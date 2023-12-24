@@ -1,7 +1,5 @@
 # AYT04 Repository
 
-> https://ayt04.github.io/AYT04/
-
 This is a Repository for all of my Software I develop online, and if anyone would like to help me with my projects, feel free to make a PR (Pull Request) here or on my Codeberg Repository.
 
 ## Codeberg
@@ -10,13 +8,40 @@ This is a Repository for all of my Software I develop online, and if anyone woul
 
 - [Mastodon](https://mastodon.social/@AYTAI)
 - [AYT!_Tree](https://aytai.codeberg.page/tree)
-- [CyberSecurity Clips](https://aytai.codeberg.page/cs/index/)
+- [CyberSecurity Clips (Codeberg)](https://aytai.codeberg.page/cs/index/)
+- [CyberSecurity Clips (GitHub)](https://aytai.github.io/cs/index/)
 - [Odysee](https://aytai.codeberg.page/Odysee)
 - [Trust](https://aytai.codeberg.page/trust)
 - [Merry Christmas! 🎅🎄🎁](https://aytai.codeberg.page/christ)
 - [Support AYTAI!](https://https://liberapay.com/AYTWorld)
 
-## Clips
+## Clips (GitHub)
+
+- [Heads Up Security Questions](https://aytai.github.io/c/husq.html)
+- [App Based 2 Factor Authentication](https://aytai.github.io/c/ab2fa.html)
+- [AI + Machine Learning](https://aytai.github.io/c/aiml.html)
+- [Administrator Privileges](https://aytai.github.io/c/ap.html)
+- [Android RGB](https://aytai.github.io/c/argb.html)
+- [Bad Portforwarding](https://aytai.github.io/c/bp.html)
+- [BitTorrent](https://aytai.github.io/c/bt.html)
+- [Buffer](https://aytai.github.io/c/buffer.html)
+- [Cache](https://aytai.github.io/c/cache.html)
+- [Compile Kernel](https://aytai.github.io/c/ck.html)
+- [CPU](https://aytai.github.io/c/cpu.html)
+- [DDOS](https://aytai.github.io/c/ddos.html)
+- [End2EndEncryption](https://aytai.github.io/c/e2e.html)
+- [Entropy DataSet](https://aytai.github.io/c/entropy.html)
+- [Firewall](https://aytai.github.io/c/fw.html)
+- [Graphics API](https://aytai.github.io/c/ga.html)
+- [Git](https://aytai.github.io/c/git.html)
+- [IP Address](https://aytai.github.io/c/ip.html)
+- [Monolithic Kernel](https://aytai.github.io/c/lmk.html)
+- [MAC Address](https://aytai.github.io/c/mac.html)
+- [Macros](https://aytai.github.io/c/macros.html)
+- [MD5CheckSum](https://aytai.github.io/c/md5.html)
+- [QEMU-KVM](https://aytai.github.io/c/qemu.html)
+
+## Clips (Codeberg)
 
 - [Heads Up Security Questions](https://aytai.codeberg.page/c/husq.html)
 - [App Based 2 Factor Authentication](https://aytai.codeberg.page/c/ab2fa.html)
