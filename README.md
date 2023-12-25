@@ -9,7 +9,6 @@ This is a Repository for all of my Software I develop online, and if anyone woul
 - [Mastodon](https://mastodon.social/@AYTAI)
 - [AYT!_Tree](https://aytai.codeberg.page/tree)
 - [CyberSecurity Clips (Codeberg)](https://aytai.codeberg.page/cs/index/)
-- [CyberSecurity Clips (GitHub)](https://aytai.github.io/cs/index/)
 - [Odysee](https://aytai.codeberg.page/Odysee)
 - [Trust](https://aytai.codeberg.page/trust)
 - [Merry Christmas! 🎅🎄🎁](https://aytai.codeberg.page/christ)
