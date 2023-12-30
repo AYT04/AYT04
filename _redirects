@@ -1,0 +1,7 @@
+# Redirects for my links; AYT!_Tree, Odysee and Trust.
+# I'm going to probably redirect this to codeberg, and back to the link
+# once Codeberg drops support for it.
+# More Information about Redirects: "https://docs.codeberg.org/codeberg-pages/redirects/"
+
+/index.html  https://aytai.codeberg.page/Odysee  301
+/ /AYT04 301

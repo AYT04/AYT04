@@ -12,6 +12,7 @@ This is a Repository for all of my Software I develop online, and if anyone woul
 - [CyberSecurity Clips (GitHub)](https://ayt04.github.io/AYT04/cs/)
 - [Odysee](https://aytai.codeberg.page/Odysee)
 - [Trust](https://aytai.codeberg.page/trust)
+- [Redirect](https://github.com/AYT04/AYT04/blob/main/index.html)
 - [Merry Christmas! 🎅🎄🎁](https://aytai.codeberg.page/christ)
 - [Support AYTAI!](https://liberapay.com/AYTWorld)
 
