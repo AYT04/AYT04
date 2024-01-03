@@ -11,7 +11,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <script src="./AYTWeb/Img/CSS,JS/AYTSearch.js"></script>
 </head>
 
 <body>
@@ -24,24 +23,41 @@
         <ul class="project-list">
 
           <center>
-            <li class="project-item  active" data-filter-item data-category="Security">
-              <a href="https://codeberg.org/AYTAI/pages"
-              target="_blank">
-        
-                <figure class="project-img">
-                  <div class="project-item-icon-box">
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </div>
-        
-                  <img src="./Img/bird_man_ayt04.png" alt="finance" loading="lazy">
-                </figure>
-        
-                <h3 class="project-title">Main Repository</h3>
-        
-                <p class="project-category">AYTClips</p>
-        
-              </a>
-            </li>
+            <div id="countdown"></div>
+<style>
+    #countdown {
+      font-size: 55px;
+      text-align: center;
+      margin-top: 100px;
+    }
+  </style>
+  
+
+  <script>
+    const countdownDate = new Date('2025-01-01').getTime();
+    const countdownTimer = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = countdownDate - now;
+      if (distance < 0) {
+        clearInterval(countdownTimer);
+        document.getElementById('countdown').innerHTML = 'Happy New Years!';
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      // Display the countdown
+      document.getElementById('countdown').innerHTML = `
+        <div>${days}d</div>
+        <div>${hours}h</div>
+        <div>${minutes}m</div>
+        <div>${seconds}s</div>
+      `;
+    }, 1000);
+  </script>
           </center>
 
           <li class="project-item  active" data-filter-item data-category="Security">
@@ -2303,6 +2319,117 @@
                 <h3 class="project-title">Odysee!</h3>
         
                 <p class="project-category">CaptainSparklez</p>
+            </a>
+            </li>
+
+            <li class="project-item  active" data-filter-item data-category="YTClip">
+              <a href="./Img/AYTClips.png"
+              target="_blank">
+            
+            <figure class="project-img">
+                  <div class="project-item-icon-box">
+                    <ion-icon name="eye-outline"></ion-icon>
+                  </div>
+        
+                  <img src="./Img/AYTClips.png" alt="Video Thumbnail" loading="lazy">
+                </figure>
+        
+                <h3 class="project-title">Update! I'm planning on hosting AYTClips Screenshots
+                  Later on GitHub using a Hugo Theme. Stay Tuned!
+                  https://themes.gohugo.io/themes/gallerydeluxe/
+                </h3>
+        
+                <p class="project-category">Birdman (Synther)</p>
+            </a>
+            </li>
+
+            <li class="project-item  active" data-filter-item data-category="YTClip">
+              <a href="https://www.youtube.com/embed/H_dETg_E7wc?si=BAaewosl_Bn6mIzW&amp;clip=UgkxeuIpaK9Uj5a-ynRy-AUFI-_bgHibhQV_&amp;clipt=EKCbDxj_7xI"
+              target="_blank">
+            
+            <figure class="project-img">
+                  <div class="project-item-icon-box">
+                    <ion-icon name="eye-outline"></ion-icon>
+                  </div>
+        
+                  <img src="./Img/bird_man_ayt04.png" alt="Video Thumbnail" loading="lazy">
+                </figure>
+        
+                <h3 class="project-title">Bridge Sound Waves</h3>
+        
+                <p class="project-category">SomeOrdinaryGamers</p>
+            </a>
+            </li>
+
+            <li class="project-item  active" data-filter-item data-category="YTClip">
+              <a href="https://www.youtube.com/embed/OQ9Uc_xjUm0?si=11gJmNizb8JmgkGs&amp;clip=Ugkx40Agk51ebpsWeJEK5QRxapiSuYZaca-w&amp;clipt=EIOjLxjNgDI"
+              target="_blank">
+            
+            <figure class="project-img">
+                  <div class="project-item-icon-box">
+                    <ion-icon name="eye-outline"></ion-icon>
+                  </div>
+        
+                  <img src="./Img/bird_man_ayt04.png" alt="Video Thumbnail" loading="lazy">
+                </figure>
+        
+                <h3 class="project-title">"Mom's Bitchin About Life" - Daz Black</h3>
+        
+                <p class="project-category">Daz Games</p>
+            </a>
+            </li>
+
+            <li class="project-item  active" data-filter-item data-category="YTClip">
+              <a href="https://www.youtube.com/embed/rgL2rVlzqyA?si=OJ83fVVKKjUoVE_Y&amp;clip=UgkxuMEZ3Z5rd2YbZuwSazn_OSyctNfOMWTi&amp;clipt=EM64FxjmrRg"
+              target="_blank">
+            
+            <figure class="project-img">
+                  <div class="project-item-icon-box">
+                    <ion-icon name="eye-outline"></ion-icon>
+                  </div>
+        
+                  <img src="./Img/bird_man_ayt04.png" alt="Video Thumbnail" loading="lazy">
+                </figure>
+        
+                <h3 class="project-title">Being a Content Creator is <b>Exhausting</b>...</h3>
+        
+                <p class="project-category">Janelle</p>
+            </a>
+            </li>
+
+            <li class="project-item  active" data-filter-item data-category="YTClip">
+              <a href="https://www.youtube.com/embed/3gUAWYgCITw?si=7uCjap7fj1U8oOku&amp;clip=UgkxJ8grg8nhR0eXoXb09Ki5kaRCj93X4htK&amp;clipt=EJ_ZBxi3zgg"
+              target="_blank">
+            
+            <figure class="project-img">
+                  <div class="project-item-icon-box">
+                    <ion-icon name="eye-outline"></ion-icon>
+                  </div>
+        
+                  <img src="./Img/bird_man_ayt04.png" alt="Video Thumbnail" loading="lazy">
+                </figure>
+        
+                <h3 class="project-title">Monsters - Crash Adams</h3>
+        
+                <p class="project-category">Crash Adams</p>
+            </a>
+            </li>
+
+            <li class="project-item  active" data-filter-item data-category="YTClip">
+              <a href="https://www.youtube.com/embed/wDaufMnafpI?si=59yZIIGz4oA3oh8h&amp;clip=Ugkx80EO_oS3qjcPNOkSHsXnMTjRE563pA0a&amp;clipt=EP3THRiVyR4"
+              target="_blank">
+            
+            <figure class="project-img">
+                  <div class="project-item-icon-box">
+                    <ion-icon name="eye-outline"></ion-icon>
+                  </div>
+        
+                  <img src="./Img/bird_man_ayt04.png" alt="Video Thumbnail" loading="lazy">
+                </figure>
+        
+                <h3 class="project-title">Bad Example of <i>Else If Statements</i>...</h3>
+        
+                <p class="project-category">SomeOrdinaryGamers</p>
             </a>
             </li>
       </ul>
