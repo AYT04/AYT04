@@ -1,6 +1,6 @@
 # AYT04
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/74fecfb7-0560-4bc7-9fbe-f54a500ae194/deploy-status)](https://app.netlify.com/sites/ayt04/deploys)
+[![Netlify Status](#)](https://app.netlify.com/sites/ayt04/deploys)
 
 ![BirdManYT04](https://ayt04.github.io/AYT04/BirdManYT04.png)
 
@@ -37,6 +37,79 @@ An Open World Video Game Project that I have not yet started as of yet, but I wi
 I've begun working on my own kernel—though it's still in the early stages. Currently, I've only developed a basic Hello World program. My goal is to create a kernel tailored for helping users and companies manage large server farms for archived data, similar to what the Internet Archive does. While Linux is a robust solution, I'm approaching this project as a learning experience and a way to deepen my understanding of Linux systems.
 
 However, if I'm being honest, this project is primarily for fun. My ultimate aim is to design a kernel that will help users host game servers specifically for my video game.
+
+### AYT!_IDE
+
+I'm developing a lightweight IDE tailored for creating Android applications, video games, and OS/kernel projects. My goal is to make it feature-rich yet efficient. I'm also considering creating a web app styled like Android Studio, so I can work on my Xbox One using the Edge browser.
+
+I’m confident in my skills and eager to share my IDE’s code here for feedback and collaboration. The IDE is designed to be minimalistic, requiring only the Python Tkinter library installed via pip. I aim to explore whether it's possible to build a functional and user-friendly IDE with just vanilla Python and Tkinter.
+
+```py
+import tkinter as tk
+import os
+# from pathlib import Path
+from tkinter import *
+from tkinter import filedialog
+from tkinter import messagebox
+# from mastodon import Mastodon
+
+root = tk.Tk()
+root.title("AYT!_IDE")
+
+# Text
+text_widget = tk.Text(root, height=10, width=40)
+text_widget.pack()
+
+def WelcomeScreen():
+    messagebox.showinfo("Thanks for using AYT!_IDE\n !","This is an Android, Video Game and Operating System IDE for developers or hobby programmers to work on what matters to them.\n If you want, you can choose to help, that's if you want to though.")
+
+# Gradle Build
+def GradleBuild():
+    print("Building...\nThis may take some time. Grab a coffee, tea, or cookie! :)")
+    os.system("./gradlew build")
+
+# # Code "Auto" Completion
+# def cc():
+#     print("Oops! This Feature is not yet Supported.")
+
+# Save Code
+def sc():
+    text_content = text_widget.get('1.0', tk.END)
+
+    file_path = filedialog.asksaveasfilename(filetypes=[("Text files", "*.txt"), ("AYT", "*.ayt"), ("All files", "*.*")])
+
+    if file_path:
+        with open(file_path, 'w') as file:
+            file.write(text_content)
+            print(f"Saved file to '{file_path}'")
+
+# Close Window
+def closew():
+    root.destroy()
+            
+# Welcome Screen
+button = tk.Button(root, text="About", command=WelcomeScreen)
+button.pack(pady=20)
+
+# Build with Gradle
+button = tk.Button(root, text="Build App", command=GradleBuild)
+button.pack()
+
+# Save
+button = tk.Button(root, text="Save", command=sc)
+button.pack()
+
+# # Auto Complete
+# button = tk.Button(root, text="SophAI (Code Completion)", command=cc)
+# button.pack()
+
+# Auto Complete
+button = tk.Button(root, text="Exit", command=closew)
+button.pack()
+
+# Start the GUI event loop
+root.mainloop()
+```
 
 ### AYT!_OS
 
