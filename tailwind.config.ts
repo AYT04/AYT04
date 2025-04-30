@@ -66,6 +66,48 @@ export default {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
+       typography: ({ theme }: { theme: any }) => ({ // Added typography configuration
+          DEFAULT: {
+            css: {
+              '--tw-prose-body': theme('colors.foreground'),
+              '--tw-prose-headings': theme('colors.primary.DEFAULT'),
+              '--tw-prose-lead': theme('colors.muted.foreground'),
+              '--tw-prose-links': theme('colors.accent.DEFAULT'),
+              '--tw-prose-bold': theme('colors.foreground'),
+              '--tw-prose-counters': theme('colors.muted.foreground'),
+              '--tw-prose-bullets': theme('colors.muted.foreground'),
+              '--tw-prose-hr': theme('colors.border'),
+              '--tw-prose-quotes': theme('colors.foreground'),
+              '--tw-prose-quote-borders': theme('colors.accent.DEFAULT'),
+              '--tw-prose-captions': theme('colors.muted.foreground'),
+              '--tw-prose-code': theme('colors.primary.DEFAULT'), // Code block text
+              '--tw-prose-pre-code': theme('colors.primary.foreground'), // Code inside pre
+              '--tw-prose-pre-bg': theme('colors.primary.DEFAULT'), // Code block background
+              '--tw-prose-th-borders': theme('colors.border'),
+              '--tw-prose-td-borders': theme('colors.border'),
+              '--tw-prose-invert-body': theme('colors.foreground'),
+              '--tw-prose-invert-headings': theme('colors.primary.DEFAULT'),
+              '--tw-prose-invert-lead': theme('colors.muted.foreground'),
+              '--tw-prose-invert-links': theme('colors.accent.DEFAULT'),
+              '--tw-prose-invert-bold': theme('colors.foreground'),
+              '--tw-prose-invert-counters': theme('colors.muted.foreground'),
+              '--tw-prose-invert-bullets': theme('colors.muted.foreground'),
+              '--tw-prose-invert-hr': theme('colors.border'),
+              '--tw-prose-invert-quotes': theme('colors.foreground'),
+              '--tw-prose-invert-quote-borders': theme('colors.accent.DEFAULT'),
+              '--tw-prose-invert-captions': theme('colors.muted.foreground'),
+              '--tw-prose-invert-code': theme('colors.primary.foreground'), // Dark: Code block text
+              '--tw-prose-invert-pre-code': theme('colors.primary.foreground'), // Dark: Code inside pre
+              '--tw-prose-invert-pre-bg': 'rgb(0 0 0 / 50%)', // Dark: Code block background
+              '--tw-prose-invert-th-borders': theme('colors.border'),
+              '--tw-prose-invert-td-borders': theme('colors.border'),
+              // Add more customizations as needed
+              h1: { fontWeight: '700' },
+              h2: { fontWeight: '600' },
+              h3: { fontWeight: '600' },
+            },
+          },
+        }),
   		keyframes: {
   			'accordion-down': {
   				from: {
@@ -90,5 +132,8 @@ export default {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require('@tailwindcss/typography'), // Added typography plugin
+  ],
 } satisfies Config;
