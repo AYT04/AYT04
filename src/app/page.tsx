@@ -15,9 +15,8 @@ export default function HomePage({ searchParams }: { searchParams?: { query?: st
       <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
       <p className="text-muted-foreground">
         Welcome to the Project Showcase! Here you can find information about the projects currently being developed.
-      </path>
+      </p>
        <ProjectList query={query} />
     </div>
   );
 }
-
