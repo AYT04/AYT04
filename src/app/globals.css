@@ -10,13 +10,13 @@ body {
   :root {
     /* Base colors */
     --background: 210 9% 98%; /* Slightly adjusted #F6F8FA */
-    --foreground: 210 10% 23%; /* Slightly adjusted #24292F */
+    --foreground: 0 0% 98%; /* Changed to white */
 
     --card: 0 0% 100%;
-    --card-foreground: 210 10% 23%;
+    --card-foreground: 210 10% 23%; /* Keep card text dark for contrast on light card */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 10% 23%;
+    --popover-foreground: 210 10% 23%; /* Keep popover text dark */
 
     --primary: 210 10% 17%; /* #24292F */
     --primary-foreground: 0 0% 98%; /* White */
