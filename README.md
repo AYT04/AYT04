@@ -1,5 +1,11 @@
-# Firebase Studio
+# AYT04 - Inspired Android & Godot Developer
 
-This is a NextJS starter in Firebase Studio.
+Welcome to my GitHub!
 
-To get started, take a look at src/app/page.tsx.
+I maintain an `Android`, `IOS` &amp; `XboxOS` Application for my hobby project.
+
+I am also working on an `Open World` video game, using the Godot engine which is an Open Source Game Engine anyone can dive into for Free!
+
+## Thanks for Checking In!
+
+#### @AddisonYT04@X.com or @AYT04@loops.video for Updates!
