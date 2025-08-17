@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Twitch Viewer</title>
+  <meta name="viewport" content="width=1280, initial-scale=1">
+  <style>
+    body {
+      background: #18181b;
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      min-height: 100vh;
+    }
+    h1 {
+      margin: 2rem 0 1rem 0;
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+      color: #9147ff;
+    }
+    .twitch-ui {
+      background: #232327;
+      border-radius: 16px;
+      box-shadow: 0 2px 16px #0008;
+      padding: 2rem 2.5rem 2rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 1350px;
+      margin: 0 0 2rem 0;
+    }
+    .channel-form {
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .channel-form label {
+      font-size: 1.1rem;
+      color: #fff;
+      font-weight: 500;
+    }
+    .channel-form input[type="text"] {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #9147ff;
+      background: #2b2b31;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      width: 180px;
+      transition: border 0.2s;
+    }
+    .channel-form input[type="text"]:focus {
+      border-color: #b881ff;
+    }
+    .channel-form button {
+      background: linear-gradient(90deg, #9147ff 0%, #6441a5 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .channel-form button:hover {
+      background: linear-gradient(90deg, #b881ff 0%, #9147ff 100%);
+    }
+    .iframe-container {
+      position: relative;
+      width: 1280px;
+      max-width: 98vw;
+      height: 720px;
+      background: #19171c;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 32px #000c;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .twitch-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      color: #9147ff;
+      font-size: 1.4rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    .twitch-logo svg {
+      height: 2rem;
+      width: 2rem;
+      vertical-align: middle;
+      fill: #9147ff;
+    }
+    #twitch-warning {
+      display: none;
+      color: #ff4747;
+      font-weight: bold;
+      margin: 1rem 0;
+      background: #2d1a1f;
+      border: 1px solid #ff4747;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      max-width: 800px;
+      text-align: center;
+    }
+    @media (max-width: 1400px) {
+      .iframe-container {
+        width: 98vw;
+        height: calc((98vw / 16) * 9);
+        min-height: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Twitch Channel Viewer</h1>
+  <div class="twitch-ui">
+    <div class="twitch-logo">
+      <svg viewBox="0 0 40 40" fill="none"><path d="M7.5 0L0 7.5V35H10V40H17.5L22.5 35H30L40 25V0H7.5ZM37.5 24.167L31.667 30H22.5L17.5 35V30H5V2.5H37.5V24.167Z" fill="#9147ff"/><path d="M30 6.667H33.333V21.667H30V6.667ZM21.667 6.667H25V21.667H21.667V6.667Z" fill="#9147ff"/></svg>
+      Powered by Twitch
+    </div>
+    <div id="twitch-warning">
+      ⚠️ <b>Twitch embed will not work unless this page is loaded from <code>https://ayt04.github.io/AYT04/ttv.html</code>.</b><br>
+      If you're seeing errors like "<i>player.twitch.tv will not allow Firefox to display the page if another site has embedded it</i>", please upload to GitHub Pages and access via the correct URL.<br><br>
+      <b>Local testing (file:// or localhost) and custom domains are not supported by Twitch embeds due to browser security restrictions, especially on Firefox.</b>
+    </div>
+    <form class="channel-form" id="channelForm" autocomplete="off">
+      <label for="channel">Channel:</label>
+      <input type="text" id="channel" name="channel" placeholder="Enter Twitch channel" value="madjad_" required>
+      <button type="submit">Watch</button>
+    </form>
+    <div class="iframe-container" id="iframeContainer">
+      <iframe
+        id="twitchPlayer"
+        src="https://player.twitch.tv/?channel=madjad_&parent=ayt04.github.io"
+        height="100%"
+        width="100%"
+        allowfullscreen
+        frameborder="0"
+        title="Twitch Player"
+        allow="autoplay; fullscreen"
+        sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+      ></iframe>
+    </div>
+  </div>
+  <script>
+    function getParentHost() {
+      // Returns the correct parent for the Twitch embed
+      if (location.protocol === "file:") return "localhost";
+      return location.hostname;
+    }
+
+    // Show warning if loaded locally or from unsupported domain
+    (function showWarningIfNeeded() {
+      // Only allow ayt04.github.io as parent
+      var allowed = "ayt04.github.io";
+      if (location.protocol === "file:" || location.hostname !== allowed) {
+        document.getElementById('twitch-warning').style.display = "block";
+      }
+    })();
+
+    document.getElementById('channelForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const channel = document.getElementById('channel').value.trim();
+      if (!channel) return;
+      const parent = "ayt04.github.io"; // Hard-coded for deployment
+      const player = document.getElementById('twitchPlayer');
+      player.src = `https://player.twitch.tv/?channel=${encodeURIComponent(channel)}&parent=${parent}`;
+    });
+
+    // Ensure embed works on correct domain on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const parent = "ayt04.github.io";
+      const channel = document.getElementById('channel').value.trim();
+      document.getElementById('twitchPlayer').src = `https://player.twitch.tv/?channel=${encodeURIComponent(channel)}&parent=${parent}`;
+    });
+  </script>
+</body>
+</html>
