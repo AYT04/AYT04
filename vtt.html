@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTT to Markdown Converter</title>
+    <!-- Use a modern font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .container {
+            max-width: 800px;
+        }
+        textarea {
+            resize: vertical;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="container bg-white shadow-xl rounded-2xl p-6 md:p-10 w-full">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">VTT to Markdown</h1>
+        <p class="text-center text-gray-500 mb-6">Upload your VTT file below to convert it to a clean, readable text format.</p>
+        
+        <!-- File Upload Input -->
+        <div class="mb-6">
+            <label for="vtt-file-upload" class="block text-sm font-medium text-gray-700 mb-2">Upload .vtt File</label>
+            <input type="file" id="vtt-file-upload" accept=".vtt" class="w-full text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:font-semibold hover:file:bg-blue-700 transition-all duration-200">
+        </div>
+
+        <!-- Copy Button -->
+        <div class="flex flex-col md:flex-row gap-4 mb-8">
+            <button id="copy-btn" class="flex-1 bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200">
+                Copy Markdown
+            </button>
+        </div>
+
+        <!-- Output Text Area for Markdown -->
+        <div>
+            <label for="markdown-output" class="block text-sm font-medium text-gray-700 mb-2">Markdown Output</label>
+            <textarea id="markdown-output" rows="10" class="w-full p-4 border border-gray-300 bg-gray-50 rounded-lg focus:outline-none transition-all duration-200" readonly placeholder="Your converted text will appear here..."></textarea>
+        </div>
+        
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const vttFileInput = document.getElementById('vtt-file-upload');
+            const copyBtn = document.getElementById('copy-btn');
+            const markdownOutput = document.getElementById('markdown-output');
+
+            // Listen for file selection
+            vttFileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const vttContent = e.target.result;
+                        const markdownText = convertVttToMarkdown(vttContent);
+                        markdownOutput.value = markdownText;
+                    };
+                    reader.readAsText(file);
+                }
+            });
+
+            // Handle copy button click
+            copyBtn.addEventListener('click', () => {
+                markdownOutput.select();
+                markdownOutput.setSelectionRange(0, 99999); // For mobile devices
+                document.execCommand('copy');
+                alertUser("Copied to clipboard!");
+            });
+
+            function convertVttToMarkdown(vtt_content) {
+                const lines = vtt_content.split('\n');
+                const markdownLines = [];
+                let lastLine = '';
+
+                for (let i = 0; i < lines.length; i++) {
+                    let line = lines[i].trim();
+
+                    // Skip lines that contain VTT metadata and timestamps.
+                    if (line.startsWith("WEBVTT") || line.startsWith("Kind:") || line.startsWith("Language:") || line.includes("-->")) {
+                        continue;
+                    }
+                    
+                    // Skip empty lines and lines with only music cues or redacted content.
+                    if (line === "" || line.includes("[Music]") || line.includes("[&nbsp;__&nbsp;]")) {
+                        continue;
+                    }
+
+                    // Remove VTT tags like '<c>' and timestamps like '<00:00:02.399>'.
+                    let cleanedLine = line.replace(/<[^>]+>/g, '').trim();
+
+                    // Add a blank line between different dialogue blocks for better readability.
+                    if (lastLine !== "" && cleanedLine !== "" && i > 0 && !lines[i-1].includes("-->") && !markdownLines[markdownLines.length-1].trim() === "") {
+                         markdownLines.push("");
+                    }
+                    
+                    // Prevent duplicate lines caused by VTT structure.
+                    if (cleanedLine !== "" && cleanedLine !== lastLine) {
+                        markdownLines.push(cleanedLine);
+                        lastLine = cleanedLine;
+                    }
+                }
+                return markdownLines.join('\n');
+            }
+
+            // Custom alert function since `window.alert()` is blocked in this environment
+            function alertUser(message) {
+                const existingAlert = document.getElementById('custom-alert');
+                if (existingAlert) existingAlert.remove();
+
+                const alertDiv = document.createElement('div');
+                alertDiv.id = 'custom-alert';
+                alertDiv.textContent = message;
+                alertDiv.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-800 text-white py-2 px-4 rounded-lg shadow-lg transition-opacity duration-300 opacity-0 z-50';
+                document.body.appendChild(alertDiv);
+
+                // Show the alert with a slight delay
+                setTimeout(() => {
+                    alertDiv.style.opacity = '1';
+                }, 100);
+
+                // Hide and remove the alert after 3 seconds
+                setTimeout(() => {
+                    alertDiv.style.opacity = '0';
+                    setTimeout(() => alertDiv.remove(), 500);
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

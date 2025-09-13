@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YouTube Channel Metadata Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #1a73e8;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      color: #333;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      display: block;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #1557b0;
+    }
+    .channel {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .channel h3 {
+      margin: 0 0 8px;
+      color: #333;
+    }
+    .channel p {
+      color: #555;
+      margin: 4px 0;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .stats div {
+      background: #f0f0f0;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .loading {
+      text-align: center;
+      color: #555;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>YouTube Channel Metadata</h1>
+  <p>Enter your YouTube API key and a channel ID to view public channel info.</p>
+  <p>UCgd5-BWtbgOw5Hx2wP3qxzg / UCJXa3_WNNmIpewOtCHf3B0g</p>
+
+  <div class="form-group">
+    <label for="api-key">Your YouTube API Key:</label>
+    <input type="text" id="api-key" placeholder="e.g. AIzaSyC..." />
+  </div>
+
+  <div class="form-group">
+    <label for="channel-id">Channel ID:</label>
+    <input type="text" id="channel-id" placeholder="e.g. UCkAizvmvTl8rQc9vDURiIeg" />
+  </div>
+
+  <button onclick="fetchChannelData()">Fetch Channel Info</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function fetchChannelData() {
+  const apiKey = document.getElementById('api-key').value.trim();
+  const channelId = document.getElementById('channel-id').value.trim();
+  const resultDiv = document.getElementById('result');
+
+  if (!apiKey) {
+    resultDiv.innerHTML = '<p class="error">Please enter your YouTube API key.</p>';
+    return;
+  }
+  if (!channelId) {
+    resultDiv.innerHTML = '<p class="error">Please enter a YouTube Channel ID.</p>';
+    return;
+  }
+
+  resultDiv.innerHTML = '<p class="loading">Loading channel info...</p>';
+
+  try {
+    // Step 1: Get channel info (including uploads playlist ID)
+    const channelResponse = await fetch(
+      `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics,contentDetails&id=${channelId}&key=${apiKey}`
+    );
+    const channelData = await channelResponse.json();
+
+    if (channelData.error) {
+      resultDiv.innerHTML = `<p class="error">API Error: ${channelData.error.message}</p>`;
+      return;
+    }
+
+    if (!channelData.items || channelData.items.length === 0) {
+      resultDiv.innerHTML = '<p class="error">Channel not found. Check the Channel ID.</p>';
+      return;
+    }
+
+    const channel = channelData.items[0];
+    const snippet = channel.snippet;
+    const stats = channel.statistics;
+    const uploadsPlaylistId = channel.contentDetails.relatedPlaylists.uploads;
+
+    // Display channel info
+    let output = `
+      <div class="channel">
+        <h3>${snippet.title}</h3>
+        <p><strong>Created:</strong> ${new Date(snippet.publishedAt).toLocaleDateString()}</p>
+        <p>${snippet.description ? snippet.description.substring(0, 300) + '...' : 'No description.'}</p>
+        <div class="stats">
+          <div>Subscribers: ${parseInt(stats.subscriberCount).toLocaleString()}</div>
+          <div>Videos: ${parseInt(stats.videoCount).toLocaleString()}</div>
+          <div>Views: ${parseInt(stats.viewCount).toLocaleString()}</div>
+        </div>
+      </div>
+      <h2>Recent Videos</h2>
+      <div class="videos" id="videos-list"></div>
+    `;
+    resultDiv.innerHTML = output;
+
+    // Step 2: Fetch uploaded videos
+    const videoList = document.getElementById('videos-list');
+    videoList.innerHTML = '<p class="loading">Loading videos...</p>';
+
+    const videoResponse = await fetch(
+      `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=10&key=${apiKey}`
+    );
+    const videoData = await videoResponse.json();
+
+    if (videoData.error) {
+      videoList.innerHTML = `<p class="error">Error fetching videos: ${videoData.error.message}</p>`;
+      return;
+    }
+
+    if (videoData.items.length === 0) {
+      videoList.innerHTML = '<p>No videos found.</p>';
+      return;
+    }
+
+    // Display video titles and thumbnails
+    videoList.innerHTML = '';
+    videoData.items.forEach(item => {
+      const video = item.snippet;
+      const videoId = video.resourceId.videoId;
+      const thumbnailUrl = video.thumbnails.medium.url;
+      const videoTitle = video.title;
+      const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+      const videoElement = document.createElement('div');
+      videoElement.className = 'video-item';
+      videoElement.innerHTML = `
+        <img class="video-thumb" src="${thumbnailUrl}" alt="Thumbnail for ${videoTitle}" />
+        <div class="video-info">
+          <a href="${videoUrl}" target="_blank" class="video-title">${videoTitle}</a>
+        </div>
+      `;
+      videoList.appendChild(videoElement);
+    });
+
+  } catch (error) {
+    resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+  }
+}
+  </script>
