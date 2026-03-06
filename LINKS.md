@@ -1,0 +1,32 @@
+* **[calc.html](https://ayt04.github.io/ayt04/calc.html)**
+* **[camera.html](https://ayt04.github.io/ayt04/camera.html)**
+* **[contact.html](https://ayt04.github.io/ayt04/contact.html)**
+* **[flagle.html](https://ayt04.github.io/ayt04/flagle.html)**
+* **[geodetective.html](https://ayt04.github.io/ayt04/geodetective.html)**
+* **[index.html](https://ayt04.github.io/ayt04/index.html)**
+* **[indianapolis.html](https://ayt04.github.io/ayt04/indianapolis.html)**
+* **[luhn.html](https://ayt04.github.io/ayt04/luhn.html)**
+* **[maps.html](https://ayt04.github.io/ayt04/maps.html)**
+* **[skyhopper.html](https://ayt04.github.io/ayt04/skyhopper.html)**
+* **[streetview.html](https://ayt04.github.io/ayt04/streetview.html)**
+* **[sysinfo.html](https://ayt04.github.io/ayt04/sysinfo.html)**
+* **[tso.html](https://ayt04.github.io/ayt04/tso.html)**
+* **[twitch.html](https://ayt04.github.io/ayt04/twitch.html)**
+* **[youtube.html](https://ayt04.github.io/ayt04/youtube.html)**
+
+<!-- Until DNS is Good!
+* [https://ayt04.xyz/calc.html](https://ayt04.xyz/calc.html)
+* [https://ayt04.xyz/camera.html](https://ayt04.xyz/camera.html)
+* [https://ayt04.xyz/contact.html](https://ayt04.xyz/contact.html)
+* [https://ayt04.xyz/flagle.html](https://ayt04.xyz/flagle.html)
+* [https://ayt04.xyz/geodetective.html](https://ayt04.xyz/geodetective.html)
+* [https://ayt04.xyz/index.html](https://ayt04.xyz/index.html)
+* [https://ayt04.xyz/indianapolis.html](https://ayt04.xyz/indianapolis.html)
+* [https://ayt04.xyz/luhn.html](https://ayt04.xyz/luhn.html)
+* [https://ayt04.xyz/maps.html](https://ayt04.xyz/maps.html)
+* [https://ayt04.xyz/skyhopper.html](https://ayt04.xyz/skyhopper.html)
+* [https://ayt04.xyz/streetview.html](https://ayt04.xyz/streetview.html)
+* [https://ayt04.xyz/sysinfo.html](https://ayt04.xyz/sysinfo.html)
+* [https://ayt04.xyz/tso.html](https://ayt04.xyz/tso.html)
+* [https://ayt04.xyz/twitch.html](https://ayt04.xyz/twitch.html)
+* [https://ayt04.xyz/youtube.html](https://ayt04.xyz/youtube.html)-->
