@@ -1,4 +1,4 @@
-* **[calc.html](https://ayt04.github.io/ayt04/calc.html)**
+<!--* **[calc.html](https://ayt04.github.io/ayt04/calc.html)**
 * **[camera.html](https://ayt04.github.io/ayt04/camera.html)**
 * **[contact.html](https://ayt04.github.io/ayt04/contact.html)**
 * **[flagle.html](https://ayt04.github.io/ayt04/flagle.html)**
@@ -12,9 +12,8 @@
 * **[sysinfo.html](https://ayt04.github.io/ayt04/sysinfo.html)**
 * **[tso.html](https://ayt04.github.io/ayt04/tso.html)**
 * **[twitch.html](https://ayt04.github.io/ayt04/twitch.html)**
-* **[youtube.html](https://ayt04.github.io/ayt04/youtube.html)**
+* **[youtube.html](https://ayt04.github.io/ayt04/youtube.html)**-->
 
-<!-- Until DNS is Good!
 * [https://ayt04.xyz/calc.html](https://ayt04.xyz/calc.html)
 * [https://ayt04.xyz/camera.html](https://ayt04.xyz/camera.html)
 * [https://ayt04.xyz/contact.html](https://ayt04.xyz/contact.html)
@@ -29,4 +28,4 @@
 * [https://ayt04.xyz/sysinfo.html](https://ayt04.xyz/sysinfo.html)
 * [https://ayt04.xyz/tso.html](https://ayt04.xyz/tso.html)
 * [https://ayt04.xyz/twitch.html](https://ayt04.xyz/twitch.html)
-* [https://ayt04.xyz/youtube.html](https://ayt04.xyz/youtube.html)-->
+* [https://ayt04.xyz/youtube.html](https://ayt04.xyz/youtube.html)
