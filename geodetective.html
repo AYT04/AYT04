@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Earth Guess</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 12px;
+            cursor: crosshair;
+            z-index: 1;
+        }
+        #image-container {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #2d2d2d;
+            cursor: zoom-in;
+        }
+        #daily-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        #daily-photo:hover {
+            transform: scale(1.02);
+        }
+        .guess-slot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #4a5568;
+        }
+        .guess-used { background-color: #ef4444; border-color: #ef4444; }
+        .guess-empty { background-color: transparent; }
+        .guess-correct { background-color: #10b981; border-color: #10b981; }
+
+        /* Modal Styles */
+        #image-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #modal-image-wrapper {
+            width: 90vw;
+            height: 80vh;
+            overflow: hidden;
+            position: relative;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #modal-image-wrapper:active {
+            cursor: grabbing;
+        }
+        #modal-img {
+            max-width: none;
+            max-height: none;
+            transition: transform 0.1s ease-out;
+            user-select: none;
+            pointer-events: none; /* Let the wrapper handle the panning */
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center p-4">
+
+    <div class="max-w-3xl w-full space-y-6">
+        <!-- Header -->
+        <header class="text-center">
+            <h1 class="text-3xl font-bold tracking-tight text-emerald-400">GEO-DAILY</h1>
+            <p class="text-slate-400 text-sm italic" id="current-date-display"></p>
+        </header>
+
+        <!-- Photo Display -->
+        <div id="image-container" class="shadow-2xl border-4 border-slate-800" onclick="openModal()">
+            <div id="loading-spinner" class="absolute inset-0 flex items-center justify-center bg-slate-800 z-10">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+            </div>
+            <img id="daily-photo" src="" alt="Daily Geolocation Challenge" class="hidden">
+            <div id="photo-credit" class="absolute bottom-2 right-2 text-[10px] bg-black/60 px-2 py-1 rounded text-white opacity-0 transition-opacity duration-500"></div>
+            <div class="absolute top-2 right-2 bg-black/40 p-1 rounded backdrop-blur-sm pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 3 6 6M9 21l-6-6M21 3l-6 6M3 21l6-6"/></svg>
+            </div>
+        </div>
+
+        <!-- Controls & Status -->
+        <div class="bg-slate-800 p-4 rounded-xl shadow-lg border border-slate-700 space-y-4">
+            <div class="flex justify-between items-center">
+                <div class="flex gap-2" id="guess-indicators">
+                    <div class="guess-slot guess-empty"></div>
+                    <div class="guess-slot guess-empty"></div>
+                    <div class="guess-slot guess-empty"></div>
+                </div>
+                <div id="distance-info" class="text-emerald-400 font-mono text-sm"></div>
+            </div>
+
+            <div id="map"></div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button id="submit-guess" class="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg active:scale-95">
+                    Submit Guess
+                </button>
+                <button id="share-btn" class="hidden bg-sky-500 hover:bg-sky-400 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    Share Result
+                </button>
+            </div>
+        </div>
+
+        <!-- Status Message -->
+        <div id="status-card" class="hidden bg-slate-800/50 p-4 rounded-xl border border-slate-700 text-center">
+            <p id="status-text" class="text-sm font-medium"></p>
+        </div>
+        
+        <footer class="text-center text-slate-500 text-xs py-4">
+            Images via Wikimedia Commons &bull; Map by OpenStreetMap &bull; New location every 24h
+        </footer>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="image-modal">
+        <button onclick="closeModal()" class="absolute top-4 right-4 text-white hover:text-red-400 z-[1001] bg-black/50 p-2 rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4 z-[1001]">
+            <button onclick="changeZoom(-0.5)" class="bg-slate-800 text-white p-3 rounded-lg border border-slate-600 hover:bg-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>
+            </button>
+            <button onclick="resetZoom()" class="bg-slate-800 text-white px-4 py-3 rounded-lg border border-slate-600 hover:bg-slate-700 font-mono">
+                RESET
+            </button>
+            <button onclick="changeZoom(0.5)" class="bg-slate-800 text-white p-3 rounded-lg border border-slate-600 hover:bg-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></svg>
+            </button>
+        </div>
+
+        <div id="modal-image-wrapper">
+            <img id="modal-img" src="" alt="Full view">
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // --- CONSTANTS & CONFIG ---
+        const MAX_GUESSES = 3;
+        const WIN_RADIUS_KM = 50; 
+        const APP_ID = 'daily-earth-guess-v1';
+        
+        const el = {
+            map: document.getElementById('map'),
+            photo: document.getElementById('daily-photo'),
+            photoCredit: document.getElementById('photo-credit'),
+            loading: document.getElementById('loading-spinner'),
+            submitBtn: document.getElementById('submit-guess'),
+            shareBtn: document.getElementById('share-btn'),
+            statusCard: document.getElementById('status-card'),
+            statusText: document.getElementById('status-text'),
+            dateDisplay: document.getElementById('current-date-display'),
+            guessDots: document.querySelectorAll('.guess-slot'),
+            distDisplay: document.getElementById('distance-info'),
+            modal: document.getElementById('image-modal'),
+            modalImg: document.getElementById('modal-img'),
+            modalWrapper: document.getElementById('modal-image-wrapper')
+        };
+
+        let map, userMarker, targetMarker, targetLatLng;
+        let gameState = {
+            date: new Date().toISOString().slice(0, 10),
+            guesses: [],
+            solved: false,
+            gameOver: false,
+            imageDetails: null
+        };
+
+        // Zoom/Pan State
+        let zoomScale = 1;
+        let isDragging = false;
+        let startPos = { x: 0, y: 0 };
+        let currentTranslate = { x: 0, y: 0 };
+
+        // --- CORE LOGIC ---
+
+        async function init() {
+            el.dateDisplay.innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            const saved = localStorage.getItem(APP_ID);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed.date === gameState.date) {
+                    gameState = parsed;
+                }
+            }
+
+            setupMap();
+            await fetchDailyImage();
+            updateUI();
+            setupModalEvents();
+        }
+
+        function setupMap() {
+            map = L.map('map', {
+                worldCopyJump: true,
+                maxBounds: [[-90, -180], [90, 180]]
+            }).setView([20, 0], 2);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            map.on('click', (e) => {
+                if (gameState.gameOver || gameState.solved) return;
+                if (userMarker) userMarker.setLatLng(e.latlng);
+                else userMarker = L.marker(e.latlng).addTo(map);
+            });
+        }
+
+        async function fetchDailyImage() {
+            try {
+                const dateSeed = new Date().getUTCDate() + (new Date().getUTCMonth() * 31) + new Date().getUTCFullYear();
+                const apiURL = `https://commons.wikimedia.org/w/api.php?action=query&generator=categorymembers&gcmtitle=Category:Featured_pictures_on_Wikimedia_Commons&gcmlimit=500&prop=imageinfo|coordinates&iiprop=url|extmetadata&format=json&origin=*`;
+                
+                const response = await fetch(apiURL);
+                const data = await response.json();
+                const candidates = Object.values(data.query.pages).filter(p => p.coordinates && p.coordinates[0]);
+                const photo = candidates[dateSeed % candidates.length];
+                const info = photo.imageinfo[0];
+                
+                targetLatLng = { lat: photo.coordinates[0].lat, lng: photo.coordinates[0].lon };
+
+                gameState.imageDetails = {
+                    url: info.url,
+                    artist: info.extmetadata?.Artist?.value || 'Unknown',
+                    license: info.extmetadata?.LicenseShortName?.value || 'CC'
+                };
+
+                el.photo.src = info.url;
+                el.modalImg.src = info.url;
+                el.photo.onload = () => {
+                    el.photo.classList.remove('hidden');
+                    el.loading.classList.add('hidden');
+                    el.photoCredit.innerHTML = `${gameState.imageDetails.artist} (${gameState.imageDetails.license})`;
+                    el.photoCredit.classList.remove('opacity-0');
+                };
+
+            } catch (err) {
+                el.statusText.innerText = "Error loading daily challenge.";
+                el.statusCard.classList.remove('hidden');
+            }
+        }
+
+        // --- MODAL & ZOOM LOGIC ---
+
+        function openModal() {
+            el.modal.style.display = 'flex';
+            resetZoom();
+        }
+
+        function closeModal() {
+            el.modal.style.display = 'none';
+        }
+
+        function changeZoom(delta) {
+            zoomScale = Math.min(Math.max(0.5, zoomScale + delta), 5);
+            applyTransform();
+        }
+
+        function resetZoom() {
+            zoomScale = 1;
+            currentTranslate = { x: 0, y: 0 };
+            // Ensure image fits initially
+            const containerAspect = el.modalWrapper.clientWidth / el.modalWrapper.clientHeight;
+            const imgAspect = el.modalImg.naturalWidth / el.modalImg.naturalHeight;
+            
+            if (imgAspect > containerAspect) {
+                el.modalImg.style.width = '100%';
+                el.modalImg.style.height = 'auto';
+            } else {
+                el.modalImg.style.width = 'auto';
+                el.modalImg.style.height = '100%';
+            }
+            applyTransform();
+        }
+
+        function applyTransform() {
+            el.modalImg.style.transform = `translate(${currentTranslate.x}px, ${currentTranslate.y}px) scale(${zoomScale})`;
+        }
+
+        function setupModalEvents() {
+            const handleStart = (e) => {
+                isDragging = true;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                startPos = { x: clientX - currentTranslate.x, y: clientY - currentTranslate.y };
+            };
+
+            const handleMove = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                currentTranslate = {
+                    x: clientX - startPos.x,
+                    y: clientY - startPos.y
+                };
+                applyTransform();
+            };
+
+            const handleEnd = () => isDragging = false;
+
+            el.modalWrapper.addEventListener('mousedown', handleStart);
+            el.modalWrapper.addEventListener('touchstart', handleStart);
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('touchmove', handleMove, { passive: false });
+            window.addEventListener('mouseup', handleEnd);
+            window.addEventListener('touchend', handleEnd);
+            
+            // Mouse wheel zoom
+            el.modalWrapper.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -0.2 : 0.2;
+                changeZoom(delta);
+            });
+        }
+
+        // --- GAMEPLAY HELPERS ---
+
+        function submitGuess() {
+            if (!userMarker) return;
+            const guessPos = userMarker.getLatLng();
+            const distance = calculateDistance(guessPos.lat, guessPos.lng, targetLatLng.lat, targetLatLng.lng);
+
+            gameState.guesses.push({ lat: guessPos.lat, lng: guessPos.lng, distance: distance });
+
+            if (distance <= WIN_RADIUS_KM) {
+                gameState.solved = true;
+                gameState.gameOver = true;
+            } else if (gameState.guesses.length >= MAX_GUESSES) {
+                gameState.gameOver = true;
+            }
+
+            saveState();
+            updateUI();
+            if (gameState.gameOver) revealLocation();
+        }
+
+        function revealLocation() {
+            if (!targetMarker) {
+                const greenIcon = L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                });
+                targetMarker = L.marker([targetLatLng.lat, targetLatLng.lng], {icon: greenIcon}).addTo(map);
+                targetMarker.bindPopup("<b>Target Location</b>").openPopup();
+                
+                const lastGuess = gameState.guesses[gameState.guesses.length - 1];
+                const line = L.polyline([[lastGuess.lat, lastGuess.lng], [targetLatLng.lat, targetLatLng.lng]], {color: '#10b981', dashArray: '5, 10'}).addTo(map);
+                map.fitBounds(line.getBounds(), {padding: [50, 50]});
+            }
+        }
+
+        function updateUI() {
+            el.guessDots.forEach((dot, i) => {
+                dot.className = 'guess-slot';
+                if (gameState.guesses[i]) {
+                    const isWin = gameState.guesses[i].distance <= WIN_RADIUS_KM;
+                    dot.classList.add(isWin ? 'guess-correct' : 'guess-used');
+                } else dot.classList.add('guess-empty');
+            });
+
+            if (gameState.guesses.length > 0) {
+                const lastDist = gameState.guesses[gameState.guesses.length - 1].distance;
+                el.distDisplay.innerText = `${Math.round(lastDist)} km away`;
+            }
+
+            if (gameState.gameOver || gameState.solved) {
+                el.submitBtn.classList.add('hidden');
+                el.shareBtn.classList.remove('hidden');
+                el.statusCard.classList.remove('hidden');
+                el.statusText.innerHTML = gameState.solved ? "🎉 Incredible! You found it." : "Out of guesses! See you tomorrow.";
+            }
+
+            if (gameState.guesses.length > 0 && !userMarker) {
+                const last = gameState.guesses[gameState.guesses.length - 1];
+                userMarker = L.marker([last.lat, last.lng]).addTo(map);
+            }
+            if (gameState.gameOver) revealLocation();
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = deg2rad(lat2 - lat1);
+            const dLon = deg2rad(lon2 - lon1);
+            const a = Math.sin(dLat/2)**2 + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2)**2; 
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        function deg2rad(deg) { return deg * (Math.PI/180); }
+        function saveState() { localStorage.setItem(APP_ID, JSON.stringify(gameState)); }
+
+        function shareResult() {
+            const score = gameState.solved ? `${gameState.guesses.length}/3` : 'X/3';
+            const emojis = gameState.guesses.map(g => g.distance <= WIN_RADIUS_KM ? '🟩' : (g.distance < 500 ? '🟨' : '🟥')).join('');
+            const text = `GeoDaily ${gameState.date}\nScore: ${score}\n${emojis}\n#DailyEarthGuess`;
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        el.submitBtn.addEventListener('click', submitGuess);
+        el.shareBtn.addEventListener('click', shareResult);
+        window.onload = init;
+    </script>
+</body>
+</html>

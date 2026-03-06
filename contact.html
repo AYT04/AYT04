@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Me</title>
+    <!-- Use Tailwind CSS for modern, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4f8; /* A soft, professional gray background */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-8 md:p-12 text-center">
+        <!-- Main heading and description -->
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+            Hello, Here's my plan!
+        </h1>
+        <p class="text-gray-600 mb-8 max-w-md mx-auto">
+          <a href="./my-story.txt">➔ My Story</a>
+        </p>
+
+        <!-- Contact Form -->
+        <form id="contactForm" class="space-y-6 text-left">
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Your Name</label>
+                <input type="text" id="name" name="name" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+            </div>
+            
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Your Email</label>
+                <input type="email" id="email" name="email" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+            </div>
+
+            <div>
+                <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+                <textarea id="message" name="message" rows="5" required class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"></textarea>
+            </div>
+            
+            <div class="flex justify-center">
+                <button type="submit" class="w-full px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out transform hover:scale-105">
+                    Send Me a Message!
+                </button>
+            </div>
+        </form>
+
+        <!-- Success Message (initially hidden) -->
+        <div id="successMessage" class="mt-8 p-4 bg-green-100 border border-green-200 text-green-700 rounded-lg hidden">
+            <p class="font-medium">Thanks for your interest! Your email draft is now ready.</p>
+        </div>
+    </div>
+
+    <script>
+    // Existing script for the contact form
+    document.getElementById('contactForm').addEventListener('submit', function(event) {
+        // Prevent the default form submission
+        event.preventDefault();
+
+        // Get the values from the form inputs
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const message = document.getElementById('message').value;
+
+        // Define your email address here
+        const myEmail = 'AYT04@duck.com'; 
+
+        // Construct the mailto link with pre-filled content
+        const subject = encodeURIComponent(`${name}`);
+        const body = encodeURIComponent(`${message}`);
+        
+        const mailtoLink = `mailto:${myEmail}?subject=${subject}&body=${body}`;
+
+        // Open the user's email client
+        window.open(mailtoLink, '_blank');
+
+        // Show a success message on the page
+        document.getElementById('successMessage').classList.remove('hidden');
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreetView Explorer - Compass Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        #streetview-container {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Compass Styling */
+        .compass-container {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .compass-tape {
+            position: absolute;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            transition: transform 0.1s ease-out;
+            will-change: transform;
+            font-family: 'JetBrains Mono', monospace, ui-monospace;
+            font-size: 12px;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .compass-mark {
+            width: 60px; /* Space between cardinal points */
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .compass-indicator {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: #3b82f6;
+            z-index: 101;
+            box-shadow: 0 0 8px #3b82f6;
+        }
+
+        #loader {
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Map Container -->
+    <div id="streetview-container"></div>
+
+    <!-- Minimalist Compass -->
+    <div class="compass-container">
+        <div class="compass-indicator"></div>
+        <div id="compass-tape" class="compass-tape">
+            <!-- Repeated cardinal points for seamless looping simulation -->
+            <div class="compass-mark">N</div>
+            <div class="compass-mark">45</div>
+            <div class="compass-mark">E</div>
+            <div class="compass-mark">135</div>
+            <div class="compass-mark">S</div>
+            <div class="compass-mark">225</div>
+            <div class="compass-mark">W</div>
+            <div class="compass-mark">315</div>
+            <!-- Repeat to allow overflow scroll -->
+            <div class="compass-mark">N</div>
+            <div class="compass-mark">45</div>
+            <div class="compass-mark">E</div>
+            <div class="compass-mark">135</div>
+            <div class="compass-mark">S</div>
+            <div class="compass-mark">225</div>
+            <div class="compass-mark">W</div>
+            <div class="compass-mark">315</div>
+            <div class="compass-mark">N</div>
+        </div>
+    </div>
+
+    <!-- Hidden controls helper -->
+    <div class="fixed bottom-4 left-4 text-[10px] text-white/30 font-mono pointer-events-none uppercase tracking-tighter">
+        A/D: Rotate • SPACE: Warp • H: UI
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loader" class="fixed inset-0 bg-black z-50 flex items-center justify-center text-white">
+        <div class="text-center">
+            <div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-[10px] tracking-[0.2em] uppercase opacity-50">Calibrating Lens</p>
+        </div>
+    </div>
+
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=&v=beta"></script>
+
+    <script>
+        let panorama;
+        const ROTATE_SPEED = 2.0;
+        const keys = {};
+
+        const locations = [
+            { lat: 48.8584, lng: 2.2945 }, // Paris
+            { lat: 35.6895, lng: 139.6917 }, // Tokyo
+            { lat: 40.7580, lng: -73.9855 }, // NYC
+            { lat: -22.9519, lng: -43.2105 }, // Rio
+            { lat: 51.5007, lng: -0.1246 }  // London
+        ];
+
+        function initApp() {
+            const startLoc = locations[Math.floor(Math.random() * locations.length)];
+            
+            panorama = new google.maps.StreetViewPanorama(
+                document.getElementById("streetview-container"),
+                {
+                    position: startLoc,
+                    pov: { heading: 0, pitch: 0 },
+                    zoom: 1,
+                    addressControl: false,
+                    showRoadLabels: false,
+                    disableDefaultUI: true,
+                    clickToGo: true,
+                    motionTracking: false,
+                    scrollwheel: true,
+                }
+            );
+
+            // Listeners
+            panorama.addListener("pov_changed", updateCompass);
+
+            // Setup Controls
+            window.onkeydown = (e) => { 
+                keys[e.key.toLowerCase()] = true; 
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    warpRandom();
+                }
+                if (e.key.toLowerCase() === 'h') {
+                    const container = document.querySelector('.compass-container');
+                    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+                }
+            };
+            window.onkeyup = (e) => { keys[e.key.toLowerCase()] = false; };
+
+            // Animation Loop for Smooth Rotation
+            function loop() {
+                const pov = panorama.getPov();
+                let changed = false;
+                if (keys['a']) { pov.heading -= ROTATE_SPEED; changed = true; }
+                if (keys['d']) { pov.heading += ROTATE_SPEED; changed = true; }
+                
+                if (changed) panorama.setPov(pov);
+                requestAnimationFrame(loop);
+            }
+            requestAnimationFrame(loop);
+
+            // Hide loader
+            setTimeout(() => {
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+            }, 1000);
+        }
+
+        function updateCompass() {
+            const heading = panorama.getPov().heading;
+            const tape = document.getElementById('compass-tape');
+            
+            // Normalize heading to 0-360
+            let normalized = heading % 360;
+            if (normalized < 0) normalized += 360;
+
+            // One full rotation (N to N) in our tape is 8 marks * 60px = 480px
+            // We shift the tape based on the heading percentage
+            const offset = (normalized / 360) * 480;
+            
+            // We center the first 'N' initially, so we adjust by the tape's start
+            // The tape is translated. 150px is the center of the 300px container.
+            // Each mark is 60px wide. N is at 30px (half of mark).
+            tape.style.transform = `translateX(${-offset}px)`;
+        }
+
+        function warpRandom() {
+            const loc = locations[Math.floor(Math.random() * locations.length)];
+            const offsetLat = loc.lat + (Math.random() - 0.5) * 0.05;
+            const offsetLng = loc.lng + (Math.random() - 0.5) * 0.05;
+            
+            const service = new google.maps.StreetViewService();
+            service.getPanorama({ location: {lat: offsetLat, lng: offsetLng}, radius: 1000 }, (data, status) => {
+                if (status === 'OK') panorama.setPosition(data.location.latLng);
+            });
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>

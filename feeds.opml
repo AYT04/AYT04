@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.1">
+	<head>
+		<title>Favourites</title>
+	</head>
+<body>
+	<outline text="AYT04" title="AYT04">
+		<outline text="Brodie Robertson" title="Brodie Robertson" description="" type="rss" version="RSS" htmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCld68syR8Wi-GY_n4CaoJGA" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCld68syR8Wi-GY_n4CaoJGA"/>
+		<outline text="Cyb3rMaddy" title="Cyb3rMaddy" description="" type="rss" version="RSS" htmlUrl="https://www.youtube.com/channel/UCgd5-BWtbgOw5Hx2wP3qxzg" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCgd5-BWtbgOw5Hx2wP3qxzg"/>
+		<outline text="techlore" title="techlore on PeerTube" description="" type="rss" version="RSS" htmlUrl="https://techlore.tv/feeds/videos.xml?videoChannelId=4" xmlUrl="https://techlore.tv/feeds/videos.xml?videoChannelId=4"/>
+		<outline text="SomeOrdinaryGamers" title="SomeOrdinaryGamers" description="" type="rss" version="RSS" htmlUrl="https://www.youtube.com/channel/UCtMVHI3AJD4Qk4hcbZnI9ZQ" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCtMVHI3AJD4Qk4hcbZnI9ZQ"/>
+	</outline>
+	<outline text="Favourites" title="Favourites"/>
+	</body>
+</opml>

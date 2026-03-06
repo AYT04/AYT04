@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Information</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            font-family: 'Poppins', sans-serif;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
+            color: white;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            padding: 40px;
+            border: 2px solid deepskyblue;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 800px;
+            background-color: #111;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+        h1 {
+            text-align: center;
+            color: deepskyblue;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .info-group {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+        .info-group h2 {
+            color: #00ffcc;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+        .info-item {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1em;
+        }
+        .label {
+            font-weight: 600;
+            color: #ff69b4;
+        }
+        .value {
+            color: #00ffcc;
+        }
+        .button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: deepskyblue;
+            color: white;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #00bfff;
+        }
+        .status {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1.1em;
+            color: #00ffcc;
+        }
+        .os-icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+        .os-name {
+            font-weight: 600;
+            color: #ff69b4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-laptop-code"></i> System Information</h1>
+        <div class="info-group">
+            <h2><i class="fas fa-globe"></i> Network & Location</h2>
+            <div class="info-item">
+                <span class="label">IP Address:</span>
+                <span class="value" id="ip">Loading...</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Location:</span>
+                <span class="value" id="location">Loading...</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Page URL:</span>
+                <span class="value" id="page-url">Loading...</span>
+            </div>
+        </div>
+
+        <div class="info-group">
+            <h2><i class="fas fa-desktop"></i> Device & Screen</h2>
+            <div class="info-item">
+                <span class="label">Device Type:</span>
+                <span class="value" id="device-type">Detecting...</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Screen Resolution:</span>
+                <span class="value" id="screen-resolution">Loading...</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Available Screen:</span>
+                <span class="value" id="available-screen">Loading...</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Color Depth:</span>
+                <span class="value" id="color-depth">Loading...</span>
+            </div>
+        </div>
+
+        <div class="info-group">
+            <h2><i class="fas fa-cogs"></i> System & Browser</h2>
+            <div class="info-item">
+                <span class="label">Operating System:</span>
+                <span class="value" id="os">Loading...</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Browser:</span>
+                <span class="value" id="browser">Loading...</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Browser Version:</span>
+                <span class="value" id="browser-version">Loading...</span>
+            </div>
+        </div>
+
+        <button class="button" id="refresh-button">Refresh Information</button>
+        <div class="status" id="status-message">Status: Ready</div>
+    </div>
+
+    <script>
+        function updateSystemInfo() {
+            // Fetching IP Address and Location
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('ip').textContent = data.ip;
+                    return fetch(`https://ipapi.co/${data.ip}/json/`);
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('location').textContent = `${data.city}, ${data.region}, ${data.country_name}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching IP or location:', error);
+                    document.getElementById('location').textContent = 'Error loading location';
+                });
+
+            // Updating Page URL
+            document.getElementById('page-url').textContent = window.location.href;
+
+            // Detecting Device Type and Screen Information
+            const deviceType = /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
+            document.getElementById('device-type').textContent = deviceType;
+            document.getElementById('screen-resolution').textContent = `${window.screen.width} x ${window.screen.height}`;
+            document.getElementById('available-screen').textContent = `${window.screen.availWidth} x ${window.screen.availHeight}`;
+            document.getElementById('color-depth').textContent = `${window.screen.colorDepth} bits`;
+
+            // Detecting Operating System and Browser
+            const userAgent = navigator.userAgent;
+            let os = 'Unknown OS';
+            if (userAgent.indexOf('Win') !== -1) os = 'Windows';
+            else if (userAgent.indexOf('Mac') !== -1) os = 'MacOS';
+            else if (userAgent.indexOf('Linux') !== -1) os = 'Linux';
+            else if (userAgent.indexOf('Android') !== -1) os = 'Android';
+            else if (userAgent.indexOf('like Mac') !== -1) os = 'iOS';
+            document.getElementById('os').textContent = os;
+
+            // Detecting Browser
+            let browser = 'Unknown Browser';
+            if (userAgent.indexOf('Chrome') !== -1) browser = 'Chrome';
+            else if (userAgent.indexOf('Firefox') !== -1) browser = 'Firefox';
+            else if (userAgent.indexOf('Safari') !== -1) browser = 'Safari';
+            else if (userAgent.indexOf('MSIE') !== -1 || userAgent.indexOf('Trident') !== -1) browser = 'Internet Explorer';
+            document.getElementById('browser').textContent = browser;
+
+            // Detecting Browser Version
+            const versionMatch = userAgent.match(/(Chrome|Firefox|Safari|MSIE|Trident)[\/\s]([\d.]+)/);
+            document.getElementById('browser-version').textContent = versionMatch ? versionMatch[2] : 'N/A';
+
+            // Update status message
+            document.getElementById('status-message').textContent = 'Status: Information Loaded';
+        }
+
+        document.getElementById('refresh-button').addEventListener('click', updateSystemInfo);
+
+        // Initial load
+        updateSystemInfo();
+    </script>
+</body>
+</html>
