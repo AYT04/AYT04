@@ -3,128 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Street Detective - Full Screen Map</title>
+    <title>Street Detective - Full Screen</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body, html {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #000;
-            font-family: 'Inter', sans-serif;
-            position: fixed;
-            touch-action: none;
+            width: 100%; height: 100%; overflow: hidden;
+            background-color: #000; font-family: 'Inter', sans-serif;
+            position: fixed; touch-action: none;
         }
 
-        #image-container {
-            position: absolute;
-            inset: 0;
-            background: #1e293b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        #image-container { position: absolute; inset: 0; background: #1e293b; }
+        #street-image { width: 100%; height: 100%; object-fit: cover; }
 
-        #street-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Map Container - The Magic Happens Here */
+        /* Map Container */
         #map-container {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 100px; 
-            height: 100px; 
-            border-radius: 12px;
-            border: 2px solid white;
+            position: absolute; bottom: 20px; right: 20px;
+            width: 100px; height: 100px; 
+            border-radius: 12px; border: 2px solid white;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
         }
 
-        /* FULL SCREEN MAP STATE */
         #map-container.expanded {
-            width: 100%;
-            height: 100%;
-            bottom: 0;
-            right: 0;
-            border-radius: 0;
-            border: none;
-            z-index: 2000; /* Above everything */
+            width: 100%; height: 100%; bottom: 0; right: 0;
+            border-radius: 0; border: none; z-index: 2000;
         }
 
-        #guess-map {
-            height: 100%;
-            width: 100%;
-            background: #242424;
-        }
+        #guess-map { height: 100%; width: 100%; background: #242424; }
 
-        /* Controls inside the expanded map */
+        /* Map Controls */
         #map-controls {
-            display: none;
-            position: absolute;
-            bottom: 30px;
-            left: 0;
-            right: 0;
-            z-index: 2001;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
+            display: none; position: absolute; bottom: 40px;
+            left: 0; right: 0; z-index: 2001;
+            flex-direction: column; align-items: center; gap: 12px;
             pointer-events: none;
         }
 
         .map-btn {
-            pointer-events: auto;
-            padding: 14px 28px;
-            border-radius: 12px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            pointer-events: auto; padding: 14px 28px; border-radius: 14px;
+            font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5); width: 200px;
         }
 
         #guess-confirm-btn { background: #2563eb; color: white; }
-        #minimize-btn { background: rgba(15, 23, 42, 0.9); color: white; font-size: 0.75rem; padding: 8px 16px; }
+        #minimize-btn { background: rgba(15, 23, 42, 0.9); color: white; font-size: 0.7rem; width: auto; padding: 8px 16px; }
+        #next-round-btn { background: #10b981; color: white; display: none; }
 
-        .ui-overlay {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 1001;
-        }
+        /* Top HUD */
+        .ui-overlay { position: absolute; top: 20px; left: 20px; z-index: 1001; }
 
         #loader {
-            position: absolute;
-            inset: 0;
-            background: #0f172a;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 3000;
+            position: absolute; inset: 0; background: #0f172a;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000;
         }
 
         .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-left-color: #3b82f6;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+            border: 4px solid rgba(255, 255, 255, 0.1); border-left-color: #3b82f6;
+            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
@@ -133,23 +74,16 @@
 
     <div id="loader">
         <div class="spinner mb-4"></div>
-        <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">Generating World...</p>
+        <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Finding Location...</p>
     </div>
 
     <div id="image-container">
         <img id="street-image" src="" alt="Street View">
         
         <div class="ui-overlay">
-            <div class="bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl border border-slate-700 shadow-2xl">
-                <div class="flex gap-4">
-                    <span class="text-slate-500 font-bold text-[10px] uppercase">R: <span id="round-num" class="text-yellow-400 text-sm">1</span></span>
-                    <span class="text-slate-500 font-bold text-[10px] uppercase">Score: <span id="total-score" class="text-green-400 text-sm">0</span></span>
-                </div>
-                
-                <div id="result-info" class="hidden mt-3 border-t border-slate-800 pt-3">
-                    <p class="text-blue-400 font-black text-xl mb-2"><span id="dist-val">0</span> km away</p>
-                    <button id="next-btn" class="w-full bg-blue-600 text-white text-[10px] font-black py-2 rounded-lg">NEXT ROUND</button>
-                </div>
+            <div class="bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-xl border border-slate-700 shadow-2xl flex gap-6">
+                <span class="text-slate-500 font-bold text-[10px] uppercase">Round <span id="round-num" class="text-yellow-400 text-sm ml-1">1</span></span>
+                <span class="text-slate-500 font-bold text-[10px] uppercase">Score <span id="total-score" class="text-green-400 text-sm ml-1">0</span></span>
             </div>
         </div>
 
@@ -158,6 +92,11 @@
             <div id="map-controls">
                 <button id="guess-confirm-btn" class="map-btn">Confirm Guess</button>
                 <button id="minimize-btn" class="map-btn">Back to Photo</button>
+                
+                <div id="result-pill" class="hidden bg-slate-900/90 text-white px-6 py-3 rounded-2xl border border-slate-700 mb-2 text-center pointer-events-auto">
+                    <p class="text-blue-400 font-black text-2xl"><span id="dist-val">0</span> <span class="text-sm">KM AWAY</span></p>
+                </div>
+                <button id="next-round-btn" class="map-btn">Next Round</button>
             </div>
         </div>
     </div>
@@ -167,31 +106,21 @@
         const MLY_KEY = 'MLY|26867455816212719|1f45e3cbfcc2a9f2977476ad1c3aa021';
         
         let map, guessMarker, actualMarker, polyline;
-        let actualLocation = null;
-        let userGuess = null;
-        let totalScore = 0;
-        let isExpanded = false;
-        let roundEnded = false;
+        let actualLocation = null, userGuess = null, totalScore = 0, currentRound = 1;
+        let isExpanded = false, roundEnded = false;
 
         const CITIES = [{lat:40.7128,lng:-74.006},{lat:51.5074,lng:-0.1278},{lat:35.6895,lng:139.6917},{lat:48.8566,lng:2.3522},{lat:-33.8688,lng:151.2093}];
 
         function init() {
-            map = L.map('guess-map', {
-                center: [20, 0],
-                zoom: 1,
-                worldCopyJump: true,
-                zoomControl: false,
-                attributionControl: false
-            });
-
+            map = L.map('guess-map', { center: [20, 0], zoom: 1, zoomControl: false, attributionControl: false });
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
             const container = document.getElementById('map-container');
             const controls = document.getElementById('map-controls');
             const minimizeBtn = document.getElementById('minimize-btn');
             const confirmBtn = document.getElementById('guess-confirm-btn');
+            const nextBtn = document.getElementById('next-round-btn');
 
-            // Expand Map
             container.addEventListener('click', (e) => {
                 if (!isExpanded && !roundEnded) {
                     isExpanded = true;
@@ -202,7 +131,6 @@
                 }
             });
 
-            // Minimize Map
             minimizeBtn.addEventListener('click', (e) => {
                 isExpanded = false;
                 container.classList.remove('expanded');
@@ -212,32 +140,29 @@
             });
 
             confirmBtn.addEventListener('click', (e) => {
-                if (userGuess) {
-                    submitGuess();
-                    controls.style.display = 'none';
-                }
+                if (userGuess) submitGuess();
+                e.stopPropagation();
+            });
+
+            nextBtn.addEventListener('click', (e) => {
+                nextRound();
                 e.stopPropagation();
             });
 
             map.on('click', (e) => {
                 if (!isExpanded || roundEnded) return;
                 userGuess = e.latlng;
-                if (guessMarker) {
-                    guessMarker.setLatLng(userGuess);
-                } else {
-                    guessMarker = L.marker(userGuess, {
-                        icon: L.divIcon({ className: 'bg-blue-500 w-5 h-5 rounded-full border-2 border-white shadow-xl', iconSize: [20, 20] })
-                    }).addTo(map);
-                }
+                if (guessMarker) guessMarker.setLatLng(userGuess);
+                else guessMarker = L.marker(userGuess, {
+                    icon: L.divIcon({ className: 'bg-blue-500 w-5 h-5 rounded-full border-2 border-white shadow-xl', iconSize: [20, 20] })
+                }).addTo(map);
             });
 
-            document.getElementById('next-btn').addEventListener('click', nextRound);
             loadNewLocation();
         }
 
         async function loadNewLocation() {
             document.getElementById('loader').style.display = 'flex';
-            document.getElementById('result-info').classList.add('hidden');
             if (guessMarker) map.removeLayer(guessMarker);
             if (actualMarker) map.removeLayer(actualMarker);
             if (polyline) map.removeLayer(polyline);
@@ -248,15 +173,12 @@
                 const lat = city.lat + (Math.random() - 0.5) * 0.1;
                 const lng = city.lng + (Math.random() - 0.5) * 0.1;
                 const bbox = `${lng-0.03},${lat-0.03},${lng+0.03},${lat+0.03}`;
-                
                 const resp = await fetch(`https://graph.mapillary.com/images?access_token=${MLY_KEY}&fields=id,geometry,thumb_original_url&bbox=${bbox}&limit=5`);
                 const data = await resp.json();
                 const img = data.data[0];
                 actualLocation = { lat: img.geometry.coordinates[1], lng: img.geometry.coordinates[0] };
-                
-                const imgEl = document.getElementById('street-image');
-                imgEl.src = img.thumb_original_url;
-                imgEl.onload = () => document.getElementById('loader').style.display = 'none';
+                document.getElementById('street-image').src = img.thumb_original_url;
+                document.getElementById('street-image').onload = () => document.getElementById('loader').style.display = 'none';
             } catch (e) { loadNewLocation(); }
         }
 
@@ -265,9 +187,13 @@
             const dist = calculateDistance(userGuess.lat, userGuess.lng, actualLocation.lat, actualLocation.lng);
             totalScore += Math.max(0, Math.round(5000 * Math.exp(-dist / 2000)));
 
-            // Show results full screen
-            document.getElementById('map-container').classList.add('expanded');
-            
+            document.getElementById('guess-confirm-btn').style.display = 'none';
+            document.getElementById('minimize-btn').style.display = 'none';
+            document.getElementById('next-round-btn').style.display = 'block';
+            document.getElementById('result-pill').classList.remove('hidden');
+            document.getElementById('dist-val').innerText = Math.round(dist).toLocaleString();
+            document.getElementById('total-score').innerText = totalScore.toLocaleString();
+
             actualMarker = L.marker([actualLocation.lat, actualLocation.lng], {
                 icon: L.divIcon({ className: 'bg-red-500 w-5 h-5 rounded-full border-2 border-white shadow-xl', iconSize: [20, 20] })
             }).addTo(map);
@@ -278,10 +204,6 @@
                 map.invalidateSize();
                 map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
             }, 500);
-
-            document.getElementById('dist-val').innerText = Math.round(dist);
-            document.getElementById('total-score').innerText = totalScore.toLocaleString();
-            document.getElementById('result-info').classList.remove('hidden');
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -293,9 +215,16 @@
         }
 
         function nextRound() {
+            currentRound++;
             isExpanded = false;
+            roundEnded = false;
+            document.getElementById('round-num').innerText = currentRound;
             document.getElementById('map-container').classList.remove('expanded');
-            document.getElementById('round-num').innerText = parseInt(document.getElementById('round-num').innerText) + 1;
+            document.getElementById('map-controls').style.display = 'none';
+            document.getElementById('next-round-btn').style.display = 'none';
+            document.getElementById('result-pill').classList.add('hidden');
+            document.getElementById('guess-confirm-btn').style.display = 'block';
+            document.getElementById('minimize-btn').style.display = 'block';
             map.setView([20, 0], 1);
             loadNewLocation();
         }
