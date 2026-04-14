@@ -2,409 +2,389 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Open Street Detective</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Street Detective - Geo Guessing Game</title>
+    <!-- Leaflet CSS for the map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         
-        :root {
-            --primary: #3b82f6;
-            --bg-dark: #020617;
-        }
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
             overflow: hidden;
-            background-color: var(--bg-dark);
-            font-family: 'Plus+Jakarta+Sans', sans-serif;
-            color: white;
-            touch-action: manipulation;
+            height: 100vh;
+            margin: 0;
         }
 
-        #game-container {
-            position: relative;
+        #image-container {
             height: 100%;
             width: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* The Main Image */
-        #viewport {
-            flex: 1;
-            position: relative;
-            background: #0f172a;
+            background: #1e293b;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
-        #street-img {
+        #street-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            transition: opacity 0.4s ease;
         }
 
-        /* Map UI */
         #map-container {
             position: absolute;
-            bottom: 16px;
-            right: 16px;
-            width: 160px;
-            height: 120px;
-            z-index: 100;
+            bottom: 20px;
+            right: 20px;
+            width: 180px; 
+            height: 120px; 
+            border-radius: 12px;
             border: 3px solid white;
-            border-radius: 16px;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-            transform-origin: bottom right;
+            opacity: 0.85;
+            cursor: crosshair;
         }
 
-        #map-container.expanded {
-            width: calc(100% - 32px);
-            height: 65%;
+        /* Expansion on hover OR when active (result showing) */
+        #map-container:hover, #map-container.active {
+            width: calc(100% - 40px);
+            height: calc(100% - 40px);
+            opacity: 1;
+            border-width: 4px;
         }
 
         #guess-map {
-            width: 100%;
             height: 100%;
-            background: #1e293b;
+            width: 100%;
+            background: #242424;
         }
 
-        /* HUD & Menus */
-        .glass {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            pointer-events: none;
+            width: 300px;
         }
 
-        .overlay {
-            position: fixed;
+        #loader {
+            position: absolute;
             inset: 0;
-            z-index: 1000;
-            background: rgba(2, 6, 23, 0.9);
+            background: rgba(15, 23, 42, 0.9);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            z-index: 2000;
+        }
+
+        /* "Oh Shit" Mode UI */
+        #api-limit-screen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
             padding: 20px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
         }
 
-        .overlay.active {
-            opacity: 1;
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .leaflet-container {
+            cursor: crosshair !important;
+        }
+
+        #next-btn {
             pointer-events: auto;
-        }
-
-        /* Animations */
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .loading-pulse {
-            animation: pulse 1.5s infinite;
-        }
-
-        .btn-action {
-            background: var(--primary);
-            transition: all 0.2s;
-        }
-
-        .btn-action:active {
-            transform: scale(0.95);
         }
     </style>
 </head>
 <body>
 
-    <!-- Loading Screen -->
-    <div id="loader" class="fixed inset-0 z-[5000] bg-[#020617] flex flex-col items-center justify-center">
-        <div class="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-        <p id="loader-status" class="font-bold tracking-widest text-sm text-blue-400">SYNCING SATELLITE...</p>
+    <!-- API Limit Screen -->
+    <div id="api-limit-screen">
+        <h1 class="text-6xl font-black text-red-600 mb-4 uppercase italic">OH SHIT!</h1>
+        <p class="text-xl text-slate-300 mb-8">The API is absolutely cooked. We hit the limit.</p>
+        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidmZ3eWtjNmNqcmYwdmZ3eWtjNmNqcmYwdmZ3eWtjNmNqcmYmZXA9YjZfaW50ZXJuYWxfZ2lmX2J5X2lkJmN0PWc/H75eliy1jJSGIbaubS/giphy.gif" 
+             alt="Panic" class="rounded-xl shadow-2xl mb-8 max-w-sm w-full">
+        <p class="text-slate-500 italic">Cooling down for <span id="cooldown-timer">60</span>s...</p>
     </div>
 
-    <!-- Settings Overlay -->
-    <div id="settings-menu" class="overlay">
-        <div class="glass p-8 rounded-3xl w-full max-w-md shadow-2xl">
-            <h2 class="text-2xl font-extrabold mb-6">Settings</h2>
-            
-            <div class="mb-6">
-                <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Mapillary Access Token</label>
-                <input type="password" id="token-input" placeholder="Paste MLY token here..." 
-                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:border-blue-500 outline-none transition-colors">
-                <p class="text-[10px] text-slate-500 mt-2">Generate this in your Mapillary Dashboard. Your token is stored locally on your device.</p>
-            </div>
-
-            <button onclick="saveSettings()" class="w-full btn-action py-4 rounded-2xl font-bold text-sm shadow-lg shadow-blue-500/20">SAVE & RESTART</button>
-            <button onclick="toggleMenu('settings-menu')" class="w-full mt-3 text-slate-400 font-bold text-xs py-2">CANCEL</button>
-        </div>
+    <div id="loader">
+        <div class="spinner mb-4"></div>
+        <p class="text-lg font-medium" id="loader-text">Loading...</p>
     </div>
 
-    <!-- About Overlay -->
-    <div id="about-menu" class="overlay">
-        <div class="glass p-8 rounded-3xl w-full max-w-md shadow-2xl max-h-[80vh] overflow-y-auto">
-            <h2 class="text-2xl font-extrabold mb-4">About</h2>
-            <p class="text-slate-300 text-sm leading-relaxed mb-4">
-                <strong class="text-white">Open Street Detective</strong> is a geo-guessing game powered by the Mapillary crowdsourced street-level imagery platform.
-            </p>
-            <p class="text-slate-300 text-sm leading-relaxed mb-4">
-                Unlike other guessing games, this app uses massive datasets contributed by users worldwide, often capturing remote corners of the planet that traditional street view services miss.
-            </p>
-            <div class="space-y-3 bg-slate-900/50 p-4 rounded-2xl border border-slate-800 mb-6">
-                <div class="flex items-center gap-3">
-                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                    <span class="text-xs font-semibold">100% Client-Side Logic</span>
+    <div id="image-container">
+        <img id="street-image" src="" alt="Street View">
+        
+        <div class="ui-overlay">
+            <div class="bg-slate-900/90 backdrop-blur-md p-5 rounded-2xl border border-slate-700 pointer-events-auto shadow-2xl transition-all duration-300">
+                <div class="flex justify-between items-center text-sm mb-2">
+                    <span class="text-slate-400 uppercase tracking-tighter font-bold text-xs">Round <span id="round-num" class="text-yellow-400 font-mono text-base">1</span></span>
+                    <span class="text-slate-400 uppercase tracking-tighter font-bold text-xs">Score: <span id="total-score" class="text-green-400 font-mono text-base">0</span></span>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span class="text-xs font-semibold">Uses Mapillary Graph API v4</span>
+                
+                <div id="result-info" class="hidden border-t border-slate-800 pt-3 mt-1">
+                    <div class="flex flex-col mb-4">
+                        <span class="text-blue-400 font-black text-4xl leading-none" id="dist-val">0</span>
+                        <span class="text-slate-400 text-xs font-bold uppercase mt-1">kilometers away</span>
+                    </div>
+                    <button id="next-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg active:scale-95">
+                        NEXT ROUND
+                    </button>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="w-2 h-2 rounded-full bg-purple-500"></div>
-                    <span class="text-xs font-semibold">No data tracking</span>
-                </div>
-            </div>
-            <button onclick="toggleMenu('about-menu')" class="w-full btn-action py-4 rounded-2xl font-bold text-sm">CLOSE</button>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div id="game-container">
-        <!-- Top Bar -->
-        <div class="absolute top-4 left-4 right-4 z-[500] pointer-events-none flex justify-between items-start">
-            <div class="glass p-4 rounded-2xl pointer-events-auto shadow-xl flex gap-6 items-center">
-                <div>
-                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Round</span>
-                    <span id="round-num" class="text-lg font-black leading-none">1</span>
-                </div>
-                <div class="w-px h-8 bg-slate-700"></div>
-                <div>
-                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Total Score</span>
-                    <span id="total-score" class="text-lg font-black leading-none text-green-400">0</span>
-                </div>
-            </div>
-
-            <div class="flex flex-col gap-2 pointer-events-auto">
-                <button onclick="toggleMenu('settings-menu')" class="glass w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                </button>
-                <button onclick="toggleMenu('about-menu')" class="glass w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </button>
             </div>
         </div>
 
-        <!-- The Guessing Feed -->
-        <div id="viewport">
-            <img id="street-img" src="" alt="Street View">
-            
-            <!-- Result Splash -->
-            <div id="result-ui" class="absolute inset-0 z-[600] pointer-events-none flex flex-col items-center justify-center opacity-0 transition-opacity duration-500">
-                <div class="glass p-8 rounded-[40px] text-center shadow-3xl transform translate-y-10 transition-transform duration-500" id="result-box">
-                    <p class="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2" id="res-dist">3,421 KM AWAY</p>
-                    <h2 class="text-5xl font-black mb-6" id="res-score">+0</h2>
-                    <button id="next-btn" class="pointer-events-auto btn-action px-12 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-blue-500/30">Continue</button>
-                </div>
-            </div>
-
-            <div class="absolute bottom-40 left-0 right-0 text-center pointer-events-none opacity-40">
-                <span class="text-[10px] font-bold uppercase tracking-[0.3em] bg-black/40 px-4 py-2 rounded-full">Tap Map to Place Guess</span>
-            </div>
-        </div>
-
-        <!-- The Map -->
         <div id="map-container">
             <div id="guess-map"></div>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
+        const PROXY_URL = ''; 
+        const FALLBACK_KEY = 'MLY|26867455816212719|1f45e3cbfcc2a9f2977476ad1c3aa021';
+        
         let map, guessMarker, actualMarker, polyline;
         let actualLocation = null;
-        let score = 0;
-        let round = 1;
-        let roundActive = true;
-        let apiToken = localStorage.getItem('mly_token') || 'MLY|26365638989761752|674fe324cc911b1f69eafdab6a735e03';
+        let userGuess = null;
+        let totalScore = 0;
+        let currentRound = 1;
+        let isApiLimitMode = false;
+        let roundEnded = false;
 
-        // High Probability Zones
-        const ANCHORS = [
-            {lat: 40.71, lng: -74.00}, {lat: 51.50, lng: -0.12}, {lat: 35.68, lng: 139.69},
-            {lat: 48.85, lng: 2.35}, {lat: -33.86, lng: 151.20}, {lat: 52.52, lng: 13.40},
-            {lat: 45.42, lng: -75.69}, {lat: 37.77, lng: -122.41}, {lat: 1.35, lng: 103.81},
-            {lat: -23.55, lng: -46.63}, {lat: 43.65, lng: -79.38}, {lat: 34.05, lng: -118.24},
-            {lat: 39.90, lng: 116.40}, {lat: 19.43, lng: -99.13}, {lat: 55.75, lng: 37.61}
+        const ANCHOR_CITIES = [
+            { name: "New York", lat: 40.7128, lng: -74.0060 },
+            { name: "London", lat: 51.5074, lng: -0.1278 },
+            { name: "Paris", lat: 48.8566, lng: 2.3522 },
+            { name: "Tokyo", lat: 35.6895, lng: 139.6917 },
+            { name: "Berlin", lat: 52.5200, lng: 13.4050 },
+            { name: "Sydney", lat: -33.8688, lng: 151.2093 },
+            { name: "São Paulo", lat: -23.5505, lng: -46.6333 },
+            { name: "Cape Town", lat: -33.9249, lng: 18.4241 },
+            { name: "Seoul", lat: 37.5665, lng: 126.9780 },
+            { name: "Mexico City", lat: 19.4326, lng: -99.1332 },
+            { name: "Rome", lat: 41.9028, lng: 12.4964 },
+            { name: "Madrid", lat: 40.4168, lng: -3.7038 },
+            { name: "Toronto", lat: 43.6532, lng: -79.3832 },
+            { name: "Los Angeles", lat: 34.0522, lng: -118.2437 },
+            { name: "Amsterdam", lat: 52.3676, lng: 4.9041 },
+            { name: "Bangkok", lat: 13.7563, lng: 100.5018 },
+            { name: "Singapore", lat: 1.3521, lng: 103.8198 },
+            { name: "Buenos Aires", lat: -34.6037, lng: -58.3816 },
+            { name: "Lisbon", lat: 38.7223, lng: -9.1393 },
+            { name: "Dublin", lat: 53.3498, lng: -6.2603 },
+            { name: "Stockholm", lat: 59.3293, lng: 18.0686 },
+            { name: "Helsinki", lat: 60.1695, lng: 24.9354 },
+            { name: "Copenhagen", lat: 55.6761, lng: 12.5683 }
         ];
 
         function init() {
-            document.getElementById('token-input').value = apiToken;
-
             map = L.map('guess-map', {
                 center: [20, 0],
                 zoom: 1,
-                zoomControl: false,
-                attributionControl: false
+                worldCopyJump: true,
+                zoomControl: false
             });
 
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            const mapContainer = document.getElementById('map-container');
+            mapContainer.addEventListener('transitionend', () => map.invalidateSize());
+            
+            // Interaction to keep map expanded while result is active
+            mapContainer.addEventListener('mouseenter', () => setTimeout(() => map.invalidateSize(), 50));
+            mapContainer.addEventListener('mouseleave', () => {
+                if (!roundEnded) setTimeout(() => map.invalidateSize(), 400);
+            });
 
             map.on('click', onMapClick);
-            
-            const mc = document.getElementById('map-container');
-            mc.addEventListener('touchstart', (e) => {
-                if (roundActive && !mc.classList.contains('expanded')) {
-                    mc.classList.add('expanded');
-                    setTimeout(() => map.invalidateSize(), 350);
-                }
-            });
+            document.getElementById('next-btn').addEventListener('click', nextRound);
 
-            document.getElementById('next-btn').addEventListener('click', startNextRound);
-
-            loadRound();
+            loadNewLocation();
         }
 
-        async function loadRound() {
-            roundActive = true;
-            toggleLoader(true, "LOCATING TARGET...");
+        function triggerOhShitMode() {
+            if (isApiLimitMode) return;
+            isApiLimitMode = true;
+            document.getElementById('api-limit-screen').style.display = 'flex';
             
-            document.getElementById('result-ui').style.opacity = '0';
-            document.getElementById('result-box').style.transform = 'translateY(40px)';
-            document.getElementById('map-container').classList.remove('expanded');
+            let seconds = 60;
+            const timerEl = document.getElementById('cooldown-timer');
+            const interval = setInterval(() => {
+                seconds--;
+                timerEl.innerText = seconds;
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    isApiLimitMode = false;
+                    document.getElementById('api-limit-screen').style.display = 'none';
+                    loadNewLocation();
+                }
+            }, 1000);
+        }
 
+        async function loadNewLocation() {
+            if (isApiLimitMode) return;
+            document.getElementById('loader').style.display = 'flex';
+            document.getElementById('loader-text').innerText = "Finding a random location...";
+            
+            // UI Reset
+            document.getElementById('result-info').classList.add('hidden');
+            document.getElementById('map-container').classList.remove('active');
+            roundEnded = false;
+            
             if (guessMarker) map.removeLayer(guessMarker);
             if (actualMarker) map.removeLayer(actualMarker);
             if (polyline) map.removeLayer(polyline);
-
-            let success = false;
-            let attempts = 0;
-
-            while (!success && attempts < 25) {
-                attempts++;
-                try {
-                    const anchor = ANCHORS[Math.floor(Math.random() * ANCHORS.length)];
-                    const offset = attempts > 5 ? 2.5 : 0.8;
-                    const lat = anchor.lat + (Math.random() - 0.5) * offset;
-                    const lng = anchor.lng + (Math.random() - 0.5) * offset;
-                    
-                    const res = await fetch(`https://graph.mapillary.com/images?access_token=${apiToken}&fields=id,geometry,thumb_2048_url&bbox=${lng-0.1},${lat-0.1},${lng+0.1},${lat+0.1}&limit=10`);
-                    const data = await res.json();
-
-                    if (data.data && data.data.length > 0) {
-                        const img = data.data.find(d => d.thumb_2048_url) || data.data[0];
-                        actualLocation = { lat: img.geometry.coordinates[1], lng: img.geometry.coordinates[0] };
-                        
-                        const el = document.getElementById('street-img');
-                        el.src = img.thumb_2048_url;
-                        el.onload = () => {
-                            toggleLoader(false);
-                            map.invalidateSize();
-                        };
-                        success = true;
-                    }
-                } catch (e) {
-                    console.error("Link error:", e);
+            userGuess = null;
+            
+            try {
+                const imageData = await fetchRandomMapillaryImage();
+                const imgElement = document.getElementById('street-image');
+                imgElement.src = imageData.thumb_original_url;
+                actualLocation = {
+                    lat: imageData.geometry.coordinates[1],
+                    lng: imageData.geometry.coordinates[0]
+                };
+                imgElement.onload = () => document.getElementById('loader').style.display = 'none';
+            } catch (error) {
+                if (error.message.includes("limit") || error.message.includes("429") || error.message.includes("403")) {
+                    triggerOhShitMode();
+                } else {
+                    document.getElementById('loader-text').innerText = "Searching next area...";
+                    setTimeout(loadNewLocation, 300);
                 }
             }
+        }
 
-            if (!success) {
-                toggleLoader(true, "TOKEN EXPIRED OR NO DATA. CHECK SETTINGS.");
+        async function fetchRandomMapillaryImage() {
+            const city = ANCHOR_CITIES[Math.floor(Math.random() * ANCHOR_CITIES.length)];
+            const lat = city.lat + (Math.random() - 0.5) * 0.2;
+            const lng = city.lng + (Math.random() - 0.5) * 0.2;
+            const radius = 0.05;
+            const bbox = `${lng-radius},${lat-radius},${lng+radius},${lat+radius}`;
+            
+            let searchUrl = PROXY_URL 
+                ? `${PROXY_URL}/api/mapillary?bbox=${bbox}`
+                : `https://graph.mapillary.com/images?access_token=${FALLBACK_KEY}&fields=id,geometry,thumb_original_url&bbox=${bbox}&limit=50`;
+            
+            const response = await fetch(searchUrl);
+            
+            if (response.status === 429 || response.status === 403) {
+                throw new Error("API limit hit");
             }
+            
+            if (!response.ok) throw new Error("API call failed");
+            
+            const data = await response.json();
+            const validImages = data.data?.filter(img => img.thumb_original_url && img.geometry) || [];
+            
+            if (validImages.length === 0) throw new Error(`No images found near ${city.name}`);
+            return validImages[Math.floor(Math.random() * validImages.length)];
         }
 
         function onMapClick(e) {
-            if (!roundActive) return;
+            if (userGuess || roundEnded) return; 
             
-            const mc = document.getElementById('map-container');
-            if (!mc.classList.contains('expanded')) {
-                mc.classList.add('expanded');
-                setTimeout(() => map.invalidateSize(), 350);
-                return;
-            }
-
-            const { lat, lng } = e.latlng;
-            guessMarker = L.marker([lat, lng], {
-                icon: L.divIcon({ className: 'w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg' })
+            userGuess = e.latlng;
+            guessMarker = L.marker(userGuess, {
+                icon: L.divIcon({
+                    className: 'bg-blue-500 w-4 h-4 rounded-full border-2 border-white shadow-lg',
+                    iconSize: [16, 16]
+                })
             }).addTo(map);
 
-            finishRound(lat, lng);
+            setTimeout(submitGuess, 300);
         }
 
-        function finishRound(gLat, gLng) {
-            roundActive = false;
-            
-            actualMarker = L.marker([actualLocation.lat, actualLocation.lng], {
-                icon: L.divIcon({ className: 'w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-lg' })
-            }).addTo(map);
-
-            polyline = L.polyline([[gLat, gLng], [actualLocation.lat, actualLocation.lng]], {
-                color: 'white', dashArray: '8, 8', weight: 2, opacity: 0.5
-            }).addTo(map);
-
-            const dist = getDistance(gLat, gLng, actualLocation.lat, actualLocation.lng);
-            const roundScore = Math.max(0, Math.round(5000 * Math.exp(-dist / 1200)));
-            score += roundScore;
-
-            document.getElementById('res-dist').innerText = `${Math.round(dist).toLocaleString()} KM AWAY`;
-            document.getElementById('res-score').innerText = `+${roundScore}`;
-            document.getElementById('total-score').innerText = score.toLocaleString();
-            
-            document.getElementById('result-ui').style.opacity = '1';
-            document.getElementById('result-box').style.transform = 'translateY(0)';
-            document.getElementById('result-ui').style.pointerEvents = 'auto';
-
-            map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
-        }
-
-        function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                       Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
                       Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
         }
 
-        function startNextRound() {
-            round++;
-            document.getElementById('round-num').innerText = round;
-            document.getElementById('result-ui').style.pointerEvents = 'none';
+        function calculateScore(distance) {
+            if (distance > 15000) return 0;
+            const score = Math.round(5000 * Math.exp(-distance / 2000));
+            return Math.max(0, score);
+        }
+
+        function submitGuess() {
+            if (!userGuess || !actualLocation) return;
+            roundEnded = true;
+            
+            const dist = calculateDistance(userGuess.lat, userGuess.lng, actualLocation.lat, actualLocation.lng);
+            const roundScore = calculateScore(dist);
+            totalScore += roundScore;
+
+            // Keep map expanded
+            const mapContainer = document.getElementById('map-container');
+            mapContainer.classList.add('active');
+            map.invalidateSize();
+
+            actualMarker = L.marker([actualLocation.lat, actualLocation.lng], {
+                icon: L.divIcon({
+                    className: 'bg-red-500 w-4 h-4 rounded-full border-2 border-white shadow-lg',
+                    iconSize: [16, 16]
+                })
+            }).addTo(map);
+
+            polyline = L.polyline([userGuess, [actualLocation.lat, actualLocation.lng]], {
+                color: 'white',
+                dashArray: '5, 10',
+                weight: 2
+            }).addTo(map);
+
+            // Give it a moment to expand before fitting bounds
+            setTimeout(() => {
+                map.fitBounds(polyline.getBounds(), { padding: [150, 150] });
+            }, 450);
+
+            // Show result info in top-left pill
+            document.getElementById('dist-val').innerText = Math.round(dist).toLocaleString();
+            document.getElementById('total-score').innerText = totalScore.toLocaleString();
+            document.getElementById('result-info').classList.remove('hidden');
+        }
+
+        function nextRound() {
+            currentRound++;
+            document.getElementById('round-num').innerText = currentRound;
             map.setView([20, 0], 1);
-            loadRound();
-        }
-
-        function toggleMenu(id) {
-            document.getElementById(id).classList.toggle('active');
-        }
-
-        function saveSettings() {
-            const val = document.getElementById('token-input').value.trim();
-            if (val) {
-                apiToken = val;
-                localStorage.setItem('mly_token', val);
-                toggleMenu('settings-menu');
-                round = 1;
-                score = 0;
-                document.getElementById('round-num').innerText = round;
-                document.getElementById('total-score').innerText = score;
-                loadRound();
-            }
-        }
-
-        function toggleLoader(show, text = "LOADING...") {
-            const l = document.getElementById('loader');
-            document.getElementById('loader-status').innerText = text;
-            l.style.opacity = show ? '1' : '0';
-            setTimeout(() => { l.style.display = show ? 'flex' : 'none'; }, show ? 0 : 300);
+            loadNewLocation();
         }
 
         window.onload = init;
