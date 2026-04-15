@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Street Detective - Full Screen</title>
+    <title>Street Detective - AYTGuessr</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -55,9 +55,11 @@
         #minimize-btn { background: rgba(15, 23, 42, 0.9); color: white; font-size: 0.7rem; width: auto; padding: 8px 16px; }
         #next-round-btn { background: #10b981; color: white; display: none; }
 
-        /* Top HUD */
+        /* UI HUD */
         .ui-overlay { position: absolute; top: 20px; left: 20px; z-index: 1001; }
+        .settings-overlay { position: absolute; top: 20px; right: 20px; z-index: 1001; }
 
+        /* Loader */
         #loader {
             position: absolute; inset: 0; background: #0f172a;
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000;
@@ -68,6 +70,33 @@
             border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px); z-index: 4000;
+            display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.active { display: flex; opacity: 1; }
+
+        .modal-content {
+            background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px; max-width: 550px; width: 100%;
+            max-height: 90vh; overflow-y: auto;
+            padding: 32px; position: relative;
+            transform: translateY(20px); transition: transform 0.3s ease;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        /* Custom Scrollbar for Modal */
+        .modal-content::-webkit-scrollbar { width: 6px; }
+        .modal-content::-webkit-scrollbar-track { background: transparent; }
+        .modal-content::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -80,11 +109,19 @@
     <div id="image-container">
         <img id="street-image" src="" alt="Street View">
         
+        <!-- HUD Left -->
         <div class="ui-overlay">
             <div class="bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-xl border border-slate-700 shadow-2xl flex gap-6">
                 <span class="text-slate-500 font-bold text-[10px] uppercase">Round <span id="round-num" class="text-yellow-400 text-sm ml-1">1</span></span>
                 <span class="text-slate-500 font-bold text-[10px] uppercase">Score <span id="total-score" class="text-green-400 text-sm ml-1">0</span></span>
             </div>
+        </div>
+
+        <!-- Settings Button Right -->
+        <div class="settings-overlay">
+            <button id="settings-trigger" class="bg-slate-900/90 backdrop-blur-md p-3 rounded-xl border border-slate-700 shadow-2xl text-slate-400 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
         </div>
 
         <div id="map-container">
@@ -101,6 +138,77 @@
         </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-white text-2xl font-bold tracking-tight">Street Detective</h2>
+                <button id="modal-close" class="text-slate-500 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            
+            <div class="space-y-8">
+                <section>
+                    <h3 class="text-blue-400 text-xs font-black uppercase tracking-widest mb-3">The Objective</h3>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                        You are a <span class="text-white font-semibold italic">Street Detective</span>. Your mission is simple but challenging: examine a single photograph from somewhere on Earth and pin its exact location on a world map.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
+                            <p class="text-white text-xs font-bold mb-1">🔍 Observe</p>
+                            <p class="text-slate-400 text-[11px]">Look for license plates, road signs, architecture, or vegetation types.</p>
+                        </div>
+                        <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
+                            <p class="text-white text-xs font-bold mb-1">📍 Pinpoint</p>
+                            <p class="text-slate-400 text-[11px]">Expand the map and place your marker. Accuracy is rewarded with points.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h3 class="text-blue-400 text-xs font-black uppercase tracking-widest mb-3">The Creator</h3>
+                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
+                        <p class="text-slate-300 text-sm mb-2">
+                            This application was developed by <span class="text-blue-400 font-bold">AddisonYT04</span>.
+                        </p>
+                        <p class="text-slate-400 text-[11px] italic">
+                            Constructed as a demonstration of real-time API integration, responsive spatial design, and immersive web experiences.
+                        </p>
+                    </div>
+                </section>
+
+                <section>
+                    <h3 class="text-blue-400 text-xs font-black uppercase tracking-widest mb-3">Service Providers</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-4">
+                            <div class="mt-1 bg-green-500/20 p-2 rounded-lg"><svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg></div>
+                            <div>
+                                <p class="text-white text-xs font-bold">Mapillary</p>
+                                <p class="text-slate-400 text-[11px]">Data provided by Mapillary's global network of contributors. All images are real-world captures used via their Open Graph API.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="mt-1 bg-blue-500/20 p-2 rounded-lg"><svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>
+                            <div>
+                                <p class="text-white text-xs font-bold">Leaflet & CartoDB</p>
+                                <p class="text-slate-400 text-[11px]">The interactive engine and dark-matter map styles are powered by open-source mapping technologies and Carto's specialized tile sets.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="pt-6 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <p class="text-slate-500 text-[10px] font-mono">SYSTEM READY / V1.2.0-STABLE</p>
+                    </div>
+                    <button id="modal-close-btn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-10 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-blue-900/20">Resume Case</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const MLY_KEY = 'MLY|26867455816212719|1f45e3cbfcc2a9f2977476ad1c3aa021';
@@ -109,7 +217,7 @@
         let actualLocation = null, userGuess = null, totalScore = 0, currentRound = 1;
         let isExpanded = false, roundEnded = false;
 
-        const CITIES = [{lat:40.7128,lng:-74.006},{lat:51.5074,lng:-0.1278},{lat:35.6895,lng:139.6917},{lat:48.8566,lng:2.3522},{lat:-33.8688,lng:151.2093}];
+        const CITIES = [{lat:40.7128,lng:-74.006},{lat:51.5074,lng:-0.1278},{lat:35.6895,lng:139.6917},{lat:48.8566,lng:2.3522},{lat:-33.8688,lng:151.2093}, {lat:-23.5505,lng:-46.6333}, {lat:55.7558,lng:37.6173}];
 
         function init() {
             map = L.map('guess-map', { center: [20, 0], zoom: 1, zoomControl: false, attributionControl: false });
@@ -120,6 +228,25 @@
             const minimizeBtn = document.getElementById('minimize-btn');
             const confirmBtn = document.getElementById('guess-confirm-btn');
             const nextBtn = document.getElementById('next-round-btn');
+            
+            // Modal Elements
+            const settingsBtn = document.getElementById('settings-trigger');
+            const modal = document.getElementById('settings-modal');
+            const modalClose = document.getElementById('modal-close');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+
+            // Modal Logic
+            const openModal = () => {
+                modal.classList.add('active');
+            };
+            const closeModal = () => {
+                modal.classList.remove('active');
+            };
+
+            settingsBtn.addEventListener('click', openModal);
+            modalClose.addEventListener('click', closeModal);
+            modalCloseBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
 
             container.addEventListener('click', (e) => {
                 if (!isExpanded && !roundEnded) {
@@ -170,16 +297,22 @@
 
             try {
                 const city = CITIES[Math.floor(Math.random() * CITIES.length)];
-                const lat = city.lat + (Math.random() - 0.5) * 0.1;
-                const lng = city.lng + (Math.random() - 0.5) * 0.1;
+                const lat = city.lat + (Math.random() - 0.5) * 0.15;
+                const lng = city.lng + (Math.random() - 0.5) * 0.15;
                 const bbox = `${lng-0.03},${lat-0.03},${lng+0.03},${lat+0.03}`;
                 const resp = await fetch(`https://graph.mapillary.com/images?access_token=${MLY_KEY}&fields=id,geometry,thumb_original_url&bbox=${bbox}&limit=5`);
                 const data = await resp.json();
+                
+                if(!data.data || data.data.length === 0) throw new Error("No images found");
+                
                 const img = data.data[0];
                 actualLocation = { lat: img.geometry.coordinates[1], lng: img.geometry.coordinates[0] };
                 document.getElementById('street-image').src = img.thumb_original_url;
                 document.getElementById('street-image').onload = () => document.getElementById('loader').style.display = 'none';
-            } catch (e) { loadNewLocation(); }
+            } catch (e) { 
+                console.log("Retrying location fetch...");
+                loadNewLocation(); 
+            }
         }
 
         function submitGuess() {
