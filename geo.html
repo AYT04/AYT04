@@ -221,7 +221,7 @@
 
         function init() {
             map = L.map('guess-map', { center: [20, 0], zoom: 1, zoomControl: false, attributionControl: false });
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
 
             const container = document.getElementById('map-container');
             const controls = document.getElementById('map-controls');
