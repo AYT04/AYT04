@@ -1,7 +1,17 @@
 #!/bin/bash
 
-#if efivar is enabled
+#iwctl (station)
+#scan
+#connect
+
+iwctl && station wlan0 scan && connect
+
+#uefi check
 efivar -l
+
+gdisk /dev/mmcblk0
+#x - expert
+#z - zap!
 
 # Format partitions
 mkfs.fat -F 32 /dev/mmcblk0p1
@@ -13,11 +23,10 @@ mount /dev/mmcblk0p2 /mnt
 mkdir -p /mnt/boot
 mount /dev/mmcblk0p1 /mnt/boot
 
-# Backup mirrorlist
-cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+#cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 
 # Rank mirrors and install base system
-rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
+#rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
 pacstrap -K /mnt base linux linux-firmware base-devel nano
 
 # Generate fstab
