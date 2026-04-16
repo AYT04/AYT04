@@ -13,6 +13,14 @@ gdisk /dev/mmcblk0
 #x - expert
 #z - zap!
 
+cgdisk /dev/mmcblk0
+#home - p1 (27GB)
+#root - p2 (300MB)
+#boot - p3 (30GB)
+
+fallocate -l 2G /swapfile
+chmod 600 /swapfile
+
 # Format partitions
 mkfs.fat -F 32 /dev/mmcblk0p1
 mkfs.ext4 /dev/mmcblk0p2
