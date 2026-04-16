@@ -1,10 +1,7 @@
 #!/bin/bash
-set -e      
 
-# Verify UEFI
-if ! efivar -l >/dev/null 2>&1; then
-  echo "Not booted in UEFI mode!"
-  exit 1
+#if efivar is enabled
+efivar -l
 
 # Format partitions
 mkfs.fat -F 32 /dev/mmcblk0p1
