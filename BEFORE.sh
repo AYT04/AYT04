@@ -1,43 +1,10 @@
 #!/bin/bash
-set -e  # Exit on error
-
-#      _ __   _______ ___  _  _         _             _     
-#     / \\ \ / /_   _/ _ \| || | _     / \   _ __ ___| |__  
-#    / _ \\ V /  | || | | | || |(_)   / _ \ | '__/ __| '_ \ 
-#   / ___ \| |   | || |_| |__   _|   / ___ \| | | (__| | | |
-#  /_/   \_\_|   |_| \___/   |_|(_) /_/_  \_\_|  \___|_| |_|
-#  | |__   __ _ ___  ___  __| | | |   (_)_ __  _   ___  __  
-#  | '_ \ / _` / __|/ _ \/ _` | | |   | | '_ \| | | \ \/ /  
-#  | |_) | (_| \__ \  __/ (_| | | |___| | | | | |_| |>  <   
-#  |_.__/ \__,_|___/\___|\__,_| |_____|_|_| |_|\__,_/_/\_\  
-#   ____  _     _        _ _           _   _                
-#  |  _ \(_)___| |_ _ __(_) |__  _   _| |_(_) ___  _ __     
-#  | | | | / __| __| '__| | '_ \| | | | __| |/ _ \| '_ \    
-#  | |_| | \__ \ |_| |  | | |_) | |_| | |_| | (_) | | | |   
-#  |____/|_|___/\__|_|  |_|_.__/ \__,_|\__|_|\___/|_| |_|   
-                                                          
-# https://budavariam.github.io/asciiart-text/
-
-# Check internet
-ping -c 3 www.ayt04.xyz || { echo "No internet!"; exit 1; }
+set -e      
 
 # Verify UEFI
 if ! efivar -l >/dev/null 2>&1; then
   echo "Not booted in UEFI mode!"
   exit 1
-fi
-
-# List disks
-lsblk
-
-# ⚠️ WARNING: This script assumes /dev/mmcblk0 is the target disk.
-# ⚠️ Double-check with lsblk before running!
-
-# Create partitions (using sgdisk for scripting)
-sgdisk -Z /dev/mmcblk0  # Wipe partition table
-sgdisk -n 1:0:+512M -t 1:EF00 /dev/mmcblk0  # EFI System Partition
-sgdisk -n 2:0:+57G -t 2:8300 /dev/mmcblk0   # Root partition
-sgdisk -n 3:0:0 -t 3:8200 /dev/mmcblk0      # Swap partition
 
 # Format partitions
 mkfs.fat -F 32 /dev/mmcblk0p1
