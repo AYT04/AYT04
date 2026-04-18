@@ -1,0 +1,27 @@
+<!-- Item Entry 1 -->
+<item>
+  <title>SomeOrdinaryGamers</title>
+  <itunes:author>SomeOrdinaryGamers</itunes:author>
+  <description>Latest content from SomeOrdinaryGamers.</description>
+  <pubDate>Sat, 18 Apr 2026 12:00:00 +0000</pubDate>
+  <link>https://odysee.com/@SomeOrdinaryGamers:6</link>
+  <guid isPermaLink="false">sog-unique-id-1</guid>
+  <enclosure url="https://odysee.com/$/download/@SomeOrdinaryGamers:6/latest-video" type="video/mp4" length="0"/>
+  <itunes:duration>00:00:00</itunes:duration>
+</item>
+
+<!-- Item Entry 2 -->
+<item>
+  <title>Brodie Robertson</title>
+  <itunes:author>Brodie Robertson</itunes:author>
+  <description>Latest content from Brodie Robertson.</description>
+  <pubDate>Sat, 18 Apr 2026 11:00:00 +0000</pubDate>
+  <link>https://odysee.com/@BrodieRobertson:5</link>
+  <guid isPermaLink="false">brodie-unique-id-1</guid>
+  <enclosure url="https://odysee.com/$/download/@BrodieRobertson:5/latest-video" type="video/mp4" length="0"/>
+  <itunes:duration>00:00:00</itunes:duration>
+</item>
+
+<!-- Note: For a live feed, you would replace these placeholders with the 
+     actual entries from the Odysee RSS XML, ensuring you use the 
+     /$/download/ path in the enclosure URL for playback compatibility. -->
