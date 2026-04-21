@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AYT Ultimate Hub</title>
+    <!-- External Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #6366f1;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --profile-gradient: linear-gradient(135deg, #7f12d8, #ff0033);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: #f8fafc;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Sidebar Responsive Drawer */
+        .glass-nav {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-closed { transform: translateX(-100%); }
+            .sidebar-open { transform: translateX(0); }
+        }
+
+        /* Main View Container */
+        .view-content {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .view-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Shared Components */
+        .hub-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.25rem;
+            padding: 1.25rem;
+        }
+
+        /* Profile Specific Styles */
+        .profile-hero {
+            background: var(--profile-gradient);
+            border-radius: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .profile-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            opacity: 0.1;
+        }
+
+        /* Flagle Pieces */
+        .flag-grid-tile { transition: opacity 0.4s; }
+        .hidden-tile { background-color: #334155; border: 1px solid rgba(255,255,255,0.05); }
+        .revealed-tile { opacity: 0; }
+
+        /* Maps */
+        #map, #indi-pano { 
+            height: 50vh; 
+            min-height: 350px;
+            width: 100%; 
+            border-radius: 1.25rem; 
+        }
+        
+        .country-label { background: white; color: black; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        
+        /* Camera */
+        #video-preview { width: 100%; border-radius: 1rem; transform: scaleX(-1); background: #000; }
+        
+        /* Mobile Overlay */
+        #sidebar-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        #sidebar-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- Mobile Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 z-40 md:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="main-sidebar" class="w-72 glass-nav fixed h-full z-50 flex flex-col sidebar-closed md:sidebar-open">
+        <div class="p-6 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <i class="fas fa-layer-group text-white"></i>
+                </div>
+                <span class="font-extrabold text-xl tracking-tight">AYT<span class="text-indigo-400">HUB</span></span>
+            </div>
+            <button onclick="toggleSidebar()" class="md:hidden text-slate-400 p-2">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <nav class="flex-1 px-4 py-2 space-y-1 overflow-y-auto custom-scrollbar">
+            <button onclick="switchView('dashboard')" class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white active" data-view="dashboard">
+                <i class="fas fa-th-large w-5"></i> <span class="font-medium">Dashboard</span>
+            </button>
+            
+            <button onclick="switchView('profile')" class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white" data-view="profile">
+                <i class="fas fa-user-circle w-5"></i> <span class="font-medium">My Space</span>
+            </button>
+
+            <div class="pt-6 pb-2 px-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Games & Geo</div>
+            <button onclick="switchView('flagle')" class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white" data-view="flagle">
+                <i class="fas fa-flag w-5"></i> <span class="font-medium">Flagle Mini</span>
+            </button>
+            <button onclick="switchView('indiguess')" class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white" data-view="indiguess">
+                <i class="fas fa-street-view w-5"></i> <span class="font-medium">IndiGuess</span>
+            </button>
+            <button onclick="switchView('geosize')" class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white" data-view="geosize">
+                <i class="fas fa-expand-arrows-alt w-5"></i> <span class="font-medium">GeoSize</span>
+            </button>
+            
+            <div class="pt-6 pb-2 px-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Media Wall</div>
+            <button onclick="switchView('youtube')" class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white" data-view="youtube">
+                <i class="fab fa-youtube w-5"></i> <span class="font-medium">YouTube Wall</span>
+            </button>
+            <button onclick="switchView('twitch')" class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white" data-view="twitch">
+                <i class="fab fa-twitch w-5"></i> <span class="font-medium">Twitch Player</span>
+            </button>
+            <button onclick="switchView('favorites')" class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white" data-view="favorites">
+                <i class="fas fa-star w-5"></i> <span class="font-medium">My Favorites</span>
+            </button>
+            <button onclick="switchView('explorer')" class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white" data-view="explorer">
+                <i class="fas fa-rss w-5"></i> <span class="font-medium">Metadata Hub</span>
+            </button>
+
+            <div class="pt-6 pb-2 px-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">System Tools</div>
+            <button onclick="switchView('camera')" class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white" data-view="camera">
+                <i class="fas fa-camera w-5"></i> <span class="font-medium">Cloud Camera</span>
+            </button>
+            <button onclick="switchView('luhn')" class="nav-item w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white" data-view="luhn">
+                <i class="fas fa-credit-card w-5"></i> <span class="font-medium">Luhn Validator</span>
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-white/5">
+            <button onclick="switchView('about')" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all hover:bg-white/5 text-slate-400 hover:text-white">
+                <i class="fas fa-info-circle w-5"></i> <span class="font-medium">About Project</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 md:ml-72 p-4 md:p-10">
+        
+        <!-- Mobile Header Bar -->
+        <header class="md:hidden flex items-center justify-between mb-6">
+            <button onclick="toggleSidebar()" class="w-10 h-10 flex items-center justify-center bg-slate-800 rounded-lg text-white">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="font-bold">AYT<span class="text-indigo-400">HUB</span></div>
+            <div class="w-10"></div> <!-- Spacer -->
+        </header>
+
+        <!-- DASHBOARD VIEW -->
+        <section id="dashboard" class="view-content active">
+            <div class="mb-10">
+                <h1 class="text-3xl md:text-4xl font-extrabold mb-2 text-white">Welcome Back</h1>
+                <p class="text-slate-400">Your unified toolkit for the modern web.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- NEW PROFILE CARD -->
+                <div class="hub-card border-l-4 border-purple-500 hover:bg-white/5 transition cursor-pointer p-6" onclick="switchView('profile')">
+                    <i class="fas fa-user-astronaut text-purple-400 text-2xl mb-4"></i>
+                    <h3 class="text-lg font-bold">My Space</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">View your personal profile and social connections.</p>
+                </div>
+                <div class="hub-card border-l-4 border-amber-400 hover:bg-white/5 transition cursor-pointer p-6" onclick="switchView('favorites')">
+                    <i class="fas fa-star text-amber-400 text-2xl mb-4"></i>
+                    <h3 class="text-lg font-bold">My Favorites</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">Quick access to your curated content feeds.</p>
+                </div>
+                <div class="hub-card border-l-4 border-indigo-500 hover:bg-white/5 transition cursor-pointer p-6" onclick="switchView('flagle')">
+                    <i class="fas fa-flag text-indigo-400 text-2xl mb-4"></i>
+                    <h3 class="text-lg font-bold">Flagle Mini</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">Guess world countries and US states by their flags.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROFILE VIEW (Integrated from original index.html) -->
+        <section id="profile" class="view-content">
+            <div class="max-w-4xl mx-auto">
+                <div class="profile-hero p-8 md:p-16 text-center shadow-2xl mb-10">
+                    <div class="relative inline-block mb-6">
+                        <img src="https://avatars.githubusercontent.com/u/153463910?v=4" 
+                             alt="Profile Image" 
+                             class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white shadow-2xl mx-auto transition-transform hover:scale-105 duration-500">
+                        <div class="absolute bottom-2 right-2 w-6 h-6 bg-emerald-500 border-4 border-indigo-900 rounded-full animate-pulse"></div>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-black mb-4 tracking-tighter text-white">AYT04</h1>
+                    <p class="text-lg md:text-xl font-medium text-white/90 max-w-lg mx-auto leading-relaxed">
+                        I'm working on a big project of mine. It'll take some time 👍
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <a href="https://twitter.com/AddisonYT04" target="_blank" class="hub-card flex items-center gap-4 hover:bg-white/10 transition group">
+                        <div class="w-12 h-12 rounded-xl bg-sky-500/20 flex items-center justify-center text-sky-400 group-hover:scale-110 transition">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold">Twitter</div>
+                            <div class="text-xs text-slate-500">@AddisonYT04</div>
+                        </div>
+                    </a>
+                    <a href="https://github.com/AYT04" target="_blank" class="hub-card flex items-center gap-4 hover:bg-white/10 transition group">
+                        <div class="w-12 h-12 rounded-xl bg-slate-100/20 flex items-center justify-center text-slate-100 group-hover:scale-110 transition">
+                            <i class="fab fa-github text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold">GitHub</div>
+                            <div class="text-xs text-slate-500">AYT04</div>
+                        </div>
+                    </a>
+                    <a href="https://threads.net/@superninjahomie1" target="_blank" class="hub-card flex items-center gap-4 hover:bg-white/10 transition group">
+                        <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-white group-hover:scale-110 transition">
+                            <i class="fab fa-at text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold">Threads</div>
+                            <div class="text-xs text-slate-500">@superninjahomie1</div>
+                        </div>
+                    </a>
+                    <button onclick="switchView('about')" class="hub-card flex items-center gap-4 hover:bg-white/10 transition group text-left">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition">
+                            <i class="fas fa-envelope text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold">Contact Me</div>
+                            <div class="text-xs text-slate-500">Send a message</div>
+                        </div>
+                    </button>
+                    <button onclick="switchView('indiguess')" class="hub-card flex items-center gap-4 hover:bg-white/10 transition group text-left">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition">
+                            <i class="fas fa-search-location text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold">GeoDetective</div>
+                            <div class="text-xs text-slate-500">Explore Indiana</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAVORITES VIEW -->
+        <section id="favorites" class="view-content">
+            <div class="mb-10">
+                <h2 class="text-3xl font-bold text-white">My Favorites</h2>
+                <p class="text-slate-400 mt-1">Real-time status of your favorite creators.</p>
+            </div>
+            <div id="favorites-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- FLAGLE VIEW -->
+        <section id="flagle" class="view-content">
+            <div class="max-w-2xl mx-auto">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                    <h2 class="text-2xl md:text-3xl font-bold text-white">Flagle Mini</h2>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <select id="flag-mode-select" class="flex-1 sm:flex-none bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 ring-indigo-500">
+                            <option value="world">World</option>
+                            <option value="us">USA</option>
+                            <option value="canada">Canada</option>
+                        </select>
+                        <button onclick="initFlagle()" class="bg-indigo-600 px-5 py-2 rounded-lg text-sm font-bold shadow-lg shadow-indigo-500/20">Reset</button>
+                    </div>
+                </div>
+
+                <div id="flag-container" class="relative aspect-[3/2] w-full bg-slate-900 rounded-2xl overflow-hidden shadow-2xl mb-6 border border-white/5">
+                    <img id="target-flag" src="" class="w-full h-full object-cover">
+                    <div id="grid-overlay" class="absolute inset-0 grid grid-cols-3 grid-rows-2">
+                        <div class="flag-grid-tile hidden-tile" data-index="0"></div>
+                        <div class="flag-grid-tile hidden-tile" data-index="1"></div>
+                        <div class="flag-grid-tile hidden-tile" data-index="2"></div>
+                        <div class="flag-grid-tile hidden-tile" data-index="3"></div>
+                        <div class="flag-grid-tile hidden-tile" data-index="4"></div>
+                        <div class="flag-grid-tile hidden-tile" data-index="5"></div>
+                    </div>
+                </div>
+
+                <div class="relative mb-6" id="flag-input-section">
+                    <input type="text" id="flag-input" placeholder="Type your guess..." class="w-full bg-slate-800 p-4 rounded-xl border border-white/10 focus:ring-2 ring-indigo-500 outline-none transition-all text-base md:text-lg">
+                    <div id="flag-suggestions" class="absolute top-full left-0 w-full mt-2 bg-slate-800 rounded-xl border border-white/10 shadow-2xl max-h-56 overflow-y-auto hidden z-20"></div>
+                </div>
+
+                <div id="flag-guess-list" class="space-y-3"></div>
+                
+                <div id="flag-success" class="hidden mt-6 p-8 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-center">
+                    <h4 class="text-emerald-400 font-bold text-2xl mb-2">Excellent!</h4>
+                    <p id="flag-answer-text" class="mb-6 text-slate-300"></p>
+                    <button onclick="initFlagle()" class="bg-emerald-600 px-8 py-3 rounded-full font-bold shadow-lg shadow-emerald-500/20">Next Flag</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- GEOSIZE VIEW -->
+        <section id="geosize" class="view-content">
+            <div class="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div>
+                    <h2 class="text-3xl font-bold text-white">GeoSize</h2>
+                    <p class="text-slate-400 mt-1">Mercator distortion visualizer. Compare true country sizes.</p>
+                </div>
+                <div class="relative w-full lg:w-96">
+                    <input type="text" id="geo-search" placeholder="Add country..." class="w-full bg-slate-800 p-3.5 pl-12 rounded-2xl border border-white/10 outline-none focus:ring-2 ring-indigo-500 shadow-xl">
+                    <i class="fas fa-search absolute left-4 top-4.5 text-slate-500"></i>
+                    <div id="geo-results" class="absolute top-full left-0 w-full mt-2 bg-slate-800 rounded-xl border border-white/10 shadow-2xl hidden z-50"></div>
+                </div>
+            </div>
+            <div id="map" class="shadow-2xl"></div>
+            <div class="mt-6 flex flex-wrap gap-4 text-xs font-medium text-slate-500">
+                <span class="bg-slate-800/50 px-3 py-1.5 rounded-full"><i class="fas fa-hand-rock mr-2"></i> Drag to move</span>
+                <span class="bg-slate-800/50 px-3 py-1.5 rounded-full"><i class="fas fa-keyboard mr-2"></i> Ctrl + Drag to rotate</span>
+                <span class="bg-slate-800/50 px-3 py-1.5 rounded-full"><i class="fas fa-trash mr-2"></i> Right-click to remove</span>
+            </div>
+        </section>
+
+        <!-- INDIGUESS VIEW -->
+        <section id="indiguess" class="view-content">
+             <div class="max-w-4xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-3xl font-bold text-white">IndiGuess</h2>
+                        <p class="text-slate-400 mt-1">Can you identify this Indiana town?</p>
+                    </div>
+                    <button onclick="openIndiSettings()" class="w-10 h-10 bg-slate-800 rounded-xl text-slate-400 flex items-center justify-center">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+
+                <div id="indi-pano" class="shadow-2xl border border-white/5">
+                    <div class="h-full flex items-center justify-center text-slate-700 bg-slate-900 rounded-2xl">
+                        <div class="text-center p-6">
+                            <i class="fas fa-map-marked-alt text-4xl mb-4 opacity-20"></i>
+                            <p>Loading Street View...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-6 mt-8">
+                    <div class="lg:col-span-2 hub-card">
+                        <div class="flex gap-3 mb-6">
+                            <input type="text" id="indi-input" placeholder="Enter city name..." class="flex-1 bg-slate-900 p-3.5 rounded-xl border border-white/10 outline-none focus:ring-2 ring-indigo-500">
+                            <button onclick="makeIndiGuess()" class="bg-indigo-600 px-8 py-3.5 rounded-xl font-bold">Guess</button>
+                        </div>
+                        <div id="indi-history" class="space-y-2 max-h-56 overflow-y-auto pr-2 custom-scrollbar"></div>
+                    </div>
+                    <div class="hub-card flex flex-col items-center justify-center text-center">
+                        <div class="text-[10px] uppercase font-black tracking-widest text-slate-500 mb-4">Attempts</div>
+                        <div class="flex gap-2.5 mb-8" id="indi-dots">
+                             <div class="w-3.5 h-3.5 rounded-full bg-indigo-500/30"></div>
+                             <div class="w-3.5 h-3.5 rounded-full bg-indigo-500/30"></div>
+                             <div class="w-3.5 h-3.5 rounded-full bg-indigo-500/30"></div>
+                             <div class="w-3.5 h-3.5 rounded-full bg-indigo-500/30"></div>
+                             <div class="w-3.5 h-3.5 rounded-full bg-indigo-500/30"></div>
+                        </div>
+                        <div id="indi-result-ui" class="hidden text-center">
+                            <div id="indi-status-text" class="font-bold text-lg mb-2"></div>
+                            <button onclick="location.reload()" class="text-xs text-indigo-400 font-bold hover:underline">New Round</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- YOUTUBE WALL VIEW -->
+        <section id="youtube" class="view-content">
+            <div class="flex flex-col sm:flex-row gap-3 mb-8">
+                <input type="text" id="yt-url" placeholder="YouTube Link or Video ID" class="flex-1 bg-slate-800 p-4 rounded-xl border border-white/10 outline-none focus:ring-2 ring-red-500 transition-all">
+                <button onclick="addYTVideo()" class="bg-red-600 px-8 py-4 rounded-xl font-bold shadow-lg shadow-red-600/20 active:scale-95 transition">Add Player</button>
+            </div>
+            <div id="yt-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div id="yt-empty" class="col-span-full py-24 text-center border-2 border-dashed border-white/5 rounded-3xl">
+                    <i class="fab fa-youtube text-6xl mb-6 text-slate-800"></i>
+                    <h3 class="text-xl font-bold text-slate-500 text-white">Video Wall Empty</h3>
+                    <p class="text-slate-600 mt-2">Add URLs to watch multiple streams at once</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CAMERA VIEW -->
+        <section id="camera" class="view-content">
+            <div class="max-w-xl mx-auto">
+                <h2 class="text-3xl font-bold mb-8 text-white">Cloud Camera</h2>
+                <div class="hub-card relative overflow-hidden p-0 bg-black">
+                    <video id="video-preview" autoplay playsinline></video>
+                    <canvas id="camera-canvas" class="hidden"></canvas>
+                    <div class="absolute bottom-8 left-1/2 -translate-x-1/2">
+                        <button id="capture-btn" class="w-20 h-20 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-slate-900 shadow-2xl border-8 border-white/20 active:scale-90 transition">
+                            <i class="fas fa-camera text-3xl"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-12">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-xl text-white">Recent Captures</h3>
+                        <span id="gallery-count" class="text-xs text-slate-500 font-bold uppercase tracking-widest">0 Photos</span>
+                    </div>
+                    <div id="photo-gallery" class="grid grid-cols-3 gap-3"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPLORER / METADATA VIEW -->
+        <section id="explorer" class="view-content">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-8">
+                <div>
+                    <h2 class="text-3xl font-bold text-white">Metadata Explorer</h2>
+                    <p class="text-slate-400 mt-1">Cross-platform feed analyzer for content discovery.</p>
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <input type="file" id="rss-file" class="hidden" accept=".txt">
+                    <button onclick="document.getElementById('rss-file').click()" class="flex-1 sm:flex-none bg-indigo-600 px-6 py-3 rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20">Import Feed List</button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10" id="rss-stats">
+                <div class="hub-card text-center p-4">
+                    <div class="text-[10px] text-slate-500 uppercase font-black mb-1">Feeds</div>
+                    <div class="text-2xl font-bold" id="rss-total">0</div>
+                </div>
+                <div class="hub-card text-center p-4">
+                    <div class="text-[10px] text-slate-500 uppercase font-black mb-1">Alive</div>
+                    <div class="text-2xl font-bold text-emerald-400" id="rss-active">0</div>
+                </div>
+                <div class="hub-card text-center p-4">
+                    <div class="text-[10px] text-slate-500 uppercase font-black mb-1">Down</div>
+                    <div class="text-2xl font-bold text-red-400" id="rss-error">0</div>
+                </div>
+                <div class="hub-card text-center p-4">
+                    <div class="text-[10px] text-slate-500 uppercase font-black mb-1">Queue</div>
+                    <div class="text-2xl font-bold text-amber-400 animate-pulse" id="rss-pending">0</div>
+                </div>
+            </div>
+
+            <div id="rss-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- LUHN VIEW -->
+        <section id="luhn" class="view-content">
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold mb-8 text-center text-white">Luhn Algorithm</h2>
+                <div class="hub-card mb-8">
+                    <label class="block text-[10px] font-black mb-3 uppercase tracking-widest text-slate-500">Card Checksum Validation</label>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="text" id="luhn-val-input" placeholder="Enter sequence..." class="flex-1 bg-slate-900 p-4 rounded-xl border border-white/10 outline-none focus:ring-2 ring-indigo-500">
+                        <button onclick="checkLuhn()" class="bg-indigo-600 px-8 py-4 rounded-xl font-bold">Validate</button>
+                    </div>
+                    <div id="luhn-result" class="mt-4 p-4 rounded-xl hidden text-center font-bold text-sm tracking-wide"></div>
+                </div>
+                <div class="hub-card bg-indigo-500/5 border-indigo-500/20">
+                    <label class="block text-[10px] font-black mb-4 uppercase tracking-widest text-slate-500">Sequence Generator</label>
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div id="luhn-gen-result" class="font-mono text-2xl md:text-3xl tracking-[0.2em] text-indigo-400">---- ---- ----</div>
+                        <button onclick="generateLuhn()" class="w-full sm:w-auto bg-emerald-600 px-10 py-4 rounded-xl font-bold shadow-lg shadow-emerald-600/10">Generate</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TWITCH VIEW -->
+        <section id="twitch" class="view-content">
+             <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold mb-2 text-white">Twitch Player</h2>
+                <p class="text-slate-400 mb-8">Global stream viewer with domain-safe embeds.</p>
+                <div class="flex flex-col sm:flex-row gap-3 mb-8">
+                    <input type="text" id="twitch-channel" value="madjad_" class="flex-1 bg-slate-800 p-4 rounded-xl border border-white/10 outline-none focus:ring-2 ring-purple-600">
+                    <button onclick="loadTwitch()" class="bg-purple-600 px-10 py-4 rounded-xl font-bold shadow-lg shadow-purple-600/20">Watch Live</button>
+                </div>
+                <div class="aspect-video bg-black rounded-2xl shadow-2xl overflow-hidden border border-white/5">
+                    <iframe id="twitch-player" src="" height="100%" width="100%" allowfullscreen frameborder="0"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT / CONTACT VIEW -->
+        <section id="about" class="view-content">
+            <div class="max-w-3xl mx-auto">
+                <div class="text-center mb-16">
+                    <div class="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2.5rem] mx-auto flex items-center justify-center text-4xl shadow-2xl mb-8 rotate-12">
+                        <i class="fas fa-layer-group text-white"></i>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight text-white">AYT Ultimate Hub</h1>
+                    <p class="text-slate-400 text-lg max-w-lg mx-auto leading-relaxed">A modern, integrated dashboard designed for speed, utility, and geography mastery.</p>
+                </div>
+                
+                <div class="grid gap-6">
+                    <div class="hub-card p-8">
+                        <h3 class="font-bold text-2xl mb-4 text-white">Unified Experience</h3>
+                        <p class="text-slate-400 leading-relaxed text-lg">Built with a single-file architecture, this hub eliminates load times between modules. Context is preserved within one high-performance environment.</p>
+                    </div>
+                    <div class="hub-card p-8 border-l-4 border-indigo-500">
+                        <h3 class="font-bold text-2xl mb-4 text-white">Get in Touch</h3>
+                        <p class="text-slate-400 mb-6">Interested in collaboration or have questions about the project?</p>
+                        <form onsubmit="event.preventDefault(); alert('Message sent! (Mockup only)')" class="space-y-4">
+                            <input type="email" placeholder="Your Email" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 outline-none focus:ring-2 ring-indigo-500">
+                            <textarea placeholder="Message" rows="4" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 outline-none focus:ring-2 ring-indigo-500"></textarea>
+                            <button class="bg-indigo-600 px-8 py-3 rounded-xl font-bold">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Global API Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+        <div class="hub-card max-w-sm w-full relative p-8 shadow-3xl">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-500 hover:text-white transition">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h3 class="text-2xl font-bold mb-2">API Configuration</h3>
+            <input type="password" id="global-api-key" placeholder="Enter API Key" class="w-full bg-slate-900 border border-white/10 rounded-2xl px-5 py-4 text-sm mb-6 focus:ring-2 ring-indigo-500 outline-none">
+            <button onclick="saveGlobalConfig()" class="w-full bg-indigo-600 py-4 rounded-2xl font-bold shadow-xl shadow-indigo-600/20 active:scale-95 transition">Apply & Refresh</button>
+        </div>
+    </div>
+
+    <script>
+        /* ============================================================
+           CORE HUB NAVIGATION
+        ============================================================ */
+        function toggleSidebar() {
+            const sb = document.getElementById('main-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sb.classList.toggle('sidebar-closed');
+            sb.classList.toggle('sidebar-open');
+            overlay.classList.toggle('active');
+        }
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(n => {
+                if(n.dataset.view === viewId) n.classList.add('active', 'bg-white/10', 'text-white');
+                else n.classList.remove('active', 'bg-white/10', 'text-white');
+            });
+
+            if(window.innerWidth < 768) {
+                const sb = document.getElementById('main-sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                sb.classList.add('sidebar-closed');
+                sb.classList.remove('sidebar-open');
+                overlay.classList.remove('active');
+            }
+
+            if(viewId === 'geosize') setTimeout(initGeoMap, 200);
+            if(viewId === 'camera') initCamera();
+            if(viewId === 'indiguess') initIndiGuess();
+            if(viewId === 'favorites') initFavorites();
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function closeModal() { document.getElementById('settings-modal').classList.add('hidden'); }
+        function openIndiSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
+        
+        function saveGlobalConfig() {
+            const key = document.getElementById('global-api-key').value.trim();
+            localStorage.setItem('hub_api_key', key);
+            location.reload();
+        }
+
+        /* ============================================================
+           FAVORITES: MODULE (From feeds.xml)
+        ============================================================ */
+        const favFeeds = [
+            { name: "Brodie Robertson", url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCld68syR8Wi-GY_n4CaoJGA" },
+            { name: "Cyb3rMaddy", url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCgd5-BWtbgOw5Hx2wP3qxzg" },
+            { name: "techlore", url: "https://techlore.tv/feeds/videos.xml?videoChannelId=4" },
+            { name: "SomeOrdinaryGamers", url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCtMVHI3AJD4Qk4hcbZnI9ZQ" }
+        ];
+
+        let favsLoaded = false;
+        async function initFavorites() {
+            if(favsLoaded) return;
+            const grid = document.getElementById('favorites-grid');
+            grid.innerHTML = '<div class="col-span-full py-12 text-center text-slate-500 animate-pulse font-bold">Synchronizing favorite feeds...</div>';
+            
+            for(let fav of favFeeds) {
+                fetchFeedMetadata(fav.url, 'favorites-grid', true);
+            }
+            
+            setTimeout(() => {
+                const loader = grid.querySelector('.animate-pulse');
+                if(loader && grid.children.length > 1) loader.remove();
+            }, 2000);
+            favsLoaded = true;
+        }
+
+        /* ============================================================
+           FLAGLE MINI: MODULE
+        ============================================================ */
+        let fl_world = [], fl_target = null, fl_guesses = [], fl_mode = 'world';
+        const fl_us = [{name:"Alabama",flag:"https://upload.wikimedia.org/wikipedia/commons/5/5c/Flag_of_Alabama.svg",coords:[32.36,-86.27]},{name:"Alaska",flag:"https://upload.wikimedia.org/wikipedia/commons/e/e6/Flag_of_Alaska.svg",coords:[58.30,-134.41]},{name:"Arizona",flag:"https://upload.wikimedia.org/wikipedia/commons/9/9d/Flag_of_Arizona.svg",coords:[33.44,-112.07]},{name:"California",flag:"https://upload.wikimedia.org/wikipedia/commons/0/01/Flag_of_California.svg",coords:[38.55,-121.46]},{name:"Texas",flag:"https://upload.wikimedia.org/wikipedia/commons/f/ff/Flag_of_Texas.svg",coords:[30.26,-97.74]}];
+        const fl_can = [{name:"Alberta",flag:"https://upload.wikimedia.org/wikipedia/commons/f/f5/Flag_of_Alberta.svg",coords:[53.54,-113.49]},{name:"Quebec",flag:"https://upload.wikimedia.org/wikipedia/commons/5/5f/Flag_of_Quebec.svg",coords:[46.81,-71.20]},{name:"Ontario",flag:"https://upload.wikimedia.org/wikipedia/commons/8/88/Flag_of_Ontario.svg",coords:[43.65,-79.38]}];
+
+        async function initFlagle() {
+            fl_mode = document.getElementById('flag-mode-select').value;
+            if (fl_mode === 'world' && fl_world.length === 0) {
+                try {
+                    const res = await fetch('https://restcountries.com/v3.1/all?fields=name,flags,cca2,latlng');
+                    const data = await res.json();
+                    fl_world = data.map(c => ({ name: c.name.common, flag: c.flags.svg, coords: c.latlng }));
+                } catch(e) {}
+            }
+            const ds = fl_mode === 'world' ? fl_world : (fl_mode === 'us' ? fl_us : fl_can);
+            if(!ds.length) return;
+            fl_target = ds[Math.floor(Math.random() * ds.length)];
+            fl_guesses = [];
+            document.getElementById('target-flag').src = fl_target.flag;
+            document.getElementById('flag-guess-list').innerHTML = '';
+            document.getElementById('flag-input').value = '';
+            document.getElementById('flag-input').disabled = false;
+            document.getElementById('flag-success').classList.add('hidden');
+            document.getElementById('flag-input-section').classList.remove('hidden');
+            document.querySelectorAll('.flag-grid-tile').forEach(t => t.classList.add('hidden-tile'));
+        }
+
+        document.getElementById('flag-input').addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            const div = document.getElementById('flag-suggestions');
+            if (val.length < 1) { div.classList.add('hidden'); return; }
+            const ds = fl_mode === 'world' ? fl_world : (fl_mode === 'us' ? fl_us : fl_can);
+            const matches = ds.filter(c => c.name.toLowerCase().includes(val)).slice(0, 5);
+            if(matches.length){
+                div.innerHTML = matches.map(m => `<div class="p-4 hover:bg-white/5 cursor-pointer text-sm border-b border-white/5 last:border-none" onclick="submitFlagGuess('${m.name.replace(/'/g,"\\'")}')">${m.name}</div>`).join('');
+                div.classList.remove('hidden');
+            } else div.classList.add('hidden');
+        });
+
+        function submitFlagGuess(name) {
+            const ds = fl_mode === 'world' ? fl_world : (fl_mode === 'us' ? fl_us : fl_can);
+            const item = ds.find(c => c.name === name);
+            if(!item || fl_guesses.some(g => g.name === name)) return;
+            document.getElementById('flag-suggestions').classList.add('hidden');
+            document.getElementById('flag-input').value = '';
+            fl_guesses.push(item);
+            const tile = document.querySelector(`.flag-grid-tile[data-index="${fl_guesses.length-1}"]`);
+            if(tile) tile.classList.remove('hidden-tile');
+            renderFlagGuesses();
+            if(item.name === fl_target.name) winFlagle();
+            else if(fl_guesses.length >= 6) loseFlagle();
+        }
+
+        function renderFlagGuesses() {
+            const container = document.getElementById('flag-guess-list');
+            container.innerHTML = fl_guesses.map(g => {
+                const dist = Math.round(haversine(g.coords[0], g.coords[1], fl_target.coords[0], fl_target.coords[1]));
+                return `<div class="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/5 shadow-sm">
+                    <span class="font-bold text-sm">${g.name}</span>
+                    <span class="text-xs font-mono text-slate-500">${g.name === fl_target.name ? '🎯' : dist + ' km'}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function winFlagle() {
+            document.querySelectorAll('.flag-grid-tile').forEach(t => t.classList.remove('hidden-tile'));
+            document.getElementById('flag-input-section').classList.add('hidden');
+            document.getElementById('flag-success').classList.remove('hidden');
+            document.getElementById('flag-answer-text').innerText = fl_target.name;
+        }
+
+        function loseFlagle() {
+            winFlagle();
+            document.querySelector('#flag-success h4').innerText = "Out of Tries";
+            document.getElementById('flag-answer-text').innerText = `The answer was ${fl_target.name}`;
+        }
+
+        /* ============================================================
+           GEOSIZE (MAPS): MODULE
+        ============================================================ */
+        let geo_map, geo_data = null;
+        function initGeoMap() {
+            if(geo_map) return;
+            geo_map = L.map('map', { center: [20, 0], zoom: 2, minZoom: 2, worldCopyJump: true, attributionControl: false });
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(geo_map);
+            fetchGeoJson();
+        }
+
+        async function fetchGeoJson() {
+            try {
+                const res = await fetch('https://raw.githubusercontent.com/datasets/geo-boundaries-world-110m/master/countries.geojson');
+                geo_data = await res.json();
+                setupGeoSearch();
+            } catch(e) {}
+        }
+
+        function setupGeoSearch() {
+            const inp = document.getElementById('geo-search');
+            const res = document.getElementById('geo-results');
+            inp.addEventListener('input', (e) => {
+                const val = e.target.value.toLowerCase();
+                if(val.length < 2) { res.classList.add('hidden'); return; }
+                const matches = geo_data.features.filter(f => f.properties.name.toLowerCase().includes(val)).slice(0, 5);
+                res.innerHTML = matches.map(m => `<div class="p-4 hover:bg-white/5 cursor-pointer text-sm border-b border-white/5 last:border-none" onclick="addGeoCountry('${m.properties.name.replace(/'/g,"\\'")}')">${m.properties.name}</div>`).join('');
+                res.classList.remove('hidden');
+            });
+        }
+
+        function addGeoCountry(name) {
+            const f = geo_data.features.find(x => x.properties.name === name);
+            document.getElementById('geo-results').classList.add('hidden');
+            document.getElementById('geo-search').value = '';
+            const color = `hsl(${Math.random()*360}, 80%, 65%)`;
+            const state = { 
+                name, color, 
+                orig: L.geoJSON(f).getBounds().getCenter(), 
+                curr: L.geoJSON(f).getBounds().getCenter(),
+                coords: JSON.parse(JSON.stringify(f.geometry.coordinates)),
+                type: f.geometry.type,
+                layer: null, rot: 0
+            };
+            drawGeo(state);
+        }
+
+        function drawGeo(s) {
+            if(s.layer) geo_map.removeLayer(s.layer);
+            const scale = Math.cos(s.orig.lat * Math.PI/180) / Math.cos(s.curr.lat * Math.PI/180);
+            const feat = {
+                type: "Feature",
+                geometry: {
+                    type: s.type,
+                    coordinates: transCoords(s.coords, s.orig, s.curr, scale, s.rot)
+                }
+            };
+            s.layer = L.geoJSON(feat, {
+                style: { fillColor: s.color, weight: 2, color: s.color, fillOpacity: 0.35 },
+                onEachFeature: (f, l) => {
+                    l.on('mousedown', (e) => {
+                        L.DomEvent.stopPropagation(e);
+                        if(e.originalEvent.button === 2) return;
+                        const start = e.latlng;
+                        const startC = s.curr;
+                        const rotating = e.originalEvent.ctrlKey;
+                        const onMove = (mv) => {
+                            if(rotating) {
+                                const a1 = Math.atan2(start.lat - startC.lat, start.lng - startC.lng);
+                                const a2 = Math.atan2(mv.latlng.lat - startC.lat, mv.latlng.lng - startC.lng);
+                                s.rot += (a2 - a1) * 180/Math.PI;
+                            } else {
+                                s.curr = L.latLng(startC.lat + (mv.latlng.lat - start.lat), startC.lng + (mv.latlng.lng - start.lng));
+                            }
+                            drawGeo(s);
+                        };
+                        const onUp = () => { geo_map.off('mousemove', onMove); geo_map.off('mouseup', onUp); geo_map.dragging.enable(); };
+                        geo_map.dragging.disable();
+                        geo_map.on('mousemove', onMove);
+                        geo_map.on('mouseup', onUp);
+                    });
+                    l.on('contextmenu', (e) => { L.DomEvent.stopPropagation(e); geo_map.removeLayer(s.layer); });
+                }
+            }).addTo(geo_map);
+        }
+
+        function transCoords(c, o, t, s, r) {
+            const rad = r * Math.PI/180, cos = Math.cos(rad), sin = Math.sin(rad);
+            const pr = (x) => {
+                if(Array.isArray(x) && typeof x[0] === 'number') {
+                    let dx = (x[0] - o.lng) * s, dy = (x[1] - o.lat) * s;
+                    return [t.lng + (dx * cos - dy * sin), t.lat + (dx * sin + dy * cos)];
+                }
+                return x.map(pr);
+            };
+            return c.map(pr);
+        }
+
+        /* ============================================================
+           CAMERA: MODULE
+        ============================================================ */
+        let stream = null;
+        async function initCamera() {
+            if(stream) return;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                document.getElementById('video-preview').srcObject = stream;
+            } catch (e) {}
+        }
+        document.getElementById('capture-btn').onclick = () => {
+            const v = document.getElementById('video-preview');
+            const c = document.getElementById('camera-canvas');
+            c.width = v.videoWidth; c.height = v.videoHeight;
+            c.getContext('2d').drawImage(v, 0, 0);
+            const data = c.toDataURL('image/png');
+            const img = document.createElement('img');
+            img.src = data;
+            img.className = "aspect-square object-cover rounded-xl border border-white/10 hover:scale-105 transition active:scale-95";
+            document.getElementById('photo-gallery').prepend(img);
+            document.getElementById('gallery-count').innerText = document.getElementById('photo-gallery').children.length + ' Photos';
+        };
+
+        /* ============================================================
+           YOUTUBE WALL: MODULE
+        ============================================================ */
+        function addYTVideo() {
+            const inp = document.getElementById('yt-url');
+            const url = inp.value.trim();
+            let id = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([\w-]{11})/) ? url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([\w-]{11})/)[1] : (url.length === 11 ? url : null);
+            if(!id) return;
+            document.getElementById('yt-empty').classList.add('hidden');
+            const div = document.createElement('div');
+            div.className = "aspect-video bg-black rounded-2xl relative overflow-hidden group shadow-xl";
+            div.innerHTML = `
+                <iframe src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1" class="w-full h-full" allowfullscreen></iframe>
+                <button onclick="this.parentElement.remove(); checkYTEmpty();" class="absolute top-3 right-3 bg-red-600/80 text-white w-10 h-10 rounded-full opacity-0 group-hover:opacity-100 transition flex items-center justify-center backdrop-blur-sm"><i class="fas fa-times"></i></button>
+            `;
+            document.getElementById('yt-grid').appendChild(div);
+            inp.value = '';
+        }
+        function checkYTEmpty() { if(!document.getElementById('yt-grid').querySelector('iframe')) document.getElementById('yt-empty').classList.remove('hidden'); }
+
+        /* ============================================================
+           METADATA EXPLORER: MODULE (With Parser)
+        ============================================================ */
+        const PROXY = 'https://api.allorigins.win/raw?url=';
+        let stats_active = 0, stats_error = 0, stats_pending = 0;
+
+        document.getElementById('rss-file').onchange = (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (ev) => processRSS(ev.target.result);
+            reader.readAsText(file);
+        };
+
+        async function processRSS(text) {
+            const urls = text.split('\n').map(u => u.trim()).filter(u => u.startsWith('http'));
+            document.getElementById('rss-grid').innerHTML = '';
+            document.getElementById('rss-total').innerText = urls.length;
+            stats_active = 0; stats_error = 0; stats_pending = urls.length;
+            for(let url of urls) { fetchFeedMetadata(url, 'rss-grid'); }
+        }
+
+        async function fetchFeedMetadata(url, gridId, silent = false) {
+            try {
+                const res = await fetch(PROXY + encodeURIComponent(url));
+                const text = await res.text();
+                const xml = new DOMParser().parseFromString(text, "text/xml");
+                const title = xml.querySelector('title')?.textContent || "Unknown Feed";
+                const entry = xml.querySelector('entry, item');
+                const latestTitle = entry ? entry.querySelector('title')?.textContent : 'No content';
+                const latestLink = entry ? (entry.querySelector('link')?.getAttribute('href') || entry.querySelector('link')?.textContent) : '#';
+                const card = document.createElement('div');
+                card.className = "hub-card hover:border-indigo-500/50 transition animate-fadeIn";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">${url.includes('youtube') ? 'YouTube' : 'Feed'}</span>
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></span>
+                    </div>
+                    <h4 class="font-bold mb-2 truncate" title="${title}">${title}</h4>
+                    <p class="text-xs text-slate-500 line-clamp-2 mb-4">${latestTitle}</p>
+                    <a href="${latestLink}" target="_blank" class="block w-full py-2.5 bg-indigo-500/10 text-indigo-400 text-center rounded-lg text-xs font-bold hover:bg-indigo-500 hover:text-white transition">Visit Latest</a>
+                `;
+                document.getElementById(gridId).appendChild(card);
+                if(!silent) { stats_active++; updateRSSStats(); }
+            } catch(e) {
+                if(!silent) { stats_error++; updateRSSStats(); }
+            } finally {
+                if(!silent) { stats_pending = Math.max(0, stats_pending - 1); updateRSSStats(); }
+            }
+        }
+        function updateRSSStats() {
+            document.getElementById('rss-pending').innerText = stats_pending;
+            document.getElementById('rss-active').innerText = stats_active;
+            document.getElementById('rss-error').innerText = stats_error;
+        }
+
+        /* ============================================================
+           INDIGUESS (GOOGLE MAPS): MODULE
+        ============================================================ */
+        let indi_pano, indi_target = "Indianapolis", indi_tries = 0;
+        const IN_BOUNDS = { north: 41.7, south: 37.8, west: -88.1, east: -84.8 };
+        function initIndiGuess() {
+            if(typeof google === 'undefined') {
+                const key = localStorage.getItem('hub_api_key') || "";
+                const s = document.createElement('script');
+                s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=geometry&callback=startIndiGame`;
+                document.head.appendChild(s);
+            } else if (!indi_pano) { startIndiGame(); }
+        }
+        function startIndiGame() {
+            const lat = IN_BOUNDS.south + Math.random() * (IN_BOUNDS.north - IN_BOUNDS.south);
+            const lng = IN_BOUNDS.west + Math.random() * (IN_BOUNDS.east - IN_BOUNDS.west);
+            const sv = new google.maps.StreetViewService();
+            sv.getPanorama({ location: {lat, lng}, radius: 25000, source: 'outdoor' }, (data, status) => {
+                if (status === "OK") {
+                    indi_pano = new google.maps.StreetViewPanorama(document.getElementById("indi-pano"), {
+                        position: data.location.latLng,
+                        addressControl: false, showRoadLabels: false, disableDefaultUI: true
+                    });
+                    new google.maps.Geocoder().geocode({ location: data.location.latLng }, (res, st) => {
+                        if (st === "OK" && res[0]) {
+                            const l = res[0].address_components.find(c => c.types.includes("locality"));
+                            indi_target = l ? l.long_name : "Indiana";
+                        }
+                    });
+                }
+            });
+        }
+        function makeIndiGuess() {
+            if(indi_tries >= 5) return;
+            const inp = document.getElementById('indi-input');
+            const guess = inp.value.trim();
+            if(!guess) return;
+            indi_tries++; updateIndiDots();
+            const item = document.createElement('div');
+            item.className = "flex justify-between p-3.5 bg-white/5 rounded-xl border border-white/5 text-sm animate-fadeIn";
+            if(guess.toLowerCase() === indi_target.toLowerCase()) {
+                item.innerHTML = `<span class="text-emerald-400 font-bold">🎯 ${guess}</span> <span class="text-xs opacity-50">WINNER</span>`;
+                endIndi(true);
+            } else {
+                item.innerHTML = `<span class="text-slate-400">❌ ${guess}</span> <span class="text-xs opacity-40">Try Again</span>`;
+                if(indi_tries >= 5) endIndi(false);
+            }
+            document.getElementById('indi-history').prepend(item);
+            inp.value = "";
+        }
+        function updateIndiDots() {
+            const dots = document.getElementById('indi-dots').children;
+            for(let i=0; i<indi_tries; i++) dots[i].classList.replace('bg-indigo-500/30', 'bg-slate-700');
+        }
+        function endIndi(win) {
+            document.getElementById('indi-result-ui').classList.remove('hidden');
+            const st = document.getElementById('indi-status-text');
+            st.innerText = win ? "BOOM! Correct. 🎉" : `NOPE! It was ${indi_target}.`;
+            st.className = win ? "text-emerald-400 font-bold mb-2" : "text-red-400 font-bold mb-2";
+            document.getElementById('indi-input').disabled = true;
+        }
+
+        /* ============================================================
+           UTILITIES
+        ============================================================ */
+        function checkLuhn() {
+            const v = document.getElementById('luhn-val-input').value.replace(/\D/g,'');
+            if(!v) return;
+            let sum = 0, db = false;
+            for(let i=v.length-1; i>=0; i--){
+                let d = parseInt(v[i]);
+                if(db){ d *= 2; if(d > 9) d -= 9; }
+                sum += d; db = !db;
+            }
+            const r = document.getElementById('luhn-result');
+            r.classList.remove('hidden', 'bg-emerald-500/10', 'text-emerald-400', 'bg-red-500/10', 'text-red-400');
+            const ok = sum % 10 === 0;
+            r.innerText = ok ? "VALID CHECKSUM" : "INVALID SEQUENCE";
+            r.classList.add(ok ? 'bg-emerald-500/10' : 'bg-red-500/10', ok ? 'text-emerald-400' : 'text-red-400');
+        }
+        function generateLuhn() {
+            let s = ""; for(let i=0; i<11; i++) s += Math.floor(Math.random()*10);
+            let sum = 0, db = true;
+            for(let i=s.length-1; i>=0; i--){
+                let d = parseInt(s[i]);
+                if(db){ d *= 2; if(d > 9) d -= 9; }
+                sum += d; db = !db;
+            }
+            const ck = (10 - (sum % 10)) % 10;
+            document.getElementById('luhn-gen-result').innerText = (s + ck).replace(/(\d{4})/g, '$1 ').trim();
+        }
+        function loadTwitch() {
+            const ch = document.getElementById('twitch-channel').value.trim();
+            const p = location.hostname === "localhost" ? "localhost" : "ayt04.xyz";
+            document.getElementById('twitch-player').src = `https://player.twitch.tv/?channel=${ch}&parent=${p}&autoplay=true`;
+        }
+        function haversine(la1, lo1, la2, lo2) {
+            const R = 6371; const dLat = (la2-la1)*Math.PI/180; const dLon = (lo2-lo1)*Math.PI/180;
+            const a = Math.sin(dLat/2)**2 + Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLon/2)**2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        window.onload = () => {
+            initFlagle();
+            const k = localStorage.getItem('hub_api_key');
+            if(k) document.getElementById('global-api-key').value = k;
+        };
+    </script>
+</body>
+</html>
