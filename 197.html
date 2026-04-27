@@ -1,0 +1,279 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Global Geography Challenge</title>
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+body, html {
+height: 100%;
+margin: 0;
+padding: 0;
+font-family: 'Inter', sans-serif;
+background: #ffffff;
+overflow: hidden;
+}
+
+#map {
+height: 100%;
+width: 100%;
+z-index: 1;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+.game-ui {
+bottom: 20px !important;
+top: auto !important;
+left: 50% !important;
+transform: translateX(-50%);
+width: 90% !important;
+max-width: none !important;
+}
+.header-stats {
+top: 10px !important;
+width: 90% !important;
+}
+}
+
+.glass {
+background: rgba(255, 255, 255, 0.95);
+backdrop-filter: blur(10px);
+box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+border: 1px solid rgba(0,0,0,0.05);
+}
+
+.country-label {
+background: transparent;
+border: none;
+box-shadow: none;
+font-weight: 900;
+color: #065f46;
+text-shadow: 0 0 5px white, 0 0 5px white;
+font-size: 11px;
+text-transform: uppercase;
+}
+
+/* Loading Screen */
+#loader {
+position: fixed;
+inset: 0;
+background: white;
+z-index: 5000;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+transition: opacity 0.5s ease-out;
+}
+
+.pulse-found {
+animation: pulse-green 1s ease-out;
+}
+
+@keyframes pulse-green {
+0% { filter: drop-shadow(0 0 0px #10b981); }
+50% { filter: drop-shadow(0 0 20px #10b981); }
+100% { filter: drop-shadow(0 0 0px #10b981); }
+}
+</style>
+</head>
+<body class="flex flex-col">
+
+<!-- Top Stats Bar (Mobile Friendly) -->
+<div class="header-stats fixed top-6 left-1/2 -translate-x-1/2 z-[2000] w-[95%] max-w-4xl glass rounded-2xl p-3 md:p-4 flex items-center justify-between">
+<div class="flex items-center gap-2 md:gap-4">
+<div class="bg-blue-600 text-white p-1.5 md:p-2 rounded-lg">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+</div>
+<div>
+<div id="score" class="text-xl md:text-2xl font-900 text-slate-800 leading-none">0/197</div>
+<div class="text-[9px] md:text-[10px] uppercase font-bold text-slate-400 tracking-wider">Discovered</div>
+</div>
+</div>
+
+<div class="flex flex-col items-center">
+<div id="timer" class="text-xl md:text-2xl font-mono font-black text-blue-600 leading-none">15:00</div>
+<div class="text-[9px] md:text-[10px] uppercase font-bold text-slate-400 tracking-wider">Remaining</div>
+</div>
+
+<button id="start-btn" class="bg-slate-900 text-white px-4 md:px-6 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-black hover:bg-blue-600 transition-all active:scale-95">
+START
+</button>
+</div>
+
+<!-- Main Game Input (Mobile: Bottom Center, Desktop: Center-Topish) -->
+<div class="game-ui fixed top-[110px] left-1/2 -translate-x-1/2 z-[2000] w-[90%] max-w-md">
+<input type="text" id="country-input" disabled
+placeholder="Click Start to play..."
+class="w-full glass border-2 border-transparent focus:border-blue-500 rounded-2xl px-6 py-4 md:py-5 text-lg md:text-xl font-bold transition-all outline-none text-center shadow-2xl">
+</div>
+
+<!-- The Map -->
+<div id="map"></div>
+
+<!-- Loader -->
+<div id="loader">
+<div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+<p class="mt-4 text-sm font-black text-slate-500 uppercase tracking-widest">Loading World Map</p>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+let map, geojsonLayer;
+let countries = {};
+let foundCount = 0;
+let isRunning = false;
+let timeLeft = 900;
+let timerId = null;
+
+const aliases = {
+"usa": "United States of America", "us": "United States of America", "united states": "United States of America",
+"uk": "United Kingdom", "britain": "United Kingdom", "england": "United Kingdom", "scotland": "United Kingdom",
+"uae": "United Arab Emirates", "emirates": "United Arab Emirates",
+"drc": "Democratic Republic of the Congo", "congo": "Democratic Republic of the Congo",
+"vatican": "Vatican", "holy see": "Vatican", "russia": "Russian Federation",
+"czechia": "Czech Republic", "ivory coast": "Ivory Coast", "cote d'ivoire": "Ivory Coast",
+"st kitts": "Saint Kitts and Nevis", "st lucia": "Saint Lucia",
+"st vincent": "Saint Vincent and the Grenadines", "trinidad": "Trinidad and Tobago",
+"macedonia": "North Macedonia", "palestine": "Palestine", "east timor": "Timor-Leste"
+};
+
+function initMap() {
+// Adaptive zoom based on screen width
+const isMobile = window.innerWidth < 768;
+const initialZoom = isMobile ? 1.5 : 2.2;
+const initialCenter = [20, 10]; // Centered on Atlantic/EMEA
+
+map = L.map('map', {
+center: initialCenter,
+zoom: initialZoom,
+minZoom: 1.2,
+maxZoom: 7,
+zoomControl: false,
+attributionControl: false,
+tap: true // Ensure touch taps work correctly
+});
+
+// Using "Voyager" style for a clean, white, modern look
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+attribution: '© OpenStreetMap'
+}).addTo(map);
+
+fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+.then(res => res.json())
+.then(data => {
+geojsonLayer = L.geoJson(data, {
+style: {
+fillColor: '#f8fafc',
+weight: 1,
+opacity: 1,
+color: '#e2e8f0',
+fillOpacity: 1
+},
+onEachFeature: (feature, layer) => {
+const name = feature.properties.ADMIN || feature.properties.name;
+countries[name.toLowerCase()] = { layer, name, found: false };
+}
+}).addTo(map);
+
+const loader = document.getElementById('loader');
+loader.style.opacity = '0';
+setTimeout(() => loader.remove(), 500);
+});
+}
+
+function handleInput(e) {
+const val = e.target.value.toLowerCase().trim();
+if (val.length < 2) return;
+
+const targetKey = aliases[val] ? aliases[val].toLowerCase() : val;
+const match = countries[targetKey];
+
+if (match && !match.found) {
+match.found = true;
+foundCount++;
+
+// Color Code: Emerald Green
+match.layer.setStyle({
+fillColor: '#10b981',
+fillOpacity: 0.9,
+color: '#059669',
+weight: 2
+});
+
+// Auto-zoom to the country
+map.flyToBounds(match.layer.getBounds(), {
+padding: [40, 40],
+duration: 0.8,
+maxZoom: 5
+});
+
+// Add Label
+match.layer.bindTooltip(match.name, {
+permanent: true,
+direction: 'center',
+className: 'country-label'
+}).openTooltip();
+
+// UI feedback
+document.getElementById('score').innerText = `${foundCount}/197`;
+e.target.value = '';
+
+// Success Vibration (Mobile)
+if (navigator.vibrate) navigator.vibrate(50);
+}
+}
+
+function toggleGame() {
+if (isRunning) {
+location.reload(); // Reset
+} else {
+isRunning = true;
+document.getElementById('country-input').disabled = false;
+document.getElementById('country-input').placeholder = "Type a country name...";
+document.getElementById('country-input').focus();
+document.getElementById('start-btn').innerText = "RESET";
+
+timerId = setInterval(() => {
+timeLeft--;
+const m = Math.floor(timeLeft / 60);
+const s = timeLeft % 60;
+document.getElementById('timer').innerText = `${m}:${s.toString().padStart(2, '0')}`;
+if (timeLeft <= 0) endGame();
+}, 1000);
+}
+}
+
+function endGame() {
+clearInterval(timerId);
+isRunning = false;
+document.getElementById('country-input').disabled = true;
+
+// Highlight missed countries in light red
+Object.values(countries).forEach(c => {
+if (!c.found) {
+c.layer.setStyle({ fillColor: '#fee2e2', color: '#f87171' });
+}
+});
+alert(`Game Over! You found ${foundCount} countries.`);
+}
+
+// Handle window resizing
+window.addEventListener('resize', () => {
+if (map) map.invalidateSize();
+});
+
+document.getElementById('start-btn').addEventListener('click', toggleGame);
+document.getElementById('country-input').addEventListener('input', handleInput);
+
+window.onload = initMap;
+</script>
+</body>
+</html>
