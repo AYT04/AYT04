@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Street Detective - AYTGuessr</title>
     <meta property="og:title" content="AYT04">
-    <meta property="og:description" content="I'm working on a big project of mine. It'll take some time 👍">
+    <meta property="og:description" content="My Free GeoGuessr clone, inspired by ZigZag & RainBolt!">
     <meta property="og:image" content="https://avatars.githubusercontent.com/u/153463910?v=4">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="#7f12d8">
+    
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -19,526 +21,292 @@
 
         body, html {
             width: 100%; height: 100%; overflow: hidden;
-            background-color: #000; font-family: 'Inter', sans-serif;
+            background-color: #1e293b; font-family: 'Inter', sans-serif;
             position: fixed; touch-action: none;
         }
 
-        #image-container { position: absolute; inset: 0; background: #1e293b; }
-        #street-image { width: 100%; height: 100%; object-fit: cover; }
+        #pano {
+            width: 100vw; height: 100%;
+            position: absolute; top: 0; left: 0;
+            z-index: 1;
+        }
 
-        /* Map Container */
-        #map-container {
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Interactive Mini Map */
+        #map-wrapper {
             position: absolute; bottom: 20px; right: 20px;
-            width: 100px; height: 100px; 
-            border-radius: 12px; border: 2px solid white;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-            z-index: 1000; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 250px; height: 200px; 
+            border-radius: 12px; z-index: 2000;
+            display: flex; flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
         }
 
-        #map-container.expanded {
-            width: 100%; height: 100%; bottom: 0; right: 0;
-            border-radius: 0; border: none; z-index: 2000;
+        #map-wrapper:hover, #map-wrapper:focus-within, #map-wrapper.expanded {
+            width: 500px; height: 350px;
         }
 
-        #guess-map { height: 100%; width: 100%; background: #242424; }
-
-        /* Map Controls */
-        #map-controls {
-            display: none; position: absolute; bottom: 40px;
-            left: 0; right: 0; z-index: 2001;
-            flex-direction: column; align-items: center; gap: 12px;
-            pointer-events: none;
+        #map {
+            flex: 1; width: 100%;
+            cursor: crosshair; background: #e2e8f0;
         }
 
-        .map-btn {
-            pointer-events: auto; padding: 14px 28px; border-radius: 14px;
-            font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5); width: 200px;
+        /* Map UI Buttons */
+        .map-control-btn {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(4px);
+            border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center;
         }
 
-        #guess-confirm-btn { background: #2563eb; color: white; }
-        #minimize-btn { background: rgba(15, 23, 42, 0.9); color: white; font-size: 0.7rem; width: auto; padding: 8px 16px; }
-        #next-round-btn { background: #10b981; color: white; display: none; }
-
-        /* UI HUD */
-        .ui-overlay { position: absolute; top: 20px; left: 20px; z-index: 1001; }
-        .settings-overlay { position: absolute; top: 20px; right: 20px; z-index: 1001; }
+        @media (max-width: 768px) {
+            #map-wrapper { width: 120px; height: 120px; bottom: 10px; right: 10px; }
+            #map-wrapper:hover, #map-wrapper:focus-within, #map-wrapper.expanded {
+                width: 95%; height: 60%; bottom: 20px; right: 2.5%;
+            }
+        }
 
         /* Loader */
         #loader {
             position: absolute; inset: 0; background: #0f172a;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 4000;
         }
-
         .spinner {
             border: 4px solid rgba(255, 255, 255, 0.1); border-left-color: #3b82f6;
             border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(8px); z-index: 4000;
-            display: none; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.3s ease;
-            padding: 20px;
-        }
-
-        .modal-overlay.active { display: flex; opacity: 1; }
-
-        .modal-content {
-            background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px; max-width: 550px; width: 100%;
-            max-height: 90vh; overflow-y: auto;
-            padding: 32px; position: relative;
-            transform: translateY(20px); transition: transform 0.3s ease;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-overlay.active .modal-content { transform: translateY(0); }
-
-        /* Custom Scrollbar for Modal */
-        .modal-content::-webkit-scrollbar { width: 6px; }
-        .modal-content::-webkit-scrollbar-track { background: transparent; }
-        .modal-content::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div id="loader">
         <div class="spinner mb-4"></div>
-        <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Finding Location...</p>
+        <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Deploying to Street...</p>
     </div>
 
-    <div id="image-container">
-        <img id="street-image" src="" alt="Street View">
+    <!-- Interactive Google Street View Background -->
+    <div id="pano"></div>
+
+    <!-- Top HUD (Stats & Compass) -->
+    <div class="fixed top-4 left-4 right-4 z-[2000] flex justify-between pointer-events-none">
+        <div class="flex gap-3 pointer-events-auto">
+            <!-- Round Indicator -->
+            <div class="glass px-4 py-2.5 rounded-full flex items-center gap-2 text-sm md:text-base font-black text-slate-800 shadow-lg">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
+                <span id="round-num">Round 1/5</span>
+            </div>
+            <!-- Score Indicator -->
+            <div class="glass px-4 py-2.5 rounded-full flex items-center gap-2 text-sm md:text-base font-black text-slate-800 shadow-lg">
+                ⭐ <span id="total-score" class="text-blue-600">0</span>
+            </div>
+        </div>
         
-        <!-- HUD Left -->
-        <div class="ui-overlay">
-            <div class="bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-xl border border-slate-700 shadow-2xl flex gap-6">
-                <span class="text-slate-500 font-bold text-[10px] uppercase">Round <span id="round-num" class="text-yellow-400 text-sm ml-1">1</span></span>
-                <span class="text-slate-500 font-bold text-[10px] uppercase">Score <span id="total-score" class="text-green-400 text-sm ml-1">0</span></span>
-            </div>
-        </div>
-
-        <!-- Settings Button Right -->
-        <div class="settings-overlay">
-            <button id="settings-trigger" class="bg-slate-900/90 backdrop-blur-md p-3 rounded-xl border border-slate-700 shadow-2xl text-slate-400 hover:text-white transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            </button>
-        </div>
-
-        <div id="map-container">
-            <div id="guess-map"></div>
-            <div id="map-controls">
-                <button id="guess-confirm-btn" class="map-btn">Confirm Guess</button>
-                <button id="minimize-btn" class="map-btn">Back to Photo</button>
-                
-                <div id="result-pill" class="hidden bg-slate-900/90 text-white px-6 py-3 rounded-2xl border border-slate-700 mb-2 text-center pointer-events-auto">
-                    <p class="text-blue-400 font-black text-2xl"><span id="dist-val">0</span> <span class="text-sm">KM AWAY</span></p>
-                </div>
-                <button id="next-round-btn" class="map-btn">Next Round</button>
-            </div>
+        <!-- Compass -->
+        <div class="glass w-12 h-12 rounded-full flex items-center justify-center shadow-lg pointer-events-auto border-2 border-white">
+            <svg id="compass-arrow" width="24" height="24" viewBox="0 0 24 24" class="transform transition-transform duration-100 ease-linear">
+                <path fill="#ef4444" d="M12 2L8 12h8z"/> <!-- Red North Needle -->
+                <path fill="#475569" d="M12 22L8 12h8z"/> <!-- Grey South Needle -->
+            </svg>
         </div>
     </div>
 
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-white text-2xl font-bold tracking-tight">Street Detective</h2>
-                <button id="modal-close" class="text-slate-500 hover:text-white transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-            
-            <div class="space-y-8">
-                <section>
-                    <h3 class="text-blue-400 text-xs font-black uppercase tracking-widest mb-3">The Objective</h3>
-                    <p class="text-slate-300 text-sm leading-relaxed mb-4">
-                        You are a <span class="text-white font-semibold italic">Street Detective</span>. Your mission is simple but challenging: examine a single photograph from somewhere on Earth and pin its exact location on a world map.
-                    </p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
-                            <p class="text-white text-xs font-bold mb-1">🔍 Observe</p>
-                            <p class="text-slate-400 text-[11px]">Look for license plates, road signs, architecture, or vegetation types.</p>
-                        </div>
-                        <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
-                            <p class="text-white text-xs font-bold mb-1">📍 Pinpoint</p>
-                            <p class="text-slate-400 text-[11px]">Expand the map and place your marker. Accuracy is rewarded with points.</p>
-                        </div>
-                    </div>
-                </section>
+    <!-- Expandable Mini Map -->
+    <div id="map-wrapper" class="glass shadow-2xl">
+        <div class="absolute top-2 right-2 z-[2500] flex flex-col gap-2">
+            <!-- Mobile Expand Close / Shrink map -->
+            <button id="shrink-map-btn" class="hidden map-control-btn w-8 h-8 text-slate-800 font-bold hover:bg-white text-lg">✕</button>
+            <!-- Theme Toggle -->
+            <button id="theme-toggle-btn" class="map-control-btn w-8 h-8 text-slate-800 hover:bg-white text-lg">🌙</button>
+        </div>
+        <div id="map"></div>
+        <div class="p-2 bg-white border-t border-slate-100">
+            <button id="guess-confirm-btn" disabled class="w-full bg-slate-300 cursor-not-allowed text-white font-black text-sm py-2 rounded-lg transition-colors">PLACE GUESS</button>
+        </div>
+    </div>
 
-                <section>
-                    <h3 class="text-blue-400 text-xs font-black uppercase tracking-widest mb-3">The Creator</h3>
-                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
-                        <p class="text-slate-300 text-sm mb-2">
-                            This application was developed by <span class="text-blue-400 font-bold">AddisonYT04</span>.
-                        </p>
-                        <p class="text-slate-400 text-[11px] italic">
-                            Constructed as a demonstration of real-time API integration, responsive spatial design, and immersive web experiences.
-                        </p>
-                    </div>
-                </section>
-
-                <section>
-                    <h3 class="text-blue-400 text-xs font-black uppercase tracking-widest mb-3">Service Providers</h3>
-                    <div class="space-y-3">
-                        <div class="flex items-start gap-4">
-                            <div class="mt-1 bg-green-500/20 p-2 rounded-lg"><svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg></div>
-                            <div>
-                                <p class="text-white text-xs font-bold">Mapillary</p>
-                                <p class="text-slate-400 text-[11px]">Data provided by Mapillary's global network of contributors. All images are real-world captures used via their Open Graph API.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-4">
-                            <div class="mt-1 bg-blue-500/20 p-2 rounded-lg"><svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>
-                            <div>
-                                <p class="text-white text-xs font-bold">Leaflet & CartoDB</p>
-                                <p class="text-slate-400 text-[11px]">The interactive engine and dark-matter map styles are powered by open-source mapping technologies and Carto's specialized tile sets.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <div class="pt-6 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        <p class="text-slate-500 text-[10px] font-mono">SYSTEM READY / V1.2.0-STABLE</p>
-                    </div>
-                    <button id="modal-close-btn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-10 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-blue-900/20">Resume Case</button>
-                </div>
-            </div>
+    <!-- Result Modal -->
+    <div id="result-screen" class="hidden fixed inset-0 bg-slate-900/60 z-[3000] flex-col items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl transform transition-all">
+            <h2 class="text-3xl font-black text-slate-800 mb-2">Location Secured</h2>
+            <p id="dist-val" class="text-lg text-slate-500 font-bold mb-4">--</p>
+            <div class="text-5xl font-black text-blue-600 mb-8" id="round-score">+0</div>
+            <button id="next-round-btn" class="w-full bg-slate-900 text-white font-bold text-lg py-4 rounded-xl hover:bg-blue-600 transition-colors">NEXT ROUND</button>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
-        const MLY_KEY = 'MLY|26867455816212719|1f45e3cbfcc2a9f2977476ad1c3aa021';
+        const GOOGLE_API_KEY = 'AIzaSyC1PB8yLb2AzlngIuJMPexzoW13LR7zAZ8';
         
-        let map, guessMarker, actualMarker, polyline;
-        let actualLocation = null, userGuess = null, totalScore = 0, currentRound = 1;
-        let isExpanded = false, roundEnded = false;
+        let map, panorama, svService, guessMarker, actualMarker, polyline;
+        let actualLocation = null, userGuess = null, totalScore = 0, currentRound = 1, currentMapTheme = 'light';
+        let gameActive = false;
+        const MAX_ROUNDS = 5;
 
-const CITIES = [
-{ name: "Kabul, Afghanistan", lat: 34.5333, lng: 69.1667 },
-{ name: "Tirana, Albania", lat: 41.3275, lng: 19.8189 },
-{ name: "Algiers, Algeria", lat: 36.7538, lng: 3.0588 },
-{ name: "Andorra la Vella, Andorra", lat: 42.5078, lng: 1.5211 },
-{ name: "Luanda, Angola", lat: -8.8333, lng: 13.2333 },
-{ name: "St. John's, Antigua and Barbuda", lat: 17.1167, lng: -61.85 },
-{ name: "Buenos Aires, Argentina", lat: -34.6037, lng: -58.3816 },
-{ name: "Yerevan, Armenia", lat: 40.1833, lng: 44.5167 },
-{ name: "Canberra, Australia", lat: -35.2809, lng: 149.13 },
-{ name: "Vienna, Austria", lat: 48.2082, lng: 16.3738 },
-{ name: "Baku, Azerbaijan", lat: 40.4093, lng: 49.8671 },
-{ name: "Nassau, Bahamas", lat: 25.0343, lng: -77.3963 },
-{ name: "Manama, Bahrain", lat: 26.2285, lng: 50.586 },
-{ name: "Dhaka, Bangladesh", lat: 23.7104, lng: 90.4074 },
-{ name: "Bridgetown, Barbados", lat: 13.1939, lng: -59.5432 },
-{ name: "Minsk, Belarus", lat: 53.9, lng: 27.5667 },
-{ name: "Brussels, Belgium", lat: 50.8503, lng: 4.3517 },
-{ name: "Belmopan, Belize", lat: 17.1899, lng: -88.4976 },
-{ name: "Porto-Novo, Benin", lat: 6.4969, lng: 2.6281 },
-{ name: "Thimphu, Bhutan", lat: 27.4722, lng: 89.6361 },
-{ name: "La Paz, Bolivia", lat: -16.5, lng: -68.15 },
-{ name: "Sarajevo, Bosnia and Herzegovina", lat: 43.8486, lng: 18.3564 },
-{ name: "Gaborone, Botswana", lat: -24.6583, lng: 25.9122 },
-{ name: "Brasilia, Brazil", lat: -15.7942, lng: -47.8822 },
-{ name: "Bandar Seri Begawan, Brunei", lat: 4.8908, lng: 114.9406 },
-{ name: "Sofia, Bulgaria", lat: 42.6977, lng: 23.3219 },
-{ name: "Ouagadougou, Burkina Faso", lat: 12.3714, lng: -1.5197 },
-{ name: "Gitega, Burundi", lat: -3.4272, lng: 29.9309 },
-{ name: "Praia, Cabo Verde", lat: 14.9315, lng: -23.5125 },
-{ name: "Phnom Penh, Cambodia", lat: 11.55, lng: 104.9167 },
-{ name: "Yaoundé, Cameroon", lat: 3.848, lng: 11.5021 },
-{ name: "Ottawa, Canada", lat: 45.4215, lng: -75.6972 },
-{ name: "Bangui, Central African Republic", lat: 4.3667, lng: 18.5833 },
-{ name: "N'Djamena, Chad", lat: 12.1347, lng: 15.0557 },
-{ name: "Santiago, Chile", lat: -33.4489, lng: -70.6693 },
-{ name: "Beijing, China", lat: 39.9042, lng: 116.4074 },
-{ name: "Bogotá, Colombia", lat: 4.6243, lng: -74.0636 },
-{ name: "Moroni, Comoros", lat: -11.6453, lng: 43.2565 },
-{ name: "Kinshasa, DR Congo", lat: -4.325, lng: 15.3222 },
-{ name: "Brazzaville, Congo", lat: -4.2634, lng: 15.2663 },
-{ name: "San José, Costa Rica", lat: 9.9281, lng: -84.0907 },
-{ name: "Yamoussoukro, Ivory Coast", lat: 6.8276, lng: -5.2755 },
-{ name: "Zagreb, Croatia", lat: 45.815, lng: 15.9819 },
-{ name: "Havana, Cuba", lat: 23.1136, lng: -82.3666 },
-{ name: "Nicosia, Cyprus", lat: 35.1667, lng: 33.3667 },
-{ name: "Prague, Czechia", lat: 50.0755, lng: 14.4378 },
-{ name: "Copenhagen, Denmark", lat: 55.6761, lng: 12.5683 },
-{ name: "Djibouti, Djibouti", lat: 11.5883, lng: 43.145 },
-{ name: "Roseau, Dominica", lat: 15.3, lng: -61.3833 },
-{ name: "Santo Domingo, Dominican Republic", lat: 18.4861, lng: -69.9312 },
-{ name: "Quito, Ecuador", lat: -0.1807, lng: -78.4678 },
-{ name: "Cairo, Egypt", lat: 30.0444, lng: 31.2357 },
-{ name: "San Salvador, El Salvador", lat: 13.6929, lng: -89.2182 },
-{ name: "Malabo, Equatorial Guinea", lat: 3.75, lng: 8.7833 },
-{ name: "Asmara, Eritrea", lat: 15.3229, lng: 38.9251 },
-{ name: "Tallinn, Estonia", lat: 59.437, lng: 24.7535 },
-{ name: "Eswatini, Mbabane", lat: -26.305, lng: 31.1367 },
-{ name: "Addis Ababa, Ethiopia", lat: 9.03, lng: 38.74 },
-{ name: "Suva, Fiji", lat: -18.1416, lng: 178.4419 },
-{ name: "Helsinki, Finland", lat: 60.1699, lng: 24.9384 },
-{ name: "Paris, France", lat: 48.8566, lng: 2.3522 },
-{ name: "Libreville, Gabon", lat: 0.3908, lng: 9.4544 },
-{ name: "Banjul, Gambia", lat: 13.4667, lng: -16.5667 },
-{ name: "Tbilisi, Georgia", lat: 41.7151, lng: 44.8271 },
-{ name: "Berlin, Germany", lat: 52.52, lng: 13.405 },
-{ name: "Accra, Ghana", lat: 5.6037, lng: -0.187 },
-{ name: "Athens, Greece", lat: 37.9838, lng: 23.7275 },
-{ name: "St. George's, Grenada", lat: 12.05, lng: -61.75 },
-{ name: "Guatemala City, Guatemala", lat: 14.6349, lng: -90.5069 },
-{ name: "Conakry, Guinea", lat: 9.5092, lng: -13.7122 },
-{ name: "Bissau, Guinea-Bissau", lat: 11.8037, lng: -15.5833 },
-{ name: "Georgetown, Guyana", lat: 6.8, lng: -58.15 },
-{ name: "Port-au-Prince, Haiti", lat: 18.5333, lng: -72.3333 },
-{ name: "Tegucigalpa, Honduras", lat: 14.1, lng: -87.2167 },
-{ name: "Budapest, Hungary", lat: 47.4979, lng: 19.0402 },
-{ name: "Reykjavik, Iceland", lat: 64.1466, lng: -21.9426 },
-{ name: "New Delhi, India", lat: 28.6139, lng: 77.209 },
-{ name: "Jakarta, Indonesia", lat: -6.1751, lng: 106.865 },
-{ name: "Tehran, Iran", lat: 35.6892, lng: 51.389 },
-{ name: "Baghdad, Iraq", lat: 33.3152, lng: 44.3661 },
-{ name: "Dublin, Ireland", lat: 53.3498, lng: -6.2603 },
-{ name: "Jerusalem, Israel", lat: 31.7683, lng: 35.2137 },
-{ name: "Rome, Italy", lat: 41.9028, lng: 12.4964 },
-{ name: "Kingston, Jamaica", lat: 17.9714, lng: -76.7936 },
-{ name: "Tokyo, Japan", lat: 35.6895, lng: 139.6917 },
-{ name: "Amman, Jordan", lat: 31.9454, lng: 35.9284 },
-{ name: "Astana, Kazakhstan", lat: 51.1667, lng: 71.4333 },
-{ name: "Nairobi, Kenya", lat: -1.2921, lng: 36.8219 },
-{ name: "Tarawa, Kiribati", lat: 1.3278, lng: 172.9717 },
-{ name: "Pyongyang, North Korea", lat: 39.0333, lng: 125.75 },
-{ name: "Seoul, South Korea", lat: 37.5665, lng: 126.978 },
-{ name: "Kuwait City, Kuwait", lat: 29.3759, lng: 47.9774 },
-{ name: "Bishkek, Kyrgyzstan", lat: 42.8747, lng: 74.5698 },
-{ name: "Vientiane, Laos", lat: 17.9667, lng: 102.6 },
-{ name: "Riga, Latvia", lat: 56.9496, lng: 24.1052 },
-{ name: "Beirut, Lebanon", lat: 33.8886, lng: 35.4955 },
-{ name: "Maseru, Lesotho", lat: -29.3167, lng: 27.4833 },
-{ name: "Monrovia, Liberia", lat: 6.3005, lng: -10.7969 },
-{ name: "Tripoli, Libya", lat: 32.8872, lng: 13.1913 },
-{ name: "Vaduz, Liechtenstein", lat: 47.141, lng: 9.521 },
-{ name: "Vilnius, Lithuania", lat: 54.6872, lng: 25.2797 },
-{ name: "Luxembourg City, Luxembourg", lat: 49.6116, lng: 6.1319 },
-{ name: "Antananarivo, Madagascar", lat: -18.8792, lng: 47.5079 },
-{ name: "Lilongwe, Malawi", lat: -13.9626, lng: 33.7741 },
-{ name: "Kuala Lumpur, Malaysia", lat: 3.139, lng: 101.6869 },
-{ name: "Malé, Maldives", lat: 4.1755, lng: 73.5093 },
-{ name: "Bamako, Mali", lat: 12.6392, lng: -8.0029 },
-{ name: "Valletta, Malta", lat: 35.8989, lng: 14.5146 },
-{ name: "Majuro, Marshall Islands", lat: 7.1167, lng: 171.3833 },
-{ name: "Nouakchott, Mauritania", lat: 18.0858, lng: -15.9785 },
-{ name: "Port Louis, Mauritius", lat: -20.1609, lng: 57.5012 },
-{ name: "Mexico City, Mexico", lat: 19.4326, lng: -99.1332 },
-{ name: "Palikir, Micronesia", lat: 6.9172, lng: 158.185 },
-{ name: "Chisinau, Moldova", lat: 47.0105, lng: 28.8638 },
-{ name: "Monaco, Monaco", lat: 43.7333, lng: 7.4167 },
-{ name: "Ulaanbaatar, Mongolia", lat: 47.8864, lng: 106.9057 },
-{ name: "Podgorica, Montenegro", lat: 42.4304, lng: 19.2594 },
-{ name: "Rabat, Morocco", lat: 34.0209, lng: -6.8416 },
-{ name: "Maputo, Mozambique", lat: -25.9692, lng: 32.5732 },
-{ name: "Naypyidaw, Myanmar", lat: 19.7633, lng: 96.0785 },
-{ name: "Windhoek, Namibia", lat: -22.5597, lng: 17.0832 },
-{ name: "Yaren, Nauru", lat: -0.5477, lng: 166.9248 },
-{ name: "Kathmandu, Nepal", lat: 27.7172, lng: 85.324 },
-{ name: "Amsterdam, Netherlands", lat: 52.3676, lng: 4.9041 },
-{ name: "Wellington, New Zealand", lat: -41.2865, lng: 174.7762 },
-{ name: "Managua, Nicaragua", lat: 12.1364, lng: -86.2514 },
-{ name: "Niamey, Niger", lat: 13.5116, lng: 2.1254 },
-{ name: "Abuja, Nigeria", lat: 9.0765, lng: 7.3986 },
-{ name: "Skopje, North Macedonia", lat: 41.9965, lng: 21.4314 },
-{ name: "Oslo, Norway", lat: 59.9139, lng: 10.7522 },
-{ name: "Muscat, Oman", lat: 23.5859, lng: 58.4059 },
-{ name: "Islamabad, Pakistan", lat: 33.6844, lng: 73.0479 },
-{ name: "Ngerulmud, Palau", lat: 7.5006, lng: 134.6242 },
-{ name: "Panama City, Panama", lat: 8.9833, lng: -79.5167 },
-{ name: "Port Moresby, Papua New Guinea", lat: -9.4438, lng: 147.1803 },
-{ name: "Asunción, Paraguay", lat: -25.2637, lng: -57.5759 },
-{ name: "Lima, Peru", lat: -12.0464, lng: -77.0428 },
-{ name: "Manila, Philippines", lat: 14.5995, lng: 120.9842 },
-{ name: "Warsaw, Poland", lat: 52.2297, lng: 21.0122 },
-{ name: "Lisbon, Portugal", lat: 38.7223, lng: -9.1393 },
-{ name: "Doha, Qatar", lat: 25.2854, lng: 51.531 },
-{ name: "Bucharest, Romania", lat: 44.4268, lng: 26.1025 },
-{ name: "Moscow, Russia", lat: 55.7558, lng: 37.6173 },
-{ name: "Kigali, Rwanda", lat: -1.9441, lng: 30.0619 },
-{ name: "Basseterre, Saint Kitts and Nevis", lat: 17.2957, lng: -62.7261 },
-{ name: "Castries, Saint Lucia", lat: 14.0101, lng: -60.9875 },
-{ name: "Kingstown, Saint Vincent and the Grenadines", lat: 13.156, lng: -61.2248 },
-{ name: "Apia, Samoa", lat: -13.8333, lng: -171.7667 },
-{ name: "San Marino, San Marino", lat: 43.9333, lng: 12.45 },
-{ name: "São Tomé, Sao Tome and Principe", lat: 0.3302, lng: 6.7333 },
-{ name: "Riyadh, Saudi Arabia", lat: 24.7136, lng: 46.6753 },
-{ name: "Dakar, Senegal", lat: 14.7167, lng: -17.4677 },
-{ name: "Belgrade, Serbia", lat: 44.7866, lng: 20.4489 },
-{ name: "Victoria, Seychelles", lat: -4.6167, lng: 55.45 },
-{ name: "Freetown, Sierra Leone", lat: 8.484, lng: -13.2299 },
-{ name: "Singapore, Singapore", lat: 1.2868, lng: 103.8519 },
-{ name: "Bratislava, Slovakia", lat: 48.1486, lng: 17.1077 },
-{ name: "Ljubljana, Slovenia", lat: 46.0569, lng: 14.5058 },
-{ name: "Honiara, Solomon Islands", lat: -9.4456, lng: 159.9594 },
-{ name: "Mogadishu, Somalia", lat: 2.0469, lng: 45.3182 },
-{ name: "Pretoria, South Africa", lat: -25.7479, lng: 28.2293 },
-{ name: "Juba, South Sudan", lat: 4.8517, lng: 31.5712 },
-{ name: "Madrid, Spain", lat: 40.4168, lng: -3.7038 },
-{ name: "Colombo, Sri Lanka", lat: 6.9271, lng: 79.8612 },
-{ name: "Khartoum, Sudan", lat: 15.5007, lng: 32.5599 },
-{ name: "Paramaribo, Suriname", lat: 5.852, lng: -55.2038 },
-{ name: "Stockholm, Sweden", lat: 59.3293, lng: 18.0686 },
-{ name: "Bern, Switzerland", lat: 46.948, lng: 7.4474 },
-{ name: "Damascus, Syria", lat: 33.5138, lng: 36.2765 },
-{ name: "Taipei, Taiwan", lat: 25.033, lng: 121.5654 },
-{ name: "Dushanbe, Tajikistan", lat: 38.5598, lng: 68.787 },
-{ name: "Dodoma, Tanzania", lat: -6.1722, lng: 35.7516 },
-{ name: "Bangkok, Thailand", lat: 13.7563, lng: 100.5018 },
-{ name: "Dili, Timor-Leste", lat: -8.5586, lng: 125.5736 },
-{ name: "Lomé, Togo", lat: 6.1375, lng: 1.2123 },
-{ name: "Nukuʻalofa, Tonga", lat: -21.1394, lng: -175.2048 },
-{ name: "Port of Spain, Trinidad and Tobago", lat: 10.6667, lng: -61.5167 },
-{ name: "Tunis, Tunisia", lat: 36.8065, lng: 10.1815 },
-{ name: "Ankara, Turkey", lat: 39.9333, lng: 32.8597 },
-{ name: "Ashgabat, Turkmenistan", lat: 37.96, lng: 58.3267 },
-{ name: "Funafuti, Tuvalu", lat: -8.5242, lng: 179.1942 },
-{ name: "Kampala, Uganda", lat: 0.3476, lng: 32.5825 },
-{ name: "Kyiv, Ukraine", lat: 50.4501, lng: 30.5234 },
-{ name: "Abu Dhabi, UAE", lat: 24.4667, lng: 54.3667 },
-{ name: "London, UK", lat: 51.5074, lng: -0.1278 },
-{ name: "Washington, D.C., USA", lat: 38.9072, lng: -77.0369 },
-{ name: "Montevideo, Uruguay", lat: -34.9011, lng: -56.1645 },
-{ name: "Tashkent, Uzbekistan", lat: 41.2995, lng: 69.2401 },
-{ name: "Port Vila, Vanuatu", lat: -17.7333, lng: 168.3167 },
-{ name: "Vatican City", lat: 41.9029, lng: 12.4534 },
-{ name: "Caracas, Venezuela", lat: 10.4806, lng: -66.9036 },
-{ name: "Hanoi, Vietnam", lat: 21.0285, lng: 105.8542 },
-{ name: "Sana'a, Yemen", lat: 15.3547, lng: 44.2067 },
-{ name: "Lusaka, Zambia", lat: -15.4167, lng: 28.2833 },
-{ name: "Harare, Zimbabwe", lat: -17.8252, lng: 31.0335 }
-];
+        window.init = function() {
+            svService = new google.maps.StreetViewService();
+            map = L.map('map', { center: [20, 0], zoom: 1, zoomControl: false, attributionControl: false, tap: false });
+            window.tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png').addTo(map);
 
-        function init() {
-            map = L.map('guess-map', { center: [20, 0], zoom: 1, zoomControl: false, attributionControl: false });
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-
-            const container = document.getElementById('map-container');
-            const controls = document.getElementById('map-controls');
-            const minimizeBtn = document.getElementById('minimize-btn');
-            const confirmBtn = document.getElementById('guess-confirm-btn');
-            const nextBtn = document.getElementById('next-round-btn');
+            // Setup Map Expand Mechanics
+            const wrapper = document.getElementById('map-wrapper');
+            wrapper.addEventListener('transitionend', () => map.invalidateSize());
             
-            // Modal Elements
-            const settingsBtn = document.getElementById('settings-trigger');
-            const modal = document.getElementById('settings-modal');
-            const modalClose = document.getElementById('modal-close');
-            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const shrinkBtn = document.getElementById('shrink-map-btn');
 
-            // Modal Logic
-            const openModal = () => {
-                modal.classList.add('active');
-            };
-            const closeModal = () => {
-                modal.classList.remove('active');
-            };
+            // Mobile Expand Mechanics
+            wrapper.addEventListener('click', (e) => {
+                if (!wrapper.classList.contains('expanded')) {
+                    wrapper.classList.add('expanded');
+                    if(window.innerWidth <= 768) shrinkBtn.classList.remove('hidden');
+                    setTimeout(() => map.invalidateSize(), 150);
+                }
+            });
+            
+            // Shrink Mobile Map
+            shrinkBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                wrapper.classList.remove('expanded');
+                shrinkBtn.classList.add('hidden');
+                setTimeout(() => map.invalidateSize(), 150);
+            });
 
-            settingsBtn.addEventListener('click', openModal);
-            modalClose.addEventListener('click', closeModal);
-            modalCloseBtn.addEventListener('click', closeModal);
-            modal.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
-
-            container.addEventListener('click', (e) => {
-                if (!isExpanded && !roundEnded) {
-                    isExpanded = true;
-                    container.classList.add('expanded');
-                    controls.style.display = 'flex';
-                    setTimeout(() => map.invalidateSize(), 500);
-                    e.stopPropagation();
+            // Theme Toggle Mechanic
+            document.getElementById('theme-toggle-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentMapTheme === 'light') {
+                    window.tileLayer.setUrl('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png');
+                    e.target.innerText = '☀️';
+                    currentMapTheme = 'dark';
+                } else {
+                    window.tileLayer.setUrl('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png');
+                    e.target.innerText = '🌙';
+                    currentMapTheme = 'light';
                 }
             });
 
-            minimizeBtn.addEventListener('click', (e) => {
-                isExpanded = false;
-                container.classList.remove('expanded');
-                controls.style.display = 'none';
-                setTimeout(() => map.invalidateSize(), 500);
-                e.stopPropagation();
-            });
-
-            confirmBtn.addEventListener('click', (e) => {
-                if (userGuess) submitGuess();
-                e.stopPropagation();
-            });
-
-            nextBtn.addEventListener('click', (e) => {
-                nextRound();
-                e.stopPropagation();
-            });
-
             map.on('click', (e) => {
-                if (!isExpanded || roundEnded) return;
+                if (!gameActive) return;
                 userGuess = e.latlng;
+                
                 if (guessMarker) guessMarker.setLatLng(userGuess);
                 else guessMarker = L.marker(userGuess, {
                     icon: L.divIcon({ className: 'bg-blue-500 w-5 h-5 rounded-full border-2 border-white shadow-xl', iconSize: [20, 20] })
                 }).addTo(map);
+
+                const btn = document.getElementById('guess-confirm-btn');
+                btn.disabled = false;
+                btn.classList.replace('bg-slate-300', 'bg-blue-600');
+                btn.classList.replace('cursor-not-allowed', 'cursor-pointer');
             });
+
+            document.getElementById('guess-confirm-btn').addEventListener('click', submitGuess);
+            document.getElementById('next-round-btn').addEventListener('click', nextRound);
 
             loadNewLocation();
         }
 
-        async function loadNewLocation() {
+        function loadNewLocation() {
             document.getElementById('loader').style.display = 'flex';
             if (guessMarker) map.removeLayer(guessMarker);
             if (actualMarker) map.removeLayer(actualMarker);
             if (polyline) map.removeLayer(polyline);
-            userGuess = null; roundEnded = false;
+            userGuess = null; 
+            
+            const btn = document.getElementById('guess-confirm-btn');
+            btn.disabled = true;
+            btn.classList.replace('bg-blue-600', 'bg-slate-300');
+            btn.classList.replace('cursor-pointer', 'cursor-not-allowed');
+            document.getElementById('map-wrapper').classList.remove('expanded');
+            document.getElementById('shrink-map-btn').classList.add('hidden');
 
-            try {
-                const city = CITIES[Math.floor(Math.random() * CITIES.length)];
-                const lat = city.lat + (Math.random() - 0.5) * 0.15;
-                const lng = city.lng + (Math.random() - 0.5) * 0.15;
-                const bbox = `${lng-0.03},${lat-0.03},${lng+0.03},${lat+0.03}`;
-                const resp = await fetch(`https://graph.mapillary.com/images?access_token=${MLY_KEY}&fields=id,geometry,thumb_original_url&bbox=${bbox}&limit=5`);
-                const data = await resp.json();
-                
-                if(!data.data || data.data.length === 0) throw new Error("No images found");
-                
-                const img = data.data[0];
-                actualLocation = { lat: img.geometry.coordinates[1], lng: img.geometry.coordinates[0] };
-                document.getElementById('street-image').src = img.thumb_original_url;
-                document.getElementById('street-image').onload = () => document.getElementById('loader').style.display = 'none';
-            } catch (e) { 
-                console.log("Retrying location fetch...");
-                loadNewLocation(); 
-            }
+            findRandomStreetView();
         }
 
-        function submitGuess() {
-            roundEnded = true;
-            const dist = calculateDistance(userGuess.lat, userGuess.lng, actualLocation.lat, actualLocation.lng);
-            totalScore += Math.max(0, Math.round(5000 * Math.exp(-dist / 2000)));
+        function findRandomStreetView() {
+            // Lat constrained slightly (-60 to 70) to avoid deep poles with zero coverage
+            const lat = (Math.random() * 130) - 60; 
+            const lng = (Math.random() * 360) - 180;
+            
+            svService.getPanorama({
+                location: {lat, lng},
+                radius: 100000, // Search within 100km of the random point
+                source: google.maps.StreetViewSource.OUTDOOR // Prefer roads over inside businesses
+            }, (data, status) => {
+                if (status === 'OK' && data.location) {
+                    actualLocation = { lat: data.location.latLng.lat(), lng: data.location.latLng.lng() };
+                    
+                    if (!panorama) {
+                        panorama = new google.maps.StreetViewPanorama(document.getElementById('pano'), {
+                            pano: data.location.pano,
+                            addressControl: false,
+                            showRoadLabels: false,
+                            linksControl: true,
+                            panControl: true,
+                            enableCloseButton: false,
+                            zoomControl: false,
+                            fullscreenControl: false
+                        });
+                        
+                        // Compass Sync
+                        panorama.addListener('pov_changed', () => {
+                            const compass = document.getElementById('compass-arrow');
+                            if(compass) compass.style.transform = `rotate(${panorama.getPov().heading}deg)`;
+                        });
+                    } else {
+                        panorama.setPano(data.location.pano);
+                    }
+                
+                    document.getElementById('loader').style.display = 'none';
+                    map.setView([20, 0], 1);
+                    gameActive = true;
+                } else {
+                    // Fails silently and quickly retries if it hits the ocean or unmapped areas
+                    setTimeout(findRandomStreetView, 150); 
+                }
+            });
+        }
 
-            document.getElementById('guess-confirm-btn').style.display = 'none';
-            document.getElementById('minimize-btn').style.display = 'none';
-            document.getElementById('next-round-btn').style.display = 'block';
-            document.getElementById('result-pill').classList.remove('hidden');
-            document.getElementById('dist-val').innerText = Math.round(dist).toLocaleString();
-            document.getElementById('total-score').innerText = totalScore.toLocaleString();
+        function submitGuess(e) {
+            e.stopPropagation();
+            if (!userGuess || !gameActive) return;
+            gameActive = false;
+
+            const dist = calculateDistance(userGuess.lat, userGuess.lng, actualLocation.lat, actualLocation.lng);
+            // Global scoring curve: Drops off over thousands of kilometers instead of single digits
+            const roundScore = Math.max(0, Math.round(5000 * Math.exp(-dist / 2000))); 
+            totalScore += roundScore;
 
             actualMarker = L.marker([actualLocation.lat, actualLocation.lng], {
-                icon: L.divIcon({ className: 'bg-red-500 w-5 h-5 rounded-full border-2 border-white shadow-xl', iconSize: [20, 20] })
+                icon: L.divIcon({ className: 'bg-green-500 w-5 h-5 rounded-full border-2 border-white shadow-xl', iconSize: [20, 20] })
             }).addTo(map);
 
-            polyline = L.polyline([userGuess, [actualLocation.lat, actualLocation.lng]], { color: 'white', weight: 3, dashArray: '5, 10' }).addTo(map);
+            polyline = L.polyline([userGuess, [actualLocation.lat, actualLocation.lng]], { color: '#10b981', weight: 3, dashArray: '5, 5' }).addTo(map);
 
             setTimeout(() => {
                 map.invalidateSize();
-                map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
-            }, 500);
+                map.fitBounds(polyline.getBounds(), { padding: [40, 40] });
+            }, 300);
+
+            // Update Result Modal
+            document.getElementById('dist-val').innerText = dist < 1 ? `${Math.round(dist * 1000)} meters away` : `${dist.toFixed(2)} km away`;
+            document.getElementById('round-score').innerText = `+${roundScore}`;
+            document.getElementById('total-score').innerText = totalScore.toLocaleString();
+
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('result-screen').classList.add('flex');
+            
+            if (currentRound >= MAX_ROUNDS) {
+                document.getElementById('next-round-btn').innerText = 'PLAY AGAIN';
+            }
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -550,21 +318,33 @@ const CITIES = [
         }
 
         function nextRound() {
-            currentRound++;
-            isExpanded = false;
-            roundEnded = false;
-            document.getElementById('round-num').innerText = currentRound;
-            document.getElementById('map-container').classList.remove('expanded');
-            document.getElementById('map-controls').style.display = 'none';
-            document.getElementById('next-round-btn').style.display = 'none';
-            document.getElementById('result-pill').classList.add('hidden');
-            document.getElementById('guess-confirm-btn').style.display = 'block';
-            document.getElementById('minimize-btn').style.display = 'block';
-            map.setView([20, 0], 1);
+            if (currentRound >= MAX_ROUNDS) {
+                currentRound = 1;
+                totalScore = 0;
+                document.getElementById('total-score').innerText = '0';
+                document.getElementById('next-round-btn').innerText = 'NEXT ROUND';
+            } else {
+                currentRound++;
+            }
+
+            document.getElementById('round-num').innerText = `Round ${currentRound}/${MAX_ROUNDS}`;
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('flex');
             loadNewLocation();
         }
 
-        window.onload = init;
+        // Dynamic Google Maps Script Loader
+        window.onload = () => {
+            if(GOOGLE_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
+                alert("Please add your Google Maps API Key to the GOOGLE_API_KEY variable in the code to play.");
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&callback=init`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        };
     </script>
 </body>
 </html>
