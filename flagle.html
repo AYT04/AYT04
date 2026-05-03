@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flagle Royale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        .flag-container {
+            aspect-ratio: 3 / 2;
+            position: relative;
+            background: #334155;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .flag-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+        .grid-cell {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .grid-cell.revealed {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.1);
+        }
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px 8px 0 0;
+        }
+        .guess-row {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="flex flex-col items-center p-4 min-h-screen">
+
+    <header class="w-full max-w-md flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold tracking-tighter text-accent">FLAGLE<span class="text-white">ROYALE</span></h1>
+        <button id="help-btn" class="p-2 hover:bg-slate-800 rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </button>
+    </header>
+
+    <main class="w-full max-w-md space-y-6">
+        <!-- The Flag Display -->
+        <div class="flag-container w-full relative">
+            <img id="target-flag" src="" alt="Target Flag" class="absolute inset-0 w-full h-full object-cover">
+            <div id="flag-grid" class="flag-grid">
+                <div class="grid-cell" data-index="0"></div>
+                <div class="grid-cell" data-index="1"></div>
+                <div class="grid-cell" data-index="2"></div>
+                <div class="grid-cell" data-index="3"></div>
+                <div class="grid-cell" data-index="4"></div>
+                <div class="grid-cell" data-index="5"></div>
+            </div>
+        </div>
+
+        <!-- Guess Counter -->
+        <div id="status-text" class="text-center font-medium text-slate-400">
+            GUESS 1 OF 6
+        </div>
+
+        <!-- Guesses History -->
+        <div id="guesses-container" class="space-y-2">
+            <!-- Guesses will be injected here -->
+        </div>
+
+        <!-- Input Area -->
+        <div id="input-container" class="relative">
+            <div id="search-dropdown" class="search-results hidden"></div>
+            <div class="flex gap-2">
+                <input 
+                    type="text" 
+                    id="country-input" 
+                    placeholder="Enter country name..." 
+                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-500 text-white"
+                    autocomplete="off"
+                >
+                <button id="guess-btn" class="bg-sky-600 hover:bg-sky-500 transition-colors px-6 py-3 rounded-lg font-bold">
+                    GUESS
+                </button>
+            </div>
+        </div>
+
+        <div id="game-over-panel" class="hidden text-center p-6 bg-slate-800 rounded-xl border border-slate-700 space-y-4">
+            <h2 id="result-title" class="text-2xl font-bold"></h2>
+            <p id="result-desc" class="text-slate-300"></p>
+            <button id="play-again-btn" class="w-full bg-green-600 hover:bg-green-500 py-3 rounded-lg font-bold transition-transform active:scale-95">
+                PLAY AGAIN
+            </button>
+        </div>
+    </main>
+
+    <!-- Overlay / Info Modal -->
+    <div id="modal" class="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 p-6 rounded-2xl max-w-sm w-full space-y-4">
+            <h3 class="text-xl font-bold">How to Play</h3>
+            <p class="text-slate-300 text-sm leading-relaxed">
+                Guess the country in 6 tries. <br><br>
+                Each guess reveals a piece of the flag. <br><br>
+                After each guess, you'll see the distance and direction to the correct country.
+            </p>
+            <button id="close-modal" class="w-full bg-slate-700 py-2 rounded-lg font-bold">Got it!</button>
+        </div>
+    </div>
+
+    <script>
+        // Game Data & Logic
+        const API_URL = "https://restcountries.com/v3.1/all?fields=name,flags,latlng,cca2";
+        let countries = [];
+        let targetCountry = null;
+        let guessesCount = 0;
+        const MAX_GUESSES = 6;
+        let gameOver = false;
+        let revealedIndices = [];
+
+        // UI Elements
+        const flagGrid = document.getElementById('flag-grid');
+        const gridCells = document.querySelectorAll('.grid-cell');
+        const countryInput = document.getElementById('country-input');
+        const guessBtn = document.getElementById('guess-btn');
+        const dropdown = document.getElementById('search-dropdown');
+        const guessesContainer = document.getElementById('guesses-container');
+        const statusText = document.getElementById('status-text');
+        const targetImg = document.getElementById('target-flag');
+        const gameOverPanel = document.getElementById('game-over-panel');
+        const resultTitle = document.getElementById('result-title');
+        const resultDesc = document.getElementById('result-desc');
+        const playAgainBtn = document.getElementById('play-again-btn');
+
+        // Initialization
+        async function initGame() {
+            try {
+                if (countries.length === 0) {
+                    const response = await fetch(API_URL);
+                    const data = await response.json();
+                    countries = data
+                        .filter(c => c.latlng && c.latlng.length === 2)
+                        .sort((a, b) => a.name.common.localeCompare(b.name.common));
+                }
+
+                resetGameState();
+                
+                // Select random country
+                targetCountry = countries[Math.floor(Math.random() * countries.length)];
+                targetImg.src = targetCountry.flags.svg || targetCountry.flags.png;
+                targetImg.onerror = () => { targetImg.src = `https://flagcdn.com/w640/${targetCountry.cca2.toLowerCase()}.png`; };
+
+                console.log("Cheater! Target is:", targetCountry.name.common);
+            } catch (err) {
+                showMessage("Failed to load countries. Check your connection.");
+            }
+        }
+
+        function resetGameState() {
+            guessesCount = 0;
+            gameOver = false;
+            revealedIndices = [];
+            guessesContainer.innerHTML = '';
+            statusText.innerText = `GUESS 1 OF ${MAX_GUESSES}`;
+            countryInput.value = '';
+            countryInput.disabled = false;
+            guessBtn.disabled = false;
+            gameOverPanel.classList.add('hidden');
+            document.getElementById('input-container').classList.remove('hidden');
+            
+            gridCells.forEach(cell => {
+                cell.classList.remove('revealed');
+            });
+        }
+
+        // Search logic
+        countryInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            if (val.length < 1) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            const matches = countries.filter(c => 
+                c.name.common.toLowerCase().includes(val)
+            ).slice(0, 8);
+
+            if (matches.length > 0) {
+                dropdown.innerHTML = matches.map(c => `
+                    <div class="px-4 py-3 hover:bg-slate-700 cursor-pointer border-b border-slate-700 last:border-0 select-item" data-name="${c.name.common}">
+                        ${c.name.common}
+                    </div>
+                `).join('');
+                dropdown.classList.remove('hidden');
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Handle item selection
+        dropdown.addEventListener('click', (e) => {
+            const item = e.target.closest('.select-item');
+            if (item) {
+                countryInput.value = item.dataset.name;
+                dropdown.classList.add('hidden');
+                handleGuess();
+            }
+        });
+
+        guessBtn.addEventListener('click', handleGuess);
+        countryInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleGuess();
+        });
+
+        function handleGuess() {
+            if (gameOver) return;
+
+            const guessName = countryInput.value.trim();
+            const guessCountry = countries.find(c => c.name.common.toLowerCase() === guessName.toLowerCase());
+
+            if (!guessCountry) {
+                showMessage("Country not found in database!");
+                return;
+            }
+
+            processGuess(guessCountry);
+            countryInput.value = '';
+            dropdown.classList.add('hidden');
+        }
+
+        function processGuess(guess) {
+            guessesCount++;
+            
+            // Reveal a random grid cell that isn't revealed yet
+            revealPart();
+
+            const isCorrect = guess.name.common === targetCountry.name.common;
+            const distance = calculateDistance(
+                guess.latlng[0], guess.latlng[1],
+                targetCountry.latlng[0], targetCountry.latlng[1]
+            );
+            const direction = calculateBearing(
+                guess.latlng[0], guess.latlng[1],
+                targetCountry.latlng[0], targetCountry.latlng[1]
+            );
+
+            addGuessRow(guess.name.common, Math.round(distance), direction, isCorrect);
+
+            if (isCorrect) {
+                endGame(true);
+            } else if (guessesCount >= MAX_GUESSES) {
+                endGame(false);
+            } else {
+                statusText.innerText = `GUESS ${guessesCount + 1} OF ${MAX_GUESSES}`;
+            }
+        }
+
+        function revealPart() {
+            const available = Array.from(gridCells)
+                .filter((_, i) => !revealedIndices.includes(i));
+            
+            if (available.length > 0) {
+                const randomCell = available[Math.floor(Math.random() * available.length)];
+                randomCell.classList.add('revealed');
+                revealedIndices.push(parseInt(randomCell.dataset.index));
+            }
+        }
+
+        function addGuessRow(name, dist, dir, correct) {
+            const row = document.createElement('div');
+            row.className = `guess-row flex items-center justify-between p-3 rounded-lg border ${correct ? 'bg-green-900/40 border-green-500' : 'bg-slate-800 border-slate-700'}`;
+            
+            const arrow = correct ? '🎉' : getDirectionEmoji(dir);
+            const distText = correct ? 'Correct!' : `${dist.toLocaleString()} km`;
+
+            row.innerHTML = `
+                <span class="font-bold truncate max-w-[150px]">${name}</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-slate-300">${distText}</span>
+                    <span class="text-xl">${arrow}</span>
+                </div>
+            `;
+            guessesContainer.prepend(row);
+        }
+
+        function endGame(won) {
+            gameOver = true;
+            countryInput.disabled = true;
+            guessBtn.disabled = true;
+            document.getElementById('input-container').classList.add('hidden');
+            
+            // Reveal all
+            gridCells.forEach(cell => cell.classList.add('revealed'));
+
+            gameOverPanel.classList.remove('hidden');
+            if (won) {
+                resultTitle.innerText = "Splendid!";
+                resultTitle.className = "text-2xl font-bold text-green-400";
+                resultDesc.innerText = `You identified ${targetCountry.name.common} in ${guessesCount} tries.`;
+            } else {
+                resultTitle.innerText = "Game Over";
+                resultTitle.className = "text-2xl font-bold text-red-400";
+                resultDesc.innerText = `The country was ${targetCountry.name.common}.`;
+            }
+        }
+
+        // Math Helpers
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function calculateBearing(lat1, lon1, lat2, lon2) {
+            const y = Math.sin((lon2 - lon1) * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180);
+            const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
+                      Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos((lon2 - lon1) * Math.PI / 180);
+            let brng = Math.atan2(y, x) * 180 / Math.PI;
+            return (brng + 360) % 360;
+        }
+
+        function getDirectionEmoji(bearing) {
+            const arrows = ['⬆️', '↗️', '➡️', '↘️', '⬇️', '↙️', '⬅️', '↖️'];
+            const index = Math.round(bearing / 45) % 8;
+            return arrows[index];
+        }
+
+        function showMessage(msg) {
+            const div = document.createElement('div');
+            div.className = "fixed top-4 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-2 rounded-full shadow-lg z-[200] animate-bounce";
+            div.innerText = msg;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+
+        // Modal Controls
+        const modal = document.getElementById('modal');
+        document.getElementById('help-btn').onclick = () => modal.classList.remove('hidden');
+        document.getElementById('close-modal').onclick = () => modal.classList.add('hidden');
+        playAgainBtn.onclick = initGame;
+
+        // Start
+        window.onload = initGame;
+
+        // Hide dropdown if clicked outside
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target) && e.target !== countryInput) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
