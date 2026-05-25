@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShulkerOS — ShulkerOS Documentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Roboto+Slab:wght@400;700&family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Exact Read the Docs Layout Theme Constants */
+        body {
+            font-family: "Lato", "Proxima Nova", "Helvetica Neue", Arial, sans-serif;
+            color: #404040;
+            background-color: #edf0f2;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: "Roboto Slab", "FF Meta Serif W01", "Mediaeval", Georgia, serif;
+            color: #2980B9;
+            font-weight: bold;
+        }
+        code, pre {
+            font-family: "Inconsolata", "Consolas", "Monaco", monospace;
+            font-size: 12px;
+        }
+        pre {
+            background: #f8f8f8;
+            border: 1px solid #e1e4e5;
+            color: #333333;
+            overflow-x: auto;
+        }
+        /* Custom Read the Docs Sidebar Scroll Properties */
+        .rtd-sidebar {
+            background-color: #343131;
+            color: #ffffff;
+        }
+        .rtd-sidebar a {
+            color: #d9d9d9;
+            transition: all 0.2s ease;
+        }
+        .rtd-sidebar a:hover {
+            background-color: #4c4a4a;
+            color: #ffffff;
+        }
+        .rtd-sidebar .active-menu {
+            background-color: #272525;
+            color: #ffffff;
+            border-left: 4px solid #2980B9;
+            font-weight: bold;
+        }
+        .rst-content {
+            background-color: #ffffff;
+            border: 1px solid #e1e4e5;
+        }
+        /* Classical RTD Warning Note Banners */
+        .admonition {
+            border-left: 4px solid #2980B9;
+            background-color: #f3f6f6;
+        }
+        .admonition-title {
+            background-color: #2980B9;
+            color: white;
+            font-weight: bold;
+            padding: 4px 12px;
+            font-size: 13px;
+        }
+        .admonition.warning {
+            border-left-color: #F0B37E;
+            background-color: #FFF3E8;
+        }
+        .admonition.warning .admonition-title {
+            background-color: #F0B37E;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row">
+
+    <aside class="w-full md:w-64 rtd-sidebar shrink-0 flex flex-col justify-between z-30">
+        <div>
+            <div class="p-4 bg-[#2980B9] text-center">
+                <a href="#" class="text-white font-bold text-lg tracking-tight block">ShulkerOS</a>
+                <div class="text-[11px] text-white/80 mt-1 font-mono">master (v1.0.0)</div>
+                <input type="text" placeholder="Search docs..." class="w-full mt-3 px-3 py-1.5 rounded bg-black/20 border border-black/10 text-xs text-white placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-white/30">
+            </div>
+
+            <nav class="text-xs py-2 flex flex-col">
+                <span class="px-4 py-2 uppercase font-bold text-[10px] text-white/40 tracking-wider">Welcome & Overview</span>
+                <button onclick="switchTab('welcome')" id="link-welcome" class="nav-btn w-full text-left px-4 py-2.5 active-menu block">Welcome to ShulkerOS</button>
+                
+                <span class="px-4 py-2 uppercase font-bold text-[10px] text-white/40 tracking-wider mt-4">Core Deployment</span>
+                <button onclick="switchTab('blueprint')" id="link-blueprint" class="nav-btn w-full text-left px-4 py-2.5 block">Drive Environment Blueprints</button>
+                <button onclick="switchTab('pipeline')" id="link-pipeline" class="nav-btn w-full text-left px-4 py-2.5 block">10-Stage Installation Process</button>
+                
+                <span class="px-4 py-2 uppercase font-bold text-[10px] text-white/40 tracking-wider mt-4">Web Architecture</span>
+                <button onclick="switchTab('geodetective')" id="link-geodetective" class="nav-btn w-full text-left px-4 py-2.5 block">GeoDetective App Spec</button>
+            </nav>
+        </div>
+
+        <div class="p-4 bg-black/20 text-[11px] text-white/40 font-mono border-t border-white/5">
+            Built with <span class="text-red-500">♥</span> using Sphinx & RTD Theme maps.
+        </div>
+    </aside>
+
+    <div class="flex-grow p-4 md:p-8 overflow-y-auto max-w-5xl mx-auto w-full">
+        <div class="rst-content p-6 md:p-10 rounded shadow-sm">
+            
+            <div class="flex items-center justify-between text-xs text-gray-400 border-b border-gray-200 pb-3 mb-6">
+                <div class="flex items-center gap-1.5">
+                    <a href="#" class="hover:text-gray-600">Docs</a> »
+                    <span id="breadcrumb-current" class="text-gray-600 font-medium">Welcome to ShulkerOS</span>
+                </div>
+                <a href="https://github.com/AYT04" target="_blank" class="hover:text-gray-600 font-mono">[Edit on GitHub]</a>
+            </div>
+
+            <section id="tab-welcome" class="doc-section flex flex-col gap-4">
+                <h1 class="text-3xl border-b border-gray-200 pb-2 mb-2">Welcome to ShulkerOS Documentation</h1>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    Welcome to the official alignment framework repository manual for **ShulkerOS**. This project acts as an interactive sandbox platform designed to eliminate traditional distribution gatekeeping. It transforms complex terminal mechanics into a modular, structural learning pipeline.
+                </p>
+                <iframe width="820" height="461" src="https://www.youtube.com/embed/_JYIAaLrwcY" title="I Installed The Hardest System Known To Man..." frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                <div class="admonition mt-2">
+                    <div class="admonition-title">Note</div>
+                    <div class="p-3 text-xs text-gray-600 leading-normal">
+                        This environment documentation references definitions parsed explicitly from the core variable definitions inside <code class="bg-gray-100 px-1 rounded text-red-600 font-bold">SHULKER_VIDEO_IDEA.sh</code>.
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-blueprint" class="doc-section hidden flex flex-col gap-4">
+                <h1 class="text-3xl border-b border-gray-200 pb-2 mb-2">Drive Environment Blueprints</h1>
+                <p class="text-sm text-gray-600">
+                    ShulkerOS configurations explicitly target embedded physical hardware flash modules (<code class="bg-gray-100 px-1 rounded text-[#2980B9]">/dev/mmcblk0</code>). Below is the architecture mapping matrix compiled directly from your system blueprints:
+                </p>
+
+                <h3 class="text-lg mt-4 font-bold border-b border-gray-100 pb-1">Target Storage Block Mapping Table</h3>
+                <div class="overflow-x-auto mt-2">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-gray-100 border-b border-gray-200">
+                                <th class="p-2.5 font-bold text-gray-700">Partition Name</th>
+                                <th class="p-2.5 font-bold text-gray-700">Volume Target Size</th>
+                                <th class="p-2.5 font-bold text-gray-700">System Code ID</th>
+                                <th class="p-2.5 font-bold text-gray-700">Filesystem Type</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 text-gray-600">
+                            <tr>
+                                <td class="p-2.5 font-mono">/dev/mmcblk0p1</td>
+                                <td class="p-2.5">1GB</td>
+                                <td class="p-2.5 font-mono text-red-600">EF00 (EFI System Partition)</td>
+                                <td class="p-2.5 font-bold text-sky-600">FAT32</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2.5 font-mono">/dev/mmcblk0p2</td>
+                                <td class="p-2.5">2GB</td>
+                                <td class="p-2.5 font-mono text-red-600">8200 (Linux Swap Boundary)</td>
+                                <td class="p-2.5 font-bold text-amber-600">SWAP</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2.5 font-mono">/dev/mmcblk0p3</td>
+                                <td class="p-2.5">40GB</td>
+                                <td class="p-2.5 font-mono text-red-600">8300 (Linux Root OS Directory)</td>
+                                <td class="p-2.5 font-bold text-indigo-600">EXT4 (Journaling)</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2.5 font-mono">/dev/mmcblk0p4</td>
+                                <td class="p-2.5">Remaining Disk Space</td>
+                                <td class="p-2.5 font-mono text-red-600">8300 (Linux User Storage Profiles)</td>
+                                <td class="p-2.5 font-bold text-indigo-600">EXT4 (Journaling)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="text-lg mt-4 font-bold border-b border-gray-100 pb-1">Environmental Baseline Keys</h3>
+                <ul class="list-disc list-inside text-xs text-gray-600 flex flex-col gap-1.5 pl-2">
+                    <li><strong>System Hostname Mapping:</strong> <code class="bg-gray-50 px-1 py-0.5 rounded text-gray-700 font-bold">ShulkerOS</code></li>
+                    <li><strong>Primary Active Profile User:</strong> <code class="bg-gray-50 px-1 py-0.5 rounded text-gray-700 font-bold">ayt04</code></li>
+                    <li><strong>Timezone Regional Target:</strong> <code class="bg-gray-50 px-1 py-0.5 rounded text-gray-700 font-bold">America/Toronto</code></li>
+                    <li><strong>Wireless Controller Interface:</strong> <code class="bg-gray-50 px-1 py-0.5 rounded text-gray-700 font-bold">wlan0</code> via <code class="text-purple-600">iwctl</code> standard operations.</li>
+                </ul>
+            </section>
+
+            <section id="tab-pipeline" class="doc-section hidden flex flex-col gap-4">
+                <h1 class="text-3xl border-b border-gray-200 pb-2 mb-2">The 10-Stage Installation Process</h1>
+                <p class="text-sm text-gray-600">
+                    The platform coordinates a structural loop to educate deployment technicians manually on low-level Linux actions rather than abstracting procedures away:
+                </p>
+
+                <div class="flex flex-col gap-5 mt-2">
+                    <div class="pl-4 border-l-2 border-gray-200">
+                        <h4 class="text-sm font-bold text-gray-800">1. Verification Testing</h4>
+                        <p class="text-xs text-gray-500">Validates network capabilities via <code class="font-mono bg-gray-50 text-red-600">ping www.ayt04.xyz</code> and tests firmware via <code class="font-mono bg-gray-50 text-red-600">efivar -l</code>.</p>
+                    </div>
+
+                    <div class="pl-4 border-l-2 border-gray-200">
+                        <h4 class="text-sm font-bold text-gray-800">2. Partition Table Zapping</h4>
+                        <p class="text-xs text-gray-500">Loads <code class="font-mono bg-gray-50 text-red-600">gdisk</code> expert operations flags (<code class="font-mono text-blue-600">x</code> then <code class="font-mono text-blue-600">z</code>) to zero out structural sectors cleanly.</p>
+                    </div>
+
+                    <div class="pl-4 border-l-2 border-gray-200">
+                        <h4 class="text-sm font-bold text-gray-800">3. cgdisk Space Allocation</h4>
+                        <p class="text-xs text-gray-500">Slices drive geometries cleanly into individual sectors matching required parameters.</p>
+                    </div>
+
+                    <div class="pl-4 border-l-2 border-gray-200">
+                        <h4 class="text-sm font-bold text-gray-800">4. Filesystem Format Structuring</h4>
+                        <p class="text-xs text-gray-500">Styles FAT32 format maps to boot space targets and standard EXT4 journaling to directory clusters.</p>
+                    </div>
+
+                    <div class="pl-4 border-l-2 border-gray-200">
+                        <h4 class="text-sm font-bold text-gray-800">5. Folder Mounting Hierarchies</h4>
+                        <p class="text-xs text-gray-500">Binds root partition 3 to primary live mount destination <code class="font-mono bg-gray-50">/mnt</code>, linking boot & home partitions safely inside branches.</p>
+                    </div>
+
+                    <div class="pl-4 border-l-2 border-gray-200">
+                        <h4 class="text-sm font-bold text-gray-800">6. Pacstrap Core Deployments</h4>
+                        <p class="text-xs text-gray-500">Downloads base utilities, operating system kernels, and device hardware firmwares directly from ranked localized mirrors.</p>
+                    </div>
+
+                    <div class="pl-4 border-l-2 border-gray-200">
+                        <h4 class="text-sm font-bold text-gray-800">7. genfstab Immutable Mapping & Chroot</h4>
+                        <p class="text-xs text-gray-500">Writes block tables using immutable <code class="font-mono text-blue-600">PARTUUID</code> tags before executing <code class="font-mono bg-gray-50 text-red-600">arch-chroot /mnt</code> to move inside the system drive filesystem.</p>
+                    </div>
+
+                    <div class="pl-4 border-l-2 border-gray-200">
+                        <h4 class="text-sm font-bold text-gray-800">8. Regional Settings Calibration</h4>
+                        <p class="text-xs text-gray-500">Generates localization configuration parameters, binds UTC motherboard internal clocks, and turns on SSD blocks cleaning optimizations.</p>
+                    </div>
+
+                    <div class="pl-4 border-l-2 border-gray-200">
+                        <h4 class="text-sm font-bold text-gray-800">9. Bootloader Installation</h4>
+                        <p class="text-xs text-gray-500">Deploys modern lightweight <code class="font-mono bg-gray-50">systemd-boot</code> modules directly to hardware partition headers via <code class="font-mono bg-gray-50 text-red-600">bootctl install</code>.</p>
+                    </div>
+
+                    <div class="pl-4 border-l-2 border-gray-200">
+                        <h4 class="text-sm font-bold text-gray-800">10. Display Greeters Setup</h4>
+                        <p class="text-xs text-gray-500">Enables graphical window server frameworks (<code class="font-mono bg-gray-50 text-red-600">Xorg</code>) and registers <code class="font-mono bg-gray-50 text-red-600">sddm.service</code> to prompt graphical user dashboards automatically upon system reboots.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-geodetective" class="doc-section hidden flex flex-col gap-4">
+                <h1 class="text-3xl border-b border-gray-200 pb-2 mb-2">GeoDetective Application Specification</h1>
+                <p class="text-sm text-gray-600">
+                    The geolocation sandbox submodule operates inside <code class="bg-gray-100 text-[#2980B9] px-1 rounded">geo.html</code>, generating interactive Mapillary tracking tasks.
+                </p>
+
+                <h3 class="text-lg font-bold border-b border-gray-100 pb-1 mt-4">API Key Layer Specifications</h3>
+                <pre class="p-4 rounded-xl text-xs">
+// Mapillary Graph Endpoint Configuration Registers
+const MLY_KEY = 'MLY|26867455816212719|1f45e3cbfcc2a9f2977476ad1c3aa021';
+const TARGET_EMAIL = 'ayt04@duck.com';
+const COOLDOWN_TIME = 120; // 2 minutes query limiter</pre>
+
+                <h3 class="text-lg font-bold border-b border-gray-100 pb-1 mt-4">System Operational Flow</h3>
+                <p class="text-xs text-gray-600 leading-relaxed">
+                    The application queries Mapillary bounding boxes dynamically to extract regional visual telemetry. Technicians pinpoint coordinates on an open LeafletJS tile container map. Submitting coordinate points structural values opens localized default mail clients to route the reports directly to the central inbox.
+                </p>
+            </section>
+
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            // Hide all sections layout containers
+            const sections = document.querySelectorAll('.doc-section');
+            sections.forEach(sec => sec.classList.add('hidden'));
+
+            // Remove active menus styles from all navigation list items
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => btn.classList.remove('active-menu'));
+
+            // Show selected view element container block
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            
+            // Add focus styles to currently clicked menu list target
+            document.getElementById(`link-${tabId}`).classList.add('active-menu');
+
+            // Set breadcrumb visual tracking indicators
+            const titleText = document.getElementById(`link-${tabId}`).innerText;
+            document.getElementById('breadcrumb-current').innerText = titleText;
+        }
+    </script>
+</body>
+</html>
