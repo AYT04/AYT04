@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHULKER OS - Interactive Arch Sandbox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: linear-gradient(to bottom right, #090214, #120422, #05010a);
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .cyber-border {
+            border: 1px solid rgba(127, 18, 216, 0.3);
+            box-shadow: 0 0 15px rgba(127, 18, 216, 0.15);
+        }
+        .cyber-border:hover {
+            border-color: rgba(255, 0, 51, 0.5);
+            box-shadow: 0 0 20px rgba(255, 0, 51, 0.25);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .shulker-gradient {
+            background: linear-gradient(135deg, #7f12d8 0%, #ff0033 100%);
+        }
+        .neon-text-purple {
+            text-shadow: 0 0 10px rgba(127, 18, 216, 0.8);
+        }
+        .neon-text-red {
+            text-shadow: 0 0 10px rgba(255, 0, 51, 0.8);
+        }
+        /* Custom Scanline Simulation */
+        .scanline {
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0, 0, 0, 0.3) 50%,
+                rgba(0, 0, 0, 0.3)
+            );
+            background-size: 100% 4px;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(127, 18, 216, 0.4);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 0, 51, 0.6);
+        }
+    </style>
+</head>
+<body class="min-h-screen relative flex flex-col">
+
+    <!-- Global Floating Notification System -->
+    <div id="alert-container" class="fixed top-6 right-6 z-50 flex flex-col gap-3 max-w-sm w-full"></div>
+
+    <!-- MAIN NAVBAR -->
+    <header class="glass-panel border-b border-white/10 px-6 py-4 flex items-center justify-between z-40 sticky top-0">
+        <div class="flex items-center gap-3">
+            <span class="w-4 h-4 rounded-full shulker-gradient animate-pulse"></span>
+            <h1 class="text-2xl font-bold tracking-wider uppercase text-white flex items-center gap-2">
+                SHULKER<span class="text-red-500 font-extrabold text-sm px-2 py-0.5 border border-red-500 rounded">OS</span>
+                <span class="text-xs font-normal text-white/50 lowercase tracking-normal">Interactive Sandbox</span>
+            </h1>
+        </div>
+        <nav class="hidden md:flex items-center gap-6">
+            <a href="./index.html" class="text-white/70 hover:text-white transition-all text-sm">← Back to Base</a>
+            <a href="./creators.html" class="text-white/70 hover:text-white transition-all text-sm">RSS Feeds</a>
+            <a href="./geo.html" class="text-white/70 hover:text-white transition-all text-sm">GeoDetective</a>
+            <button onclick="toggleAIChat()" class="px-4 py-1.5 rounded-full border border-[#7f12d8] hover:bg-[#7f12d8]/20 transition-all text-xs font-bold text-purple-400">
+                ⚡ Ask Mutahar AI
+            </button>
+        </nav>
+        <button onclick="toggleAIChat()" class="md:hidden p-2 text-purple-400 hover:text-purple-300">
+            💬
+        </button>
+    </header>
+
+    <!-- CONTENT LAYOUT -->
+    <main class="flex-grow grid grid-cols-1 xl:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto w-full relative z-10">
+        
+        <!-- LEFT COLUMN: ARCH SYSTEM MANUAL (5 Cols) -->
+        <section class="xl:col-span-5 flex flex-col gap-5 h-[calc(100vh-140px)] overflow-y-auto pr-2">
+            <div class="glass-panel rounded-3xl p-6 cyber-border">
+                <h2 class="text-xl font-bold tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+                    LEARNING PIPELINE
+                </h2>
+                <p class="text-sm text-white/60 mb-4">
+                    Walk through the 10 core architectural modules mapped directly from <span class="code-font text-purple-400 text-xs font-semibold">SHULKER_VIDEO_IDEA.sh</span>. Complete each quiz to unlock sequential stages!
+                </p>
+                <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                    <div id="global-progress" class="shulker-gradient h-full transition-all duration-500" style="width: 10%;"></div>
+                </div>
+            </div>
+
+            <!-- MANUAL STAGES ACCORDION -->
+            <div id="stages-container" class="flex flex-col gap-3">
+                <!-- Javascript will inject stages dynamically here -->
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: INTERACTIVE HARDWARE SANDBOX (7 Cols) -->
+        <section class="xl:col-span-7 flex flex-col gap-5 h-[calc(100vh-140px)] justify-between">
+            
+            <!-- VIRTUAL DRIVE VISUALIZER -->
+            <div class="glass-panel rounded-3xl p-6 border border-white/5 relative flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-white/70 flex items-center gap-2">
+                        💾 Disk Architecture Monitor: <span class="code-font text-purple-400">/dev/mmcblk0</span>
+                    </h3>
+                    <span id="disk-status" class="text-xs px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
+                        Raw Table (MBR Default)
+                    </span>
+                </div>
+                
+                <!-- Partition Blocks Graphic -->
+                <div id="drive-visualizer" class="h-16 rounded-2xl bg-black/40 border border-white/10 flex overflow-hidden p-1 gap-1">
+                    <div class="w-full h-full flex items-center justify-center text-xs text-white/40 italic">
+                        No persistent sectors allocated on hardware block...
+                    </div>
+                </div>
+
+                <!-- Partition Meta Table -->
+                <div class="grid grid-cols-4 gap-2 text-center text-xs text-white/50">
+                    <div class="p-2 rounded bg-white/5">
+                        <span class="block text-[10px] text-white/30 uppercase">p1 (Boot)</span>
+                        <span id="p1-meta" class="font-bold">-</span>
+                    </div>
+                    <div class="p-2 rounded bg-white/5">
+                        <span class="block text-[10px] text-white/30 uppercase">p2 (Swap)</span>
+                        <span id="p2-meta" class="font-bold">-</span>
+                    </div>
+                    <div class="p-2 rounded bg-white/5">
+                        <span class="block text-[10px] text-white/30 uppercase">p3 (Root)</span>
+                        <span id="p3-meta" class="font-bold">-</span>
+                    </div>
+                    <div class="p-2 rounded bg-white/5">
+                        <span class="block text-[10px] text-white/30 uppercase">p4 (Home)</span>
+                        <span id="p4-meta" class="font-bold">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIRTUAL INTERACTIVE SHELL -->
+            <div class="flex-grow glass-panel rounded-3xl p-6 border border-[#7f12d8]/30 flex flex-col justify-between overflow-hidden relative min-h-[300px]">
+                <!-- Scanlines aesthetic -->
+                <div class="absolute inset-0 scanline pointer-events-none opacity-[0.03]"></div>
+                
+                <!-- Terminal Screen Controls -->
+                <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                    </div>
+                    <span class="text-xs font-mono text-purple-400">shulker@live-installer: ~</span>
+                    <button onclick="clearTerminal()" class="text-[10px] text-white/40 hover:text-white transition-colors uppercase font-mono tracking-wider">
+                        [Clear Console]
+                    </button>
+                </div>
+
+                <!-- Console Output Streams -->
+                <div id="terminal-stdout" class="flex-grow overflow-y-auto text-xs code-font text-emerald-400 flex flex-col gap-1 pr-2 max-h-[380px]">
+                    <div class="text-white/60 font-sans italic mb-2">
+                        Welcome to the simulated live target console. Type commands manually or use 'Run in Terminal' buttons inside the guide to execute. Try typing <span class="text-purple-400">help</span> to begin.
+                    </div>
+                </div>
+
+                <!-- Input Prompt Box -->
+                <form id="terminal-form" class="mt-4 flex items-center border-t border-white/10 pt-3">
+                    <span id="prompt-label" class="code-font text-purple-400 mr-2 shrink-0">root@shulker-iso ~ #</span>
+                    <input type="text" id="terminal-input" autocomplete="off" autofocus
+                        class="bg-transparent text-white code-font text-xs flex-grow focus:outline-none placeholder-white/20"
+                        placeholder="Type system commands here...">
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- FLOATING RETRO DESKTOP SIMULATOR (Modal Overlay) -->
+    <div id="desktop-simulator" class="fixed inset-0 bg-[#090214] z-50 flex-col hidden">
+        <!-- Panel Head -->
+        <div class="bg-slate-900 border-b border-white/10 px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="font-bold text-sm text-emerald-400 tracking-wider font-mono">ShulkerOS v1.0.0 (Plasma Simulator)</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-xs text-white/50 font-mono">Status: Connected to Virtual Drive p3</span>
+                <button onclick="exitDesktop()" class="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-xs font-bold text-white transition-all">
+                    Shutdown OS
+                </button>
+            </div>
+        </div>
+
+        <!-- Desktop Screen Space -->
+        <div class="flex-grow p-8 relative flex flex-wrap gap-6 items-start content-start" style="background: radial-gradient(circle, #220336 0%, #090214 100%);">
+            <!-- App Icons -->
+            <button onclick="openMockApp('terminal')" class="flex flex-col items-center gap-2 text-center group w-20">
+                <div class="w-12 h-12 rounded-xl bg-black/60 border border-purple-500/30 flex items-center justify-center group-hover:scale-110 group-hover:border-purple-400 transition-all shadow-lg shadow-purple-500/10">
+                    💻
+                </div>
+                <span class="text-xs text-white/80 font-mono text-shadow">Terminal</span>
+            </button>
+
+            <button onclick="openMockApp('firefox')" class="flex flex-col items-center gap-2 text-center group w-20">
+                <div class="w-12 h-12 rounded-xl bg-orange-600/30 border border-orange-500/30 flex items-center justify-center group-hover:scale-110 group-hover:border-orange-400 transition-all shadow-lg shadow-orange-500/10">
+                    🦊
+                </div>
+                <span class="text-xs text-white/80 font-mono text-shadow">Firefox</span>
+            </button>
+
+            <button onclick="openMockApp('pacman')" class="flex flex-col items-center gap-2 text-center group w-20">
+                <div class="w-12 h-12 rounded-xl bg-yellow-500/20 border border-yellow-500/30 flex items-center justify-center group-hover:scale-110 group-hover:border-yellow-400 transition-all shadow-lg shadow-yellow-500/10">
+                    🕹️
+                </div>
+                <span class="text-xs text-white/80 font-mono text-shadow">Pacman</span>
+            </button>
+
+            <!-- MOCK TERMINAL APP -->
+            <div id="mock-terminal-window" class="absolute left-20 top-20 w-full max-w-lg glass-panel rounded-2xl border border-emerald-500/30 shadow-2xl hidden flex flex-col h-96 overflow-hidden">
+                <div class="bg-black/50 px-4 py-2 flex items-center justify-between border-b border-white/10 cursor-move">
+                    <span class="text-xs font-mono text-emerald-400 flex items-center gap-1">💻 local_console - ayt04@ShulkerOS</span>
+                    <button onclick="closeMockApp('terminal')" class="text-white/40 hover:text-white">&times;</button>
+                </div>
+                <div class="p-4 flex-grow overflow-y-auto text-xs code-font text-emerald-300 flex flex-col gap-1 bg-black/60">
+                    <p class="text-white/40 font-sans">ShulkerOS kernel release v1.0.0-Arch Linux. Type 'neofetch' or 'cowsay hello' to test!</p>
+                    <div id="mock-stdout"></div>
+                    <form id="mock-terminal-form" class="flex items-center mt-2">
+                        <span class="text-purple-400 mr-2">[ayt04@ShulkerOS ~]$</span>
+                        <input type="text" id="mock-terminal-input" class="bg-transparent border-none focus:outline-none text-white flex-grow">
+                    </form>
+                </div>
+            </div>
+
+            <!-- MOCK FIREFOX APP -->
+            <div id="mock-firefox-window" class="absolute left-32 top-32 w-full max-w-2xl glass-panel rounded-2xl border border-orange-500/30 shadow-2xl hidden flex flex-col h-[420px] overflow-hidden">
+                <div class="bg-black/50 px-4 py-2 flex items-center justify-between border-b border-white/10">
+                    <div class="flex items-center gap-2 flex-grow">
+                        <span class="text-xs text-orange-400">🦊 Browser</span>
+                        <input type="text" id="browser-url" class="bg-white/5 border border-white/10 px-3 py-0.5 rounded text-[11px] text-white/80 w-full max-w-md focus:outline-none" value="https://ayt04.xyz/creators.html" readonly>
+                    </div>
+                    <button onclick="closeMockApp('firefox')" class="text-white/40 hover:text-white ml-4">&times;</button>
+                </div>
+                <div class="bg-slate-950 p-4 flex-grow overflow-y-auto text-sm text-slate-300">
+                    <h3 class="text-lg font-bold text-white mb-2">AYT04 - Creator RSS Feeds</h3>
+                    <p class="text-xs text-slate-400 mb-4">Emulated Firefox view from yourCreators Page</p>
+                    <div class="flex flex-col gap-2">
+                        <a href="https://odysee.com/$/rss/@BrodieRobertson:5" target="_blank" class="block p-3 bg-white/5 rounded hover:bg-white/10 transition-colors">
+                            <span class="font-bold text-purple-400 block">Brodie Robertson</span>
+                            <span class="text-xs text-white/50">https://odysee.com/$/rss/@BrodieRobertson:5</span>
+                        </a>
+                        <a href="https://www.youtube.com/feeds/videos.xml?channel_id=UCgd5-BWtbgOw5Hx2wP3qxzg" target="_blank" class="block p-3 bg-white/5 rounded hover:bg-white/10 transition-colors">
+                            <span class="font-bold text-purple-400 block">Cyb3rMaddy</span>
+                            <span class="text-xs text-white/50">https://www.youtube.com/feeds/videos.xml?channel_id=UCgd5-BWtbgOw5...</span>
+                        </a>
+                        <a href="https://odysee.com/$/rss/@SomeOrdinaryGamers:6" target="_blank" class="block p-3 bg-white/5 rounded hover:bg-white/10 transition-colors">
+                            <span class="font-bold text-purple-400 block">SomeOrdinaryGamers</span>
+                            <span class="text-xs text-white/50">https://odysee.com/$/rss/@SomeOrdinaryGamers:6</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MOCK PACMAN APP -->
+            <div id="mock-pacman-window" class="absolute left-1/4 top-1/4 w-[400px] glass-panel rounded-2xl border border-yellow-500/30 shadow-2xl hidden flex flex-col overflow-hidden">
+                <div class="bg-black/50 px-4 py-2 flex items-center justify-between border-b border-white/10">
+                    <span class="text-xs text-yellow-400">🕹️ Pacman Minigame Sandbox</span>
+                    <button onclick="closeMockApp('pacman')" class="text-white/40 hover:text-white">&times;</button>
+                </div>
+                <div class="p-6 bg-slate-950 flex flex-col items-center gap-4 text-center">
+                    <p class="text-xs text-white/60">Press start to deploy a lightweight simulated rendering environment.</p>
+                    <div id="pacman-screen" class="w-full h-32 bg-black border border-white/10 rounded flex items-center justify-center font-mono text-yellow-400 animate-pulse">
+                        READY TO BOOT
+                    </div>
+                    <button onclick="playMockGame()" class="px-6 py-2 bg-yellow-500 text-black font-bold text-xs rounded hover:bg-yellow-400 transition-all">
+                        START SIMULATION
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CHAT DRAWER: MUTAHAR AI GUIDE -->
+    <div id="ai-chat-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-[#0d0417] border-l border-[#7f12d8]/30 shadow-2xl z-50 flex flex-col justify-between transition-transform duration-300 transform translate-x-full">
+        <!-- Drawer Head -->
+        <div class="p-4 bg-slate-950 border-b border-white/10 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="w-3 h-3 rounded-full bg-[#ff0033] animate-ping"></span>
+                <h3 class="font-bold text-sm tracking-wider uppercase text-white">Mutahar's Arch Advisor</h3>
+            </div>
+            <button onclick="toggleAIChat()" class="text-white/60 hover:text-white text-xl font-bold">&times;</button>
+        </div>
+
+        <!-- Chat Log Stream -->
+        <div id="chat-messages" class="flex-grow p-4 overflow-y-auto flex flex-col gap-3 text-xs leading-relaxed font-sans">
+            <div class="bg-purple-950/20 border border-[#7f12d8]/30 p-3 rounded-2xl">
+                <span class="font-bold text-[#ff0033] block mb-1">🔥 Mutahar Guide:</span>
+                "Yo, what's up buckos! Welcome to your personal educational AI portal. If you're struggling to understand directories, partition zapping, or why graphics drivers require DKMS modules, ask below. Let's make this a certified hood moment!"
+            </div>
+        </div>
+
+        <!-- Input Box -->
+        <form id="chat-form" class="p-4 bg-slate-950 border-t border-white/10 flex gap-2">
+            <input type="text" id="chat-input" autocomplete="off"
+                class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500 flex-grow"
+                placeholder="Ask Mutahar anything about Arch installation...">
+            <button type="submit" class="px-4 py-2 bg-[#7f12d8] text-white text-xs font-bold rounded-xl hover:bg-opacity-90 active:scale-95 transition-all">
+                Send
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // EXPONENTIAL BACKOFF FOR GEMINI API INTERACTION
+        const apiKey = ""; // Runtime automatically injects API keys in your environment
+        const systemPrompt = `You are Mutahar, the highly energetic and charismatic host of SomeOrdinaryGamers. 
+        You use comedic tech slang ('buckos', 'certified hood moment', 'virgins', 'wizards', 'muda', 'butt plug fairy') 
+        and you act as an interactive Arch Linux installation guide. 
+        Explain things using configurations from 'SHULKER_VIDEO_IDEA.sh' (eMMC drive /dev/mmcblk0, Hostname ShulkerOS, username ayt04). 
+        Ensure you are highly encouraging, deeply educational, and make funny comments about Arch Linux elitism while helping them solve their specific issue.`;
+
+        async function fetchGeminiResponse(userQuery) {
+            const maxRetries = 5;
+            let attempt = 0;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            while (attempt < maxRetries) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Muda... the matrix has returned empty content, try asking again bucko!";
+                    }
+                } catch (err) {
+                    attempt++;
+                    const delay = Math.pow(2, attempt) * 500;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+            return "Unable to bridge to Mutahar's AI core. Ensure network configurations aren't blocking Google APIs.";
+        }
+
+        // STATE CONTROLLERS
+        let sandboxState = {
+            progress: 10,
+            hasNetwork: false,
+            uefiEnabled: false,
+            diskZapped: false,
+            currentTool: "shell", // shell, gdisk, cgdisk
+            partitions: [],
+            mounted: {},
+            pacstrapped: false,
+            chrooted: false,
+            bootloaderInstalled: false,
+            sddmEnabled: false,
+            completedSteps: [false, false, false, false, false, false, false, false, false, false]
+        };
+
+        // STAGE DOCUMENTATION OBJECT ARRAY
+        const manualStages = [
+            {
+                title: "1. Environmental Checklist",
+                short: "Ping & UEFI",
+                desc: "We verify system state variables. Pinging ensures target routes to external domains like www.ayt04.xyz are active. 'efivar -l' verifies that you booted in UEFI standard, rather than Legacy BIOS.",
+                command: "ping www.ayt04.xyz",
+                commandAlt: "efivar -l",
+                quiz: {
+                    q: "Why is UEFI verification crucial prior to bootctl deployment?",
+                    options: [
+                        "So we can write target boot variables to firmware maps",
+                        "Because it speeds up standard downloading speeds",
+                        "To bypass graphical card dkms validations"
+                    ],
+                    ans: 0
+                }
+            },
+            {
+                title: "2. Disk Table Wiping",
+                short: "GDISK ZAP",
+                desc: "We target our eMMC block storage device '/dev/mmcblk0'. Using gdisk expert mode commands (X -> Z) zaps GPT partition blocks cleanly, ensuring previous filesystems don't conflict with current boot tracks.",
+                command: "gdisk /dev/mmcblk0",
+                quiz: {
+                    q: "What does the Gdisk ZAP option do?",
+                    options: [
+                        "Overwrites partition table maps with zeros",
+                        "Downloads package keychains into memory",
+                        "Activates multilib 32-bit software layers"
+                    ],
+                    ans: 0
+                }
+            },
+            {
+                title: "3. Sector Partition Allocation",
+                short: "CGDISK Allocations",
+                desc: "Using the user-friendly cgdisk partition editor, we partition the hardware drive: Boot (1GB - EF00), Swap (2G - 8200), Root (40GB - 8300), and Home (remaining disk - 8300).",
+                command: "cgdisk /dev/mmcblk0",
+                quiz: {
+                    q: "Which standard partition code maps cleanly to modern EFI Systems?",
+                    options: [
+                        "8200 (Swap Space Code)",
+                        "EF00 (EFI Boot Loader Space)",
+                        "8300 (Linux Directory Target Code)"
+                    ],
+                    ans: 1
+                }
+            },
+            {
+                title: "4. Filesystem Format Styling",
+                short: "Formatting Devices",
+                desc: "Wipe sector structures and configure formatting: FAT32 for boot so system firmware maps can read it, Swap to help when hardware memory fills up, and EXT4 for active OS directories.",
+                command: "mkfs.fat -F32 /dev/mmcblk0p1",
+                commandAlt: "mkfs.ext4 /dev/mmcblk0p3",
+                quiz: {
+                    q: "Why formatting partition 1 specifically to FAT32 filesystem is crucial?",
+                    options: [
+                        "EXT4 lacks modern encryption mechanics",
+                        "Standard motherboard firmwares only read FAT format types natively",
+                        "Swap memory allocations cannot reside in EXT4 journals"
+                    ],
+                    ans: 1
+                }
+            },
+            {
+                title: "5. Mounting Partition trees",
+                short: "Mount Directories",
+                desc: "In Unix, isolated disks join the main tree inside directories. Mount Partition 3 directly to /mnt, create boot & home directories, and mount the respective drives inside them.",
+                command: "mount /dev/mmcblk0p3 /mnt",
+                commandAlt: "mount /dev/mmcblk0p1 /mnt/boot",
+                quiz: {
+                    q: "Where must the Root partition attach to write bootstrap system files?",
+                    options: [
+                        "Directly to /etc/fstab configuration index",
+                        "To the active target path of /mnt boundary space",
+                        "To the systemd graphics manager engine"
+                    ],
+                    ans: 1
+                }
+            },
+            {
+                title: "6. Mirror Calibration & Pacstrap",
+                short: "Mirror Optimization",
+                desc: "We calibrate pacman download queues using rankmirrors, placing optimal localized routes first. Then run pacstrap to build root frameworks (base core utilities, active Linux kernel, device firmwares).",
+                command: "pacstrap -K /mnt base linux linux-firmware base-devel nano",
+                quiz: {
+                    q: "What component maps core system priorities directly to actual computer CPU architectures?",
+                    options: [
+                        "The Linux Kernel Engine",
+                        "The rankmirrors calibration index",
+                        "The bootctl boot configuration parameters"
+                    ],
+                    ans: 0
+                }
+            },
+            {
+                title: "7. Persistent FSTAB & Chroot",
+                short: "Persistent Maps",
+                desc: "We write target mappings to /mnt/etc/fstab using PARTUUID labels to prevent boot disruptions. Then execute 'arch-chroot /mnt' to move operations directly onto the local drive.",
+                command: "genfstab -U -p /mnt >> /mnt/etc/fstab",
+                commandAlt: "arch-chroot /mnt",
+                quiz: {
+                    q: "What does Fstab mapping ensure across system reboots?",
+                    options: [
+                        "Allows the system to automatically load partitions under correct mounts",
+                        "Regulates graphics DKMS compile states dynamically",
+                        "Initializes sddm login windows"
+                    ],
+                    ans: 0
+                }
+            },
+            {
+                title: "8. Regional Configuration Settings",
+                short: "System Settings",
+                desc: "Configure regional variables: generate locales, bind the Eastern Canada/Toronto Timezone map, align hardware motherboard clocks to UTC, and turn on SSD support via systemctl.",
+                command: "locale-gen",
+                commandAlt: "hwclock --systohc --utc",
+                quiz: {
+                    q: "Why do we run systemctl to configure the fstrim timer?",
+                    options: [
+                        "To clean up unused blocks on active Solid State Drives",
+                        "To configure display rendering rates",
+                        "To secure internet connections across regional loops"
+                    ],
+                    ans: 0
+                }
+            },
+            {
+                title: "9. Bootloader Registration",
+                short: "Systemd-Boot",
+                desc: "Deploy systemd-boot to drive firmwares on startup. Define options directly in arch.conf, passing target storage parameters using blkid query parameters.",
+                command: "bootctl install",
+                quiz: {
+                    q: "Where does the bootloader lookup OS entry maps?",
+                    options: [
+                        "Inside /sys/firmware/efi directories",
+                        "Inside /boot/loader/entries/ configurations",
+                        "Within standard Xorg layout maps"
+                    ],
+                    ans: 1
+                }
+            },
+            {
+                title: "10. Graphics Desktop Setup",
+                short: "Enable SDDM",
+                desc: "Deploy display stacks (Xorg graphic servers), configure sddm, and type 'reboot'. If correct, your system will transition cleanly from terminal state logs directly to retro desktop spaces!",
+                command: "systemctl enable sddm.service",
+                commandAlt: "reboot",
+                quiz: {
+                    q: "What component displays the graphical username/password login screen?",
+                    options: [
+                        "A Display Manager (such as SDDM)",
+                        "The EXT4 journaling matrix",
+                        "Systemd-boot registry arrays"
+                    ],
+                    ans: 0
+                }
+            }
+        ];
+
+        // INJECT STAGES DYNAMICALLY
+        function initGuide() {
+            const container = document.getElementById('stages-container');
+            container.innerHTML = "";
+            
+            manualStages.forEach((stage, idx) => {
+                const isLocked = idx > 0 && !sandboxState.completedSteps[idx - 1];
+                const isCurrent = idx === getActiveStepIndex();
+                
+                let quizHtml = "";
+                if (!isLocked) {
+                    quizHtml = `
+                        <div class="mt-4 p-4 rounded-xl bg-purple-950/20 border border-white/5">
+                            <span class="block text-xs font-bold uppercase text-purple-400 mb-2">⚡ QUIZ: SECURE KNOWLEDGE BLOCK</span>
+                            <p class="text-xs text-white mb-3">${stage.quiz.q}</p>
+                            <div class="flex flex-col gap-2">
+                                ${stage.quiz.options.map((opt, oIdx) => `
+                                    <button onclick="checkQuiz(${idx}, ${oIdx})" class="p-2.5 rounded bg-white/5 border border-white/10 hover:border-[#7f12d8] transition-all text-left text-xs">
+                                        ${opt}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML += `
+                    <div id="stage-${idx}" class="glass-panel rounded-3xl p-5 border transition-all duration-300 ${isLocked ? 'opacity-40 select-none' : ''} ${isCurrent ? 'border-purple-500 shadow-lg shadow-purple-500/10' : 'border-white/10'}">
+                        <div class="flex items-center justify-between cursor-pointer" onclick="setActiveStep(${idx})">
+                            <div class="flex items-center gap-3">
+                                <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${sandboxState.completedSteps[idx] ? 'bg-emerald-500 text-black' : 'bg-white/10 text-white'}">
+                                    ${sandboxState.completedSteps[idx] ? '✓' : idx + 1}
+                                </span>
+                                <h4 class="font-bold text-sm text-white">${stage.title}</h4>
+                            </div>
+                            <span class="text-xs px-2 py-0.5 rounded ${isLocked ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}">
+                                ${isLocked ? 'Locked' : (sandboxState.completedSteps[idx] ? 'Verified' : 'Active')}
+                            </span>
+                        </div>
+                        
+                        ${isCurrent && !isLocked ? `
+                            <div class="mt-4 pt-4 border-t border-white/5 flex flex-col gap-3">
+                                <p class="text-xs text-white/70 leading-relaxed">${stage.desc}</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="runCommandInSandbox('${stage.command}')" class="px-3 py-1.5 bg-purple-500/20 border border-purple-500 hover:bg-purple-500 text-white text-xs font-mono font-bold rounded-lg transition-all">
+                                        Run: ${stage.command}
+                                    </button>
+                                    ${stage.commandAlt ? `
+                                        <button onclick="runCommandInSandbox('${stage.commandAlt}')" class="px-3 py-1.5 bg-[#ff0033]/20 border border-[#ff0033] hover:bg-[#ff0033] text-white text-xs font-mono font-bold rounded-lg transition-all">
+                                            Run: ${stage.commandAlt}
+                                        </button>
+                                    ` : ''}
+                                </div>
+                                ${!sandboxState.completedSteps[idx] ? quizHtml : '<p class="text-xs text-emerald-400 mt-2 font-mono">✓ Knowledge unlocked!</p>'}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            updateVisualizer();
+        }
+
+        function getActiveStepIndex() {
+            for (let i = 0; i < 10; i++) {
+                if (!sandboxState.completedSteps[i]) return i;
+            }
+            return 9;
+        }
+
+        function setActiveStep(idx) {
+            if (idx > 0 && !sandboxState.completedSteps[idx - 1]) {
+                showAlert("Knowledge Pipeline Locked!", "Please complete earlier stage requirements and pass their quiz validations first, bucko!", "error");
+                return;
+            }
+            initGuide();
+        }
+
+        // QUIZ VALIDATION
+        function checkQuiz(stepIdx, optionIdx) {
+            const correctAns = manualStages[stepIdx].quiz.ans;
+            if (optionIdx === correctAns) {
+                sandboxState.completedSteps[stepIdx] = true;
+                showAlert("Certified Hood Moment!", "Correct answers unlocked. Knowledge secured! Proceed forward.", "success");
+                
+                // Track progress
+                const completedCount = sandboxState.completedSteps.filter(v => v).length;
+                sandboxState.progress = Math.min(100, (completedCount * 10) + 10);
+                document.getElementById('global-progress').style.width = `${sandboxState.progress}%`;
+                
+                initGuide();
+            } else {
+                showAlert("Muda... Access Denied", "Not quite right. Review the Stage Manual or ask Mutahar's AI Guide!", "error");
+            }
+        }
+
+        // FLOATING NOTIFICATION WRAPPER
+        function showAlert(title, text, type) {
+            const container = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `p-4 rounded-2xl glass-panel border shadow-2xl transition-all duration-300 transform translate-y-2 opacity-0 flex items-start gap-3 ${type === 'success' ? 'border-emerald-500 bg-emerald-950/20' : 'border-red-500 bg-red-950/20'}`;
+            alert.innerHTML = `
+                <span class="text-xl">${type === 'success' ? '⚡' : '🔥'}</span>
+                <div>
+                    <h5 class="font-bold text-sm text-white">${title}</h5>
+                    <p class="text-xs text-white/70 mt-1 leading-normal">${text}</p>
+                </div>
+            `;
+            container.appendChild(alert);
+            setTimeout(() => {
+                alert.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+            setTimeout(() => {
+                alert.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => alert.remove(), 300);
+            }, 4000);
+        }
+
+        // TERMINAL COMMAND SIMULATOR ENGINE
+        const termStdout = document.getElementById('terminal-stdout');
+        const termInput = document.getElementById('terminal-input');
+        const promptLabel = document.getElementById('prompt-label');
+
+        function appendStdout(text, isInput = false) {
+            const div = document.createElement('div');
+            if (isInput) {
+                div.className = "text-white/40 font-mono mt-2";
+                div.innerHTML = `<span class="text-purple-400">${promptLabel.innerText}</span> ${text}`;
+            } else {
+                div.className = "text-emerald-400 font-mono whitespace-pre-wrap leading-relaxed";
+                div.innerHTML = text;
+            }
+            termStdout.appendChild(div);
+            termStdout.scrollTop = termStdout.scrollHeight;
+        }
+
+        function clearTerminal() {
+            termStdout.innerHTML = "";
+        }
+
+        function runCommandInSandbox(cmd) {
+            termInput.value = cmd;
+            document.getElementById('terminal-form').dispatchEvent(new Event('submit'));
+        }
+
+        // PARSER CORE LOGIC
+        document.getElementById('terminal-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const rawVal = termInput.value.trim();
+            termInput.value = "";
+            if (!rawVal) return;
+
+            appendStdout(rawVal, true);
+            parseAndRunCommand(rawVal);
+        });
+
+        function parseAndRunCommand(cmd) {
+            const clean = cmd.toLowerCase().replace(/\s+/g, ' ');
+            
+            // Core instructions definitions
+            if (clean === 'help') {
+                appendStdout(`Available System Utilities:
+  help                     Display command details
+  ping [domain]            Test network connectivity (e.g. ping www.ayt04.xyz)
+  efivar -l                Check UEFI configuration states
+  gdisk [device]           Wipe sector tables cleanly
+  cgdisk [device]          Launch structural partitioning editor
+  mkfs.fat -F32 [partition] Format system boot spaces
+  mkfs.ext4 [partition]     Format system target directories
+  mount [device] [dir]     Attach volume points to tree nodes
+  pacstrap [args]          Bootstrap baseline software files
+  arch-chroot [mnt]        Shift execution directly to drive blocks
+  bootctl install          Build local bootloader structures
+  systemctl enable sddm    Activate Plasma graphical visual interface
+  reboot                   Boot into clean installations!`);
+                return;
+            }
+
+            if (clean.startsWith('ping')) {
+                appendStdout("PINGing network interfaces (64 bytes sequence standard response active)...");
+                let count = 0;
+                const interval = setInterval(() => {
+                    appendStdout("64 bytes from 104.21.36.10: icmp_seq=" + count + " ttl=56 time=" + (Math.random()*15 + 10).toFixed(2) + " ms");
+                    count++;
+                    if (count >= 4) {
+                        clearInterval(interval);
+                        appendStdout("--- ping sequence finished successfully ---");
+                        sandboxState.hasNetwork = true;
+                        showAlert("System Connected", "External ping loops successfully routing pipelines!", "success");
+                    }
+                }, 400);
+                return;
+            }
+
+            if (clean === 'efivar -l') {
+                appendStdout("Querying EFI variable spaces...\n" +
+                    "efi_subsystem_active: active\n" +
+                    "SECURE_BOOT: disabled\n" +
+                    "firmware_runtime_type: UEFI\n" +
+                    "[SUCCESS] Modern UEFI states correctly initialized.");
+                sandboxState.uefiEnabled = true;
+                return;
+            }
+
+            if (clean.startsWith('gdisk')) {
+                appendStdout("Opening gdisk interactive interface...\nType 'x' to switch to expert options, then 'z' to execute partition ZAP command.");
+                return;
+            }
+
+            if (clean === 'x') {
+                appendStdout("gdisk [expert command mode]: Command entered. Type 'z' to invoke block table destruction sequence.");
+                return;
+            }
+
+            if (clean === 'z') {
+                appendStdout("🔥 WARNING: You are about to initiate sector zapping on /dev/mmcblk0!\nConfirm structural GPT destruction sequence (y/n)?");
+                return;
+            }
+
+            if (clean === 'y') {
+                appendStdout("Wiping GPT mapping definitions...\nZeroing sector partitions cleanly...\n[SUCCESS] Partition table maps destroyed.");
+                sandboxState.diskZapped = true;
+                sandboxState.partitions = [];
+                updateVisualizer();
+                return;
+            }
+
+            if (clean.startsWith('cgdisk')) {
+                if (!sandboxState.diskZapped) {
+                    appendStdout("🔥 EXCEPTION: GPT configurations contain existing allocation tables. Wipe devices cleanly first using 'gdisk'!");
+                    return;
+                }
+                openCgdiskSimulator();
+                return;
+            }
+
+            if (clean.startsWith('mkfs.fat')) {
+                if (!sandboxState.partitions.some(p => p.num === 1)) {
+                    appendStdout("🔥 EXCEPTION: Boot partition 1 does not exist. Allocate space using cgdisk!");
+                    return;
+                }
+                appendStdout("Formatting Partition 1 (/dev/mmcblk0p1) to FAT32 system standard...");
+                setTimeout(() => {
+                    const p = sandboxState.partitions.find(pt => pt.num === 1);
+                    if (p) p.fs = "FAT32";
+                    appendStdout("[SUCCESS] System Bootloader sector space styled correctly.");
+                    updateVisualizer();
+                }, 800);
+                return;
+            }
+
+            if (clean.startsWith('mkfs.ext4')) {
+                const target = clean.split(' ').pop();
+                const num = target.endsWith('p3') ? 3 : (target.endsWith('p4') ? 4 : null);
+                if (!num || !sandboxState.partitions.some(p => p.num === num)) {
+                    appendStdout("🔥 EXCEPTION: Selected sector block does not exist or target index invalid!");
+                    return;
+                }
+                appendStdout("Generating journaling map indexes on Partition " + num + "...");
+                setTimeout(() => {
+                    const p = sandboxState.partitions.find(pt => pt.num === num);
+                    if (p) p.fs = "EXT4";
+                    appendStdout("[SUCCESS] EXT4 indexing mapped perfectly.");
+                    updateVisualizer();
+                }, 800);
+                return;
+            }
+
+            if (clean.startsWith('mount')) {
+                const parts = clean.split(' ');
+                const src = parts[1];
+                const dest = parts[2];
+                if (src.endsWith('p3') && dest === '/mnt') {
+                    sandboxState.mounted['/mnt'] = 'p3';
+                    appendStdout("[SUCCESS] Bound Partition 3 root to /mnt branch cleanly.");
+                } else if (src.endsWith('p1') && dest === '/mnt/boot') {
+                    sandboxState.mounted['/mnt/boot'] = 'p1';
+                    appendStdout("[SUCCESS] Bound Boot Partition 1 to /mnt/boot.");
+                } else if (src.endsWith('p4') && dest === '/mnt/home') {
+                    sandboxState.mounted['/mnt/home'] = 'p4';
+                    appendStdout("[SUCCESS] Bound Personal Storage Partition 4 to /mnt/home.");
+                } else {
+                    appendStdout("🔥 MOUNT EXCEPTION: Mounting path validation failed.");
+                }
+                updateVisualizer();
+                return;
+            }
+
+            if (clean.startsWith('pacstrap')) {
+                appendStdout("Generating local repository package signatures...\nBootstrapping base files to /mnt destination...");
+                const pkgs = ["base", "linux", "linux-firmware", "base-devel"];
+                let pIdx = 0;
+                const interval = setInterval(() => {
+                    appendStdout("Installing package [" + (pIdx+1) + "/4]: " + pkgs[pIdx] + " ... Done [100%]");
+                    pIdx++;
+                    if (pIdx >= pkgs.length) {
+                        clearInterval(interval);
+                        appendStdout("[SUCCESS] Arch Linux baseline system installed. System ready to chroot!");
+                        sandboxState.pacstrapped = true;
+                    }
+                }, 600);
+                return;
+            }
+
+            if (clean === 'arch-chroot /mnt') {
+                if (!sandboxState.pacstrapped) {
+                    appendStdout("🔥 ERROR: No valid target systems installed on /mnt storage loops!");
+                    return;
+                }
+                sandboxState.chrooted = true;
+                promptLabel.innerText = "root@ShulkerOS / #";
+                appendStdout("Shifting namespace contexts...\nWelcome to your localized target space. Standard configuration paths available in /etc/.");
+                return;
+            }
+
+            if (clean === 'locale-gen') {
+                appendStdout("Generating localized formats indices...\nen_US.UTF-8 UTF-8 ... Generated\n[SUCCESS] Locales registry built cleanly.");
+                return;
+            }
+
+            if (clean === 'hwclock --systohc --utc') {
+                appendStdout("[SUCCESS] Local timezone linked cleanly. Synchronized physical Motherboard Clock to standard UTC timeline.");
+                return;
+            }
+
+            if (clean === 'bootctl install') {
+                appendStdout("Initializing dynamic EFI loader registers...\nWriting boot paths to Partition 1 bootloaders...\n[SUCCESS] Boot registers written successfully.");
+                sandboxState.bootloaderInstalled = true;
+                return;
+            }
+
+            if (clean.includes('systemctl enable sddm')) {
+                appendStdout("Generating system graphical automation simlinks...\nSDDM login prompt initialized on runtime level.");
+                sandboxState.sddmEnabled = true;
+                return;
+            }
+
+            if (clean === 'reboot') {
+                if (!sandboxState.bootloaderInstalled || !sandboxState.sddmEnabled) {
+                    appendStdout("🔥 SYSTEM CRASH: Bootloader installation is missing, or Display greeter is unconfigured. Black screen crash incoming!");
+                    return;
+                }
+                appendStdout("Synchronizing storage sectors... Unmounting maps...\nRestarting system hardware arrays into ShulkerOS!");
+                setTimeout(() => {
+                    bootIntoDesktop();
+                }, 1000);
+                return;
+            }
+
+            // Fallback Unknown console prints
+            appendStdout("bash: " + cmd + ": system module not found or simulation environment restriction.");
+        }
+
+        // TUI CGDISK INTERACTIVE EMULATOR
+        function openCgdiskSimulator() {
+            clearTerminal();
+            appendStdout(`========================================================================
+            CGDISK PARTITION LAYOUT MANAGER - SELECT ALLOCATIONS
+========================================================================
+Let's build your custom ShulkerOS configuration map:
+  [1] Create Boot Partition  (Size: 1GB, Type: EF00)
+  [2] Create Swap Boundary   (Size: 2GB, Type: 8200)
+  [3] Create System Root     (Size: 40GB, Type: 8300)
+  [4] Create Personal Home   (Size: Remaining space, Type: 8300)
+  [5] Write configuration changes to disk and quit editor.
+
+Please enter selection index [1-5]:`);
+            
+            // Rehook prompt logic temporarily for CGDISK
+            const form = document.getElementById('terminal-form');
+            const oldSubmit = form.onsubmit;
+            promptLabel.innerText = "cgdisk select >";
+            
+            form.onsubmit = (e) => {
+                e.preventDefault();
+                const choice = termInput.value.trim();
+                termInput.value = "";
+                
+                if (choice === '1') {
+                    sandboxState.partitions.push({ num: 1, label: "boot", size: "1GB", code: "EF00", fs: "Raw", mounted: false });
+                    appendStdout("✓ Allocated Partition 1: 1GB EFI System Volume space.");
+                } else if (choice === '2') {
+                    sandboxState.partitions.push({ num: 2, label: "swap", size: "2GB", code: "8200", fs: "Raw", mounted: false });
+                    appendStdout("✓ Allocated Partition 2: 2GB Swap Memory Volume boundary.");
+                } else if (choice === '3') {
+                    sandboxState.partitions.push({ num: 3, label: "root", size: "40GB", code: "8300", fs: "Raw", mounted: false });
+                    appendStdout("✓ Allocated Partition 3: 40GB Root Core Volume destination.");
+                } else if (choice === '4') {
+                    sandboxState.partitions.push({ num: 4, label: "home", size: "Rest", code: "8300", fs: "Raw", mounted: false });
+                    appendStdout("✓ Allocated Partition 4: Remaining disk sectors allocated to Personal Profiles storage.");
+                } else if (choice === '5') {
+                    appendStdout("Syncing drive structures to database indices...\nTable maps updated cleanly.\nExiting cgdisk simulator.");
+                    promptLabel.innerText = "root@shulker-iso ~ #";
+                    form.onsubmit = null; // restore standard command flow
+                    updateVisualizer();
+                } else {
+                    appendStdout("Invalid selection. Choose standard index options (1-5).");
+                }
+            };
+        }
+
+        // HARDWARE VISUALIZER CANVAS GENERATOR
+        function updateVisualizer() {
+            const container = document.getElementById('drive-visualizer');
+            const diskStatus = document.getElementById('disk-status');
+            
+            if (!sandboxState.diskZapped) {
+                container.innerHTML = `
+                    <div class="w-full h-full bg-slate-800 flex items-center justify-center text-xs text-white/50 font-bold uppercase tracking-wider">
+                        Raw Table Layout - Unconfigured Sector arrays
+                    </div>
+                `;
+                diskStatus.innerText = "Raw default layout";
+                diskStatus.className = "text-xs px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/30";
+                return;
+            }
+
+            diskStatus.innerText = "GPT Activated Table Maps";
+            diskStatus.className = "text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30";
+
+            if (sandboxState.partitions.length === 0) {
+                container.innerHTML = `
+                    <div class="w-full h-full flex items-center justify-center text-xs text-white/30 italic">
+                        Empty GPT drive array space. Allocate sectors using 'cgdisk /dev/mmcblk0'.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = "";
+            sandboxState.partitions.sort((a,b) => a.num - b.num).forEach(p => {
+                const div = document.createElement('div');
+                div.className = `h-full flex flex-col justify-center items-center text-[10px] font-bold text-black border border-black/20 rounded transition-all duration-300 relative group cursor-pointer`;
+                
+                // Color formatting checks
+                let colorClass = "bg-slate-600 text-white/70"; // default raw
+                if (p.fs === "FAT32") colorClass = "bg-sky-400 text-sky-950";
+                if (p.fs === "EXT4") colorClass = "bg-indigo-400 text-indigo-950 animate-pulse";
+                if (p.num === 2) colorClass = "bg-amber-400 text-amber-950"; // Swap Space color
+                
+                // Mount validation badges
+                const isMounted = sandboxState.mounted['/mnt'] === 'p3' && p.num === 3 ||
+                                  sandboxState.mounted['/mnt/boot'] === 'p1' && p.num === 1 ||
+                                  sandboxState.mounted['/mnt/home'] === 'p4' && p.num === 4;
+
+                div.className += ` ${colorClass}`;
+                
+                // Define flexible sizing based on simulated parameters
+                let widthPercent = "w-1/4";
+                if (p.num === 3) widthPercent = "w-2/5";
+                if (p.num === 4) widthPercent = "w-2/5";
+                div.className += ` ${widthPercent}`;
+
+                div.innerHTML = `
+                    <span class="uppercase text-[9px] tracking-wider font-extrabold">p${p.num} (${p.label})</span>
+                    <span class="text-[8px] font-normal">${p.size} | ${p.fs}</span>
+                    ${isMounted ? `<span class="absolute top-1 right-1 text-[8px] px-1 bg-black text-emerald-400 rounded-full">Mounted</span>` : ''}
+                `;
+
+                container.appendChild(div);
+
+                // Update text elements under the chart dynamically
+                document.getElementById(`p${p.num}-meta`).innerText = `${p.fs} (${p.size})`;
+                document.getElementById(`p${p.num}-meta`).className = "font-bold text-white text-xs";
+            });
+        }
+
+        // CHAT DRAWER DRAWER TOGGLERS
+        function toggleAIChat() {
+            const drawer = document.getElementById('ai-chat-drawer');
+            drawer.classList.toggle('translate-x-full');
+        }
+
+        document.getElementById('chat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const val = input.value.trim();
+            if (!val) return;
+
+            input.value = "";
+            appendChatMessage("user", val);
+
+            const container = document.getElementById('chat-messages');
+            const loaderDiv = document.createElement('div');
+            loaderDiv.className = "bg-[#7f12d8]/10 p-3 rounded-2xl italic text-white/50 text-[11px] animate-pulse";
+            loaderDiv.innerText = "Mutahar AI is cooking a response...";
+            container.appendChild(loaderDiv);
+            container.scrollTop = container.scrollHeight;
+
+            const res = await fetchGeminiResponse(val);
+            loaderDiv.remove();
+            appendChatMessage("guide", res);
+        });
+
+        function appendChatMessage(sender, text) {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            
+            if (sender === 'user') {
+                div.className = "bg-white/5 border border-white/10 p-3 rounded-2xl self-end text-white/90 max-w-[85%] ml-auto";
+                div.innerHTML = `<span class="font-bold text-purple-400 block mb-1">You:</span> ${text}`;
+            } else {
+                div.className = "bg-purple-950/20 border border-[#7f12d8]/30 p-3 rounded-2xl max-w-[85%] mr-auto";
+                div.innerHTML = `<span class="font-bold text-[#ff0033] block mb-1">🔥 Mutahar Guide:</span> ${text}`;
+            }
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // DESKTOP INTERACTIVE SIMULATION WINDOWS
+        function bootIntoDesktop() {
+            const dsim = document.getElementById('desktop-simulator');
+            dsim.classList.remove('hidden');
+            dsim.classList.add('flex');
+            showAlert("Welcome to ShulkerOS!", "Certified Hood Moment active. Explore local packages via the virtual desktop interfaces!", "success");
+        }
+
+        function exitDesktop() {
+            const dsim = document.getElementById('desktop-simulator');
+            dsim.classList.remove('flex');
+            dsim.classList.add('hidden');
+            showAlert("OS Shutdown Completed", "Clean termination values registered across storage sectors.", "success");
+        }
+
+        function openMockApp(appId) {
+            document.getElementById(`mock-${appId}-window`).classList.remove('hidden');
+        }
+
+        function closeMockApp(appId) {
+            document.getElementById(`mock-${appId}-window`).classList.add('hidden');
+        }
+
+        // MOCK SHELL ACTIONS
+        document.getElementById('mock-terminal-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('mock-terminal-input');
+            const val = input.value.trim().toLowerCase();
+            input.value = "";
+            if (!val) return;
+
+            const stdout = document.getElementById('mock-stdout');
+            const p = document.createElement('p');
+            p.className = "text-white mt-1";
+            p.innerHTML = `<span class="text-purple-400">[ayt04@ShulkerOS ~]$</span> ${val}`;
+            stdout.appendChild(p);
+
+            const out = document.createElement('p');
+            out.className = "text-emerald-400";
+            if (val === 'neofetch') {
+                out.innerHTML = `
+                    <div class="flex gap-4 items-start leading-relaxed text-xs">
+                        <div class="text-[#ff0033] font-bold">
+                            /\\<br>
+                           /  \\<br>
+                          /\\   \\<br>
+                         /  __  \\<br>
+                        /  (  )  \\<br>
+                       /__  __  __\\<br>
+                      /    /  \\    \\
+                        </div>
+                        <div>
+                            <span class="text-[#7f12d8] font-bold">ayt04@ShulkerOS</span><br>
+                            --------------------<br>
+                            OS: ShulkerOS x86_64 Core standard Linux<br>
+                            Kernel: 6.4.2-arch1-1<br>
+                            Uptime: 1 min<br>
+                            Packages: 146 standard pacstrap signatures<br>
+                            Shell: bash standard simulation v5.1<br>
+                            DE: KDE Plasma simulated desktop engine<br>
+                            WM: KWin compositor arrays<br>
+                            Memory: 128GB high speed storage maps
+                        </div>
+                    </div>
+                `;
+            } else if (val.startsWith('cowsay')) {
+                const msg = val.substring(7) || "hello buckos!";
+                out.innerHTML = `
+         &lt; ${msg} &gt;
+         ---------
+                \\   ^__^
+                 \\  (oo)\\_______
+                    (__)\\       )\\/\\
+                        ||----w |
+                        ||     ||
+                `;
+            } else {
+                out.innerText = `sh: command not found: ${val}`;
+            }
+            stdout.appendChild(out);
+        });
+
+        // SIMULATED RETRO MINIGAME RUNNERS
+        function playMockGame() {
+            const screen = document.getElementById('pacman-screen');
+            screen.innerText = "BOOTING MINIGAME SYSTEM...";
+            let dots = "";
+            let score = 0;
+            const interval = setInterval(() => {
+                dots += ".";
+                screen.innerHTML = `<span class="text-yellow-400">LOADING CHIPS ${dots}</span>`;
+                if (dots.length > 5) {
+                    clearInterval(interval);
+                    screen.innerHTML = `
+                        <div class="text-center font-bold text-xs">
+                            <span class="text-yellow-400 block mb-1">🕹️ PACMAN SHELL STAGE 1 ACTIVE</span>
+                            <span class="text-white block tracking-widest font-mono mb-2">ᗧ • • • • 👻 👻</span>
+                            <span class="text-emerald-400 text-[10px]">CURRENT SCORE: ${score += 100}</span>
+                        </div>
+                    `;
+                }
+            }, 300);
+        }
+
+        // Run setup routine on window load
+        window.onload = function() {
+            initGuide();
+            appendStdout("LIVE ARCH INSTALLER VERSION 1.0.1 INITIALIZED...\nType 'help' in terminal prompts to review physical utilities maps.");
+        };
+    </script>
+</body>
+</html>
