@@ -3,84 +3,1400 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AYT04</title>
-
-<meta property="og:title" content="AYT04">
-    <meta property="og:description" content="I'm working on a big project of mine. It'll take some time 👍">
+    <title>AYT04 Portal — ShulkerOS, GeoDetective & RSS Hub</title>
+    
+    <!-- Open Graph / Meta -->
+    <meta property="og:title" content="AYT04">
+    <meta property="og:description" content="My interactive sandbox platform, featuring ShulkerOS docs, GeoDetective NMPZ, and favourite creator RSS feeds.">
     <meta property="og:image" content="https://avatars.githubusercontent.com/u/153463910?v=4">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="theme-color" content="#7f12d8">
+
+    <!-- Styles & Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inconsolata:wght@400;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
-</head>
-<body>
-    <div class="container">
-        <div class="profile">
-            <img src="https://avatars.githubusercontent.com/u/153463910?v=4"
-              alt="Profile Image" class="profile-image">
-            <h1>AYT04</h1>
-            <p>I'm working on a big project of mine. It'll take some time 👍</p>
-        </div>
-        <div class="links">
-            <a href="https://twitter.com/AddisonYT04" target="_blank" class="link">Twitter</a>
-            <a href="https://github.com/AYT04" target="_blank" class="link">GitHub</a>
-            <a href="https://mastodon.social/@markymarkfuntime" class="link" target="_blank">Threads</a>
-            <a href="./contact.html" class="link">Contact Me</a>
-            <a href="./geo.html" class="link">GeoDetective</a>
-            <a href="./creators.html" class="link">RSS</a>
-            <a href="./docs.html">Documentation</a>
-            <a href="./SHULKER_VIDEO_IDEA.sh">ShulkerOS</a>
-        </div>
-    </div>
-      <style>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
         body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(to bottom right, #7f12d8, #ff0033);
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
+            font-family: 'Space Grotesk', sans-serif;
+            background: linear-gradient(135deg, #0f021e 0%, #160222 50%, #290014 100%);
+            color: #f1f5f9;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
 
-.container {
-    text-align: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-}
+        /* Ambient Background Grid and Glows */
+        .ambient-grid {
+            background-image: linear-gradient(rgba(127, 18, 216, 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(127, 18, 216, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
 
-.profile {
-    margin-bottom: 20px;
-}
+        .glow-orb-1 {
+            filter: blur(140px);
+            background: radial-gradient(circle, rgba(127, 18, 216, 0.3) 0%, rgba(255, 0, 51, 0.0) 70%);
+        }
 
-.profile-image {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    border: 3px solid white;
-}
+        .glow-orb-2 {
+            filter: blur(140px);
+            background: radial-gradient(circle, rgba(255, 0, 51, 0.25) 0%, rgba(127, 18, 216, 0) 70%);
+        }
 
-.links {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
 
-.link {
-    text-decoration: none;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    transition: background 0.3s;
-}
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-.link:hover {
-    background: rgba(255, 255, 255, 0.4);
-}
-      </style>
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(127, 18, 216, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px -10px rgba(127, 18, 216, 0.2);
+        }
+
+        .glass-nav-btn {
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .glass-nav-btn.active {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+        }
+
+        /* Leaflet tweaks */
+        .leaflet-container {
+            font-family: inherit;
+            background: #1e1b24 !important;
+        }
+
+        /* RTD Documentation Subtheme Elements */
+        .doc-sidebar-btn {
+            transition: all 0.2s ease;
+        }
+        .doc-sidebar-btn.active {
+            background: rgba(127, 18, 216, 0.2);
+            color: #ffffff;
+            border-left: 4px solid #7f12d8;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(127, 18, 216, 0.3);
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(127, 18, 216, 0.5);
+        }
+
+        /* Code View custom */
+        .code-container {
+            font-family: 'Inconsolata', monospace;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen pb-12">
+
+    <!-- Interactive Ambient Canvas/Glow Elements -->
+    <div class="absolute inset-0 ambient-grid pointer-events-none z-0"></div>
+    <div class="absolute top-10 left-1/4 w-[500px] h-[500px] glow-orb-1 rounded-full pointer-events-none z-0"></div>
+    <div class="absolute bottom-10 right-1/4 w-[600px] h-[600px] glow-orb-2 rounded-full pointer-events-none z-0"></div>
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-50 w-full border-b border-white/10 bg-[#0f021e]/80 backdrop-blur-md px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="navigate('home')">
+                <img src="https://avatars.githubusercontent.com/u/153463910?v=4" alt="AYT04 Logo" class="w-9 h-9 rounded-full border-2 border-[#7f12d8]">
+                <div>
+                    <span class="font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 text-lg">AYT04</span>
+                    <span class="text-xs px-2 py-0.5 ml-2 bg-[#ff0033]/10 text-[#ff0033] border border-[#ff0033]/20 rounded-full font-mono">v1.1.0-spa</span>
+                </div>
+            </div>
+
+            <!-- Main App Switcher -->
+            <nav class="flex flex-wrap items-center gap-1.5 bg-black/40 p-1.5 rounded-2xl border border-white/5">
+                <button onclick="navigate('home')" id="nav-home" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
+                    <i data-lucide="home" class="w-4 h-4"></i> Home
+                </button>
+                <button onclick="navigate('geodetective')" id="nav-geodetective" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
+                    <i data-lucide="map-pin" class="w-4 h-4"></i> GeoDetective
+                </button>
+                <button onclick="navigate('docs')" id="nav-docs" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-4 h-4"></i> ShulkerOS Docs
+                </button>
+                <button onclick="navigate('shulker')" id="nav-shulker" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
+                    <i data-lucide="terminal" class="w-4 h-4"></i> ShulkerOS Script
+                </button>
+                <button onclick="navigate('rss')" id="nav-rss" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
+                    <i data-lucide="rss" class="w-4 h-4"></i> Creator RSS
+                </button>
+                <button onclick="navigate('contact')" id="nav-contact" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
+                    <i data-lucide="mail" class="w-4 h-4"></i> Contact
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Notification Toast System -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- MAIN APP ROUTER ENGINES -->
+    <main class="max-w-7xl mx-auto px-4 py-8 relative z-10">
+
+        <!-- ================= PAGE: HOME ================= -->
+        <section id="page-home" class="app-route hidden max-w-4xl mx-auto text-center py-12">
+            <div class="glass-panel rounded-3xl p-8 md:p-14 shadow-2xl relative overflow-hidden border-white/10">
+                <div class="absolute -top-24 -right-24 w-48 h-48 bg-[#7f12d8]/20 blur-3xl rounded-full"></div>
+                <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-[#ff0033]/20 blur-3xl rounded-full"></div>
+
+                <div class="relative z-10 flex flex-col items-center">
+                    <img src="https://avatars.githubusercontent.com/u/153463910?v=4" alt="AYT04 Profile Picture" class="w-32 h-32 rounded-full border-4 border-[#7f12d8] shadow-2xl mb-6">
+                    
+                    <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-300">
+                        AYT04
+                    </h1>
+                    
+                    <p class="text-lg md:text-xl text-slate-300 max-w-xl mx-auto font-light leading-relaxed mb-8">
+                        I'm working on a big project of mine. It'll take some time 👍
+                    </p>
+
+                    <div class="w-full max-w-md h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8"></div>
+
+                    <!-- Hub Links -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-2xl mx-auto mb-10">
+                        <a href="https://twitter.com/AddisonYT04" target="_blank" class="glass-card p-4 rounded-2xl flex flex-col items-center gap-2 group">
+                            <div class="p-3 rounded-xl bg-white/5 text-white/80 group-hover:bg-[#7f12d8]/20 group-hover:text-white transition-all">
+                                <i data-lucide="twitter" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-sm font-medium">Twitter</span>
+                        </a>
+                        <a href="https://github.com/AYT04" target="_blank" class="glass-card p-4 rounded-2xl flex flex-col items-center gap-2 group">
+                            <div class="p-3 rounded-xl bg-white/5 text-white/80 group-hover:bg-[#7f12d8]/20 group-hover:text-white transition-all">
+                                <i data-lucide="github" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-sm font-medium">GitHub</span>
+                        </a>
+                        <a href="https://mastodon.social/@markymarkfuntime" target="_blank" class="glass-card p-4 rounded-2xl flex flex-col items-center gap-2 group">
+                            <div class="p-3 rounded-xl bg-white/5 text-white/80 group-hover:bg-[#7f12d8]/20 group-hover:text-white transition-all">
+                                <i data-lucide="message-square" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-sm font-medium">Mastodon</span>
+                        </a>
+                        <button onclick="navigate('contact')" class="glass-card p-4 rounded-2xl flex flex-col items-center gap-2 group text-left w-full">
+                            <div class="p-3 rounded-xl bg-white/5 text-white/80 group-hover:bg-[#7f12d8]/20 group-hover:text-white transition-all mx-auto">
+                                <i data-lucide="mail" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-sm font-medium mx-auto">Contact</span>
+                        </button>
+                    </div>
+
+                    <!-- Quick Navigation Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                        <div onclick="navigate('geodetective')" class="glass-card p-6 rounded-2xl cursor-pointer text-left relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 p-4 text-[#ff0033] opacity-30 group-hover:opacity-100 transition-opacity">
+                                <i data-lucide="map" class="w-12 h-12"></i>
+                            </div>
+                            <h3 class="font-bold text-lg mb-1 flex items-center gap-2">GeoDetective <span class="text-xs text-red-500 font-mono">NMPZ</span></h3>
+                            <p class="text-xs text-slate-400 leading-normal">Interactive geo guess challenge based on Mapillary telemetry API and Leaflet Maps.</p>
+                        </div>
+                        <div onclick="navigate('docs')" class="glass-card p-6 rounded-2xl cursor-pointer text-left relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 p-4 text-[#7f12d8] opacity-30 group-hover:opacity-100 transition-opacity">
+                                <i data-lucide="book" class="w-12 h-12"></i>
+                            </div>
+                            <h3 class="font-bold text-lg mb-1">ShulkerOS Wiki</h3>
+                            <p class="text-xs text-slate-400 leading-normal">Sphinx/RTD inspired installation handbook mapped directly to hardware specifications.</p>
+                        </div>
+                        <div onclick="navigate('shulker')" class="glass-card p-6 rounded-2xl cursor-pointer text-left relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 p-4 text-emerald-500 opacity-30 group-hover:opacity-100 transition-opacity">
+                                <i data-lucide="code" class="w-12 h-12"></i>
+                            </div>
+                            <h3 class="font-bold text-lg mb-1">Shulker Script</h3>
+                            <p class="text-xs text-slate-400 leading-normal">Raw build parameters, partition structures and configuration scripts for Arch deployments.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center text-xs text-white/30 font-mono">
+                ayt04.xyz &bull; Configured on custom standalone network targets
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE: GEODETECTIVE ================= -->
+        <section id="page-geodetective" class="app-route hidden max-w-5xl mx-auto">
+            <div class="glass-panel rounded-3xl p-6 shadow-2xl border-white/10">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 border-b border-white/5 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-red-400">
+                            <i data-lucide="map" class="text-[#ff0033] w-6 h-6"></i> GeoDetective Sandbox
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Rules: No Move, No Pan, No Zoom (NMPZ). Use the Map to pin the location and submit via secure email client.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button id="next-img-btn" onclick="geoLoadNewLocation()" class="px-5 py-2.5 bg-[#ff0033] text-white font-bold rounded-xl hover:bg-[#ff0033]/90 active:scale-95 transition-all text-xs flex items-center gap-1.5 shadow-lg shadow-[#ff0033]/20">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Get New Image
+                        </button>
+                        <button id="open-modal-btn" onclick="toggleGeoModal(true)" class="px-5 py-2.5 bg-[#7f12d8] text-white font-bold rounded-xl hover:bg-[#7f12d8]/90 active:scale-95 transition-all text-xs flex items-center gap-1.5 shadow-lg shadow-[#7f12d8]/20">
+                            <i data-lucide="map-pin" class="w-4 h-4"></i> Place My Guess
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Visual Capture Frame -->
+                <div class="relative w-full aspect-video md:h-[500px] bg-black/40 rounded-2xl border border-white/5 overflow-hidden shadow-inner">
+                    <div id="geo-loader" class="absolute inset-0 flex flex-col items-center justify-center gap-3 z-20 bg-slate-950/80">
+                        <div class="w-10 h-10 border-4 border-[#ff0033] border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-sm font-mono text-slate-400">Consulting Mapillary API registers...</span>
+                    </div>
+                    <img id="street-image" src="" alt="Street View Capture Location" class="w-full h-full object-cover hidden select-none">
+                    
+                    <div class="absolute bottom-4 left-4 bg-black/60 px-3 py-1.5 rounded-lg border border-white/5 text-[10px] font-mono text-white/80 z-10 flex items-center gap-1.5">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Raw Telemetry Active
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Unified Modals (Leaflet Map Guessing) -->
+            <div id="geo-modal" class="fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-4 md:p-6 hidden opacity-0 transition-opacity duration-300">
+                <div class="glass-panel w-full max-w-4xl h-[85vh] rounded-3xl p-6 flex flex-col gap-4 shadow-2xl relative border-white/10 overflow-hidden">
+                    <div class="absolute -top-32 -left-32 w-64 h-64 bg-[#7f12d8]/10 blur-3xl rounded-full"></div>
+                    
+                    <div class="flex items-center justify-between z-10 border-b border-white/5 pb-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="map" class="text-[#7f12d8]"></i>
+                            <h3 class="text-xl font-bold">Pin Location Guess</h3>
+                        </div>
+                        <button onclick="toggleGeoModal(false)" class="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <!-- Embedded Leaflet Area -->
+                    <div id="osm-map" class="w-full flex-grow rounded-2xl overflow-hidden border border-white/10 relative z-10 shadow-lg"></div>
+
+                    <!-- Action control -->
+                    <div class="flex gap-4 items-center z-10 mt-2">
+                        <button id="email-guess-btn" disabled onclick="sendEmailGuess()" class="flex-grow py-3 px-6 bg-emerald-600 disabled:bg-slate-800 disabled:text-slate-500 hover:bg-emerald-500 text-white font-bold rounded-xl active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2 shadow-lg">
+                            <i data-lucide="navigation" class="w-4 h-4"></i> Select Location on Map Above
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE: DOCS ================= -->
+        <section id="page-docs" class="app-route hidden max-w-7xl mx-auto">
+            <div class="glass-panel rounded-3xl shadow-2xl overflow-hidden border-white/10 flex flex-col lg:flex-row min-h-[70vh]">
+                
+                <!-- Documentation Sidebar -->
+                <aside class="w-full lg:w-72 bg-black/40 border-b lg:border-b-0 lg:border-r border-white/10 p-5 flex flex-col justify-between shrink-0">
+                    <div>
+                        <div class="bg-[#7f12d8]/10 p-4 rounded-2xl border border-[#7f12d8]/20 mb-6">
+                            <div class="text-lg font-bold text-white flex items-center gap-2">
+                                <i data-lucide="terminal" class="text-purple-400"></i> ShulkerOS
+                            </div>
+                            <div class="text-[10px] text-white/50 font-mono mt-0.5">master branch (v1.0.0)</div>
+                            <div class="mt-3 relative">
+                                <i data-lucide="search" class="w-4 h-4 text-white/30 absolute left-3 top-2.5"></i>
+                                <input type="text" id="doc-search" oninput="searchDocumentation()" placeholder="Search docs..." class="w-full pl-9 pr-3 py-1.5 rounded-xl bg-black/30 border border-white/10 text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#7f12d8]/50">
+                            </div>
+                        </div>
+
+                        <nav class="flex flex-col gap-1 text-sm text-slate-300">
+                            <span class="px-2 py-1 text-[10px] uppercase font-bold text-white/30 tracking-widest">Introduction</span>
+                            <button onclick="switchDocTab('welcome')" id="doc-link-welcome" class="doc-sidebar-btn w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-2">
+                                <i data-lucide="info" class="w-3.5 h-3.5"></i> Welcome to ShulkerOS
+                            </button>
+                            
+                            <span class="px-2 py-1 text-[10px] uppercase font-bold text-white/30 tracking-widest mt-4">Core Deployment</span>
+                            <button onclick="switchDocTab('blueprint')" id="doc-link-blueprint" class="doc-sidebar-btn w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-2">
+                                <i data-lucide="layers" class="w-3.5 h-3.5"></i> Drive Geometries
+                            </button>
+                            <button onclick="switchDocTab('pipeline')" id="doc-link-pipeline" class="doc-sidebar-btn w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-2">
+                                <i data-lucide="list-ordered" class="w-3.5 h-3.5"></i> 10-Stage Installation
+                            </button>
+                            
+                            <span class="px-2 py-1 text-[10px] uppercase font-bold text-white/30 tracking-widest mt-4">Web Architecture</span>
+                            <button onclick="switchDocTab('geodetective')" id="doc-link-geodetective" class="doc-sidebar-btn w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-2">
+                                <i data-lucide="cpu" class="w-3.5 h-3.5"></i> GeoDetective Engine Specs
+                            </button>
+                        </nav>
+                    </div>
+
+                    <div class="mt-8 pt-4 border-t border-white/5 text-[10px] text-white/30 font-mono flex items-center justify-between">
+                        <span>Powered by Sphinx</span>
+                        <a href="https://github.com/AYT04" target="_blank" class="hover:text-white transition-colors flex items-center gap-1">
+                            <i data-lucide="github" class="w-3 h-3"></i> edit on GitHub
+                        </a>
+                    </div>
+                </aside>
+
+                <!-- Document Body Container -->
+                <article class="flex-grow p-6 md:p-10 bg-slate-950/20 max-w-4xl">
+                    <div class="flex items-center gap-1.5 text-xs text-white/40 border-b border-white/5 pb-4 mb-6">
+                        <span>Docs</span>
+                        <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                        <span id="doc-breadcrumb" class="text-white/80 font-medium">Welcome to ShulkerOS</span>
+                    </div>
+
+                    <!-- SUBTAB: WELCOME -->
+                    <section id="doc-section-welcome" class="doc-tab-content flex flex-col gap-5">
+                        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-400">
+                            Welcome to ShulkerOS Documentation
+                        </h1>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Welcome to the official alignment framework repository manual for <strong class="text-purple-400">ShulkerOS</strong>. This project acts as an interactive sandbox platform designed to eliminate traditional distribution gatekeeping. It transforms complex terminal mechanics into a modular, structural learning pipeline.
+                        </p>
+
+                        <div class="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl mt-4 bg-black">
+                            <iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/_JYIAaLrwcY" title="I Installed The Hardest System Known To Man..." frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+
+                        <div class="bg-blue-950/20 border-l-4 border-blue-500 rounded-r-xl p-4 mt-4 text-xs">
+                            <h4 class="font-bold text-blue-400 flex items-center gap-1.5 mb-1">
+                                <i data-lucide="info" class="w-4 h-4"></i> Architectural Mapping Note
+                            </h4>
+                            <p class="text-slate-300">This documentation environment explicitly target variables parsed directly from the system environment rules inside <code class="bg-black/40 px-1 py-0.5 rounded text-pink-400 font-mono">SHULKER_VIDEO_IDEA.sh</code>.</p>
+                        </div>
+                    </section>
+
+                    <!-- SUBTAB: BLUEPRINT -->
+                    <section id="doc-section-blueprint" class="doc-tab-content hidden flex flex-col gap-5">
+                        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-400">
+                            Drive Environment Blueprints
+                        </h1>
+                        <p class="text-slate-300 text-sm">
+                            ShulkerOS configurations target embedded physical hardware flash modules (<code class="bg-black/30 px-1 rounded text-purple-400 font-mono">/dev/mmcblk0</code>). Below is the architecture mapping matrix compiled directly from your system blueprints:
+                        </p>
+
+                        <h3 class="text-lg font-bold mt-4 border-b border-white/5 pb-2 text-purple-300">Target Storage Block Mapping Table</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-white/5 border-b border-white/10">
+                                        <th class="p-3 font-semibold text-slate-200">Partition</th>
+                                        <th class="p-3 font-semibold text-slate-200">Volume Target Size</th>
+                                        <th class="p-3 font-semibold text-slate-200">System Code ID</th>
+                                        <th class="p-3 font-semibold text-slate-200">Filesystem Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/5 text-slate-300 font-mono">
+                                    <tr class="hover:bg-white/5 transition-colors">
+                                        <td class="p-3 text-emerald-400">/dev/mmcblk0p1</td>
+                                        <td class="p-3">1GB</td>
+                                        <td class="p-3">EF00 (EFI System Partition)</td>
+                                        <td class="p-3 text-sky-400 font-bold">FAT32</td>
+                                    </tr>
+                                    <tr class="hover:bg-white/5 transition-colors">
+                                        <td class="p-3 text-emerald-400">/dev/mmcblk0p2</td>
+                                        <td class="p-3">2GB</td>
+                                        <td class="p-3">8200 (Linux Swap Boundary)</td>
+                                        <td class="p-3 text-amber-500 font-bold">SWAP</td>
+                                    </tr>
+                                    <tr class="hover:bg-white/5 transition-colors">
+                                        <td class="p-3 text-emerald-400">/dev/mmcblk0p3</td>
+                                        <td class="p-3">40GB</td>
+                                        <td class="p-3">8300 (Linux Root OS Directory)</td>
+                                        <td class="p-3 text-indigo-400 font-bold">EXT4 (Journaled)</td>
+                                    </tr>
+                                    <tr class="hover:bg-white/5 transition-colors">
+                                        <td class="p-3 text-emerald-400">/dev/mmcblk0p4</td>
+                                        <td class="p-3">Remaining Space</td>
+                                        <td class="p-3">8300 (Linux User Storage Profiles)</td>
+                                        <td class="p-3 text-indigo-400 font-bold">EXT4 (Journaled)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h3 class="text-lg font-bold mt-6 border-b border-white/5 pb-2 text-purple-300">Environmental Baseline Keys</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                            <div class="bg-black/30 p-4 rounded-xl border border-white/5">
+                                <span class="text-white/40 block uppercase tracking-wider text-[9px] mb-1">System Hostname</span>
+                                <strong class="text-slate-200">ShulkerOS</strong>
+                            </div>
+                            <div class="bg-black/30 p-4 rounded-xl border border-white/5">
+                                <span class="text-white/40 block uppercase tracking-wider text-[9px] mb-1">Primary Active Profile</span>
+                                <strong class="text-slate-200">ayt04</strong>
+                            </div>
+                            <div class="bg-black/30 p-4 rounded-xl border border-white/5">
+                                <span class="text-white/40 block uppercase tracking-wider text-[9px] mb-1">Timezone Regional Target</span>
+                                <strong class="text-slate-200">America/Toronto</strong>
+                            </div>
+                            <div class="bg-black/30 p-4 rounded-xl border border-white/5">
+                                <span class="text-white/40 block uppercase tracking-wider text-[9px] mb-1">Wireless Controller Interface</span>
+                                <strong class="text-slate-200">wlan0 <span class="text-[10px] text-purple-400">(iwctl)</span></strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SUBTAB: PIPELINE -->
+                    <section id="doc-section-pipeline" class="doc-tab-content hidden flex flex-col gap-5">
+                        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-400">
+                            The 10-Stage Installation Process
+                        </h1>
+                        <p class="text-slate-300 text-sm mb-4">
+                            The platform coordinates an absolute logical pipeline mapping variables down directly into functional physical device states:
+                        </p>
+
+                        <!-- Pipeline Timeline Steps -->
+                        <div class="relative pl-6 border-l border-white/10 flex flex-col gap-8 text-xs">
+                            <div class="relative">
+                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
+                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">1. Verification Testing</h4>
+                                <p class="text-slate-400 mt-1">Validates network capabilities via <code class="font-mono bg-black/30 text-pink-400 px-1 py-0.5 rounded">ping www.ayt04.xyz</code> and tests UEFI systems configuration variables standard with <code class="font-mono bg-black/30 text-pink-400 px-1 py-0.5 rounded">efivar -l</code>.</p>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
+                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">2. Partition Table Zapping</h4>
+                                <p class="text-slate-400 mt-1">Executes robust sector clearing actions by feeding <code class="font-mono bg-black/30 text-pink-400 px-1 py-0.5 rounded">gdisk</code> expert-level execution sequences (<code class="font-mono text-[#ff0033]">x</code> to load commands, then <code class="font-mono text-[#ff0033]">z</code> to cleanly zero out structures).</p>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
+                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">3. cgdisk Space Allocation</h4>
+                                <p class="text-slate-400 mt-1">Slices drive sectors accurately utilizing responsive GUI-driven ncurses configuration environments.</p>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
+                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">4. Filesystem Format Structuring</h4>
+                                <p class="text-slate-400 mt-1">Builds partition layers cleanly. Forms FAT32 schemas to drive sector blocks, and sets up high-reliability journaled EXT4 structures.</p>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
+                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">5. Folder Mounting Hierarchies</h4>
+                                <p class="text-slate-400 mt-1">Wires physical block partition p3 safely to system live workspace root (<code class="font-mono bg-black/30 text-emerald-400 px-1 py-0.5 rounded">/mnt</code>), and hooks up isolated boot/user profiles mounts inside.</p>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
+                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">6. Pacstrap Core Deployments</h4>
+                                <p class="text-slate-400 mt-1">Deploys structural operations kernels, peripheral machine interfaces, and system packages from localized mirrors lists.</p>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
+                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">7. Immutable Mapping & Chroot</h4>
+                                <p class="text-slate-400 mt-1">Generates unique permanent system ID signatures (<code class="font-mono text-[#7f12d8]">PARTUUID</code>) to lock system configurations safely before running <code class="font-mono bg-black/30 text-pink-400 px-1 py-0.5 rounded">arch-chroot</code> inside the container target.</p>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
+                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">8. Regional Settings Calibration</h4>
+                                <p class="text-slate-400 mt-1">Configures language profiles, locks motherboard clock bounds directly to global standards, and commands SSD sector block optimization protocols to reduce physical wear.</p>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
+                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">9. Bootloader Installation</h4>
+                                <p class="text-slate-400 mt-1">Installs modern high-efficiency <code class="font-mono bg-black/30 text-pink-400 px-1 py-0.5 rounded">systemd-boot</code> components inside local firmware sectors.</p>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
+                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">10. Display Greeters Setup</h4>
+                                <p class="text-slate-400 mt-1">Launches localized window engines (<code class="font-mono bg-black/30 text-[#ff0033] px-1 py-0.5 rounded">Xorg</code>) and activates user authentication managers (<code class="font-mono bg-black/30 text-[#ff0033] px-1 py-0.5 rounded">sddm.service</code>) to display visual dashboards on subsequent boots.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SUBTAB: GEODETECTIVE -->
+                    <section id="doc-section-geodetective" class="doc-tab-content hidden flex flex-col gap-5">
+                        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-400">
+                            GeoDetective Application Specification
+                        </h1>
+                        <p class="text-slate-300 text-sm">
+                            The geolocation engine uses dynamic OpenStreetMap layers coupled with real-world Mapillary street captures to challenge geographical reasoning:
+                        </p>
+
+                        <h3 class="text-lg font-bold mt-4 border-b border-white/5 pb-2 text-purple-300">API Registers & Security Keys</h3>
+                        <div class="bg-black/40 rounded-xl p-4 border border-white/10 font-mono text-xs">
+                            <span class="text-slate-500">// Mapillary Token Registers</span><br>
+                            <span class="text-pink-400">const</span> MLY_KEY = <span class="text-emerald-400">'MLY|26867455816212719|1f45e3cbfcc2a9f2977476ad1c3aa021'</span>;<br>
+                            <span class="text-pink-400">const</span> TARGET_EMAIL = <span class="text-emerald-400">'ayt04@duck.com'</span>;<br>
+                            <span class="text-pink-400">const</span> COOLDOWN_TIME = <span class="text-amber-400">120</span>; <span class="text-slate-500">// Seconds query wait limitation</span>
+                        </div>
+
+                        <h3 class="text-lg font-bold mt-6 border-b border-white/5 pb-2 text-purple-300">System Mechanics</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            The interface queries Mapillary database vectors using randomly generated coordinate boundaries surrounding global capitals. Pinning markers inside our integrated Leaflet viewport extracts coordinate states. Submitting triggers local operating system mail wrappers to compile coordinates to the server index immediately.
+                        </p>
+                    </section>
+
+                </article>
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE: SHULKEROS SCRIPT ================= -->
+        <section id="page-shulker" class="app-route hidden max-w-5xl mx-auto">
+            <div class="glass-panel rounded-3xl p-6 shadow-2xl border-white/10 flex flex-col gap-5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-400">
+                            <i data-lucide="terminal" class="text-purple-500"></i> SHULKER_VIDEO_IDEA.sh
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Live operational terminal sandbox configuration script. Ready to download, copy, or review.</p>
+                    </div>
+                    <div class="flex items-center gap-2 self-start md:self-auto">
+                        <button onclick="downloadShulkerScript()" class="px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-lg shadow-purple-600/20 active:scale-95">
+                            <i data-lucide="download" class="w-4 h-4"></i> Download .sh
+                        </button>
+                        <button onclick="copyShulkerScript()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-100 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-white/10 active:scale-95">
+                            <i data-lucide="copy" class="w-4 h-4"></i> Copy Script
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Syntax Highlight Simulated Container -->
+                <div class="rounded-2xl bg-black/60 border border-white/5 overflow-hidden flex flex-col h-[65vh] shadow-inner">
+                    <div class="bg-[#160d24] px-4 py-3 flex items-center justify-between border-b border-white/5">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                            <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                            <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                            <span class="text-xs text-slate-400 font-mono ml-2">SHULKER_VIDEO_IDEA.sh &mdash; Bash (78 lines)</span>
+                        </div>
+                    </div>
+                    <div class="flex-grow overflow-y-auto p-4 code-container text-xs text-slate-300 leading-relaxed font-mono flex">
+                        <!-- Line Numbers -->
+                        <div id="shulker-lines" class="text-right text-slate-600 select-none pr-4 border-r border-white/5 flex flex-col shrink-0"></div>
+                        <!-- Content Code Panel -->
+                        <pre id="shulker-code-block" class="pl-4 overflow-x-auto whitespace-pre text-slate-200 flex-grow select-text selection:bg-[#7f12d8]/30"></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE: CREATOR RSS ================= -->
+        <section id="page-rss" class="app-route hidden max-w-4xl mx-auto">
+            <div class="glass-panel rounded-3xl p-8 shadow-2xl border-white/10 relative overflow-hidden">
+                <div class="absolute -top-32 -right-32 w-64 h-64 bg-[#7f12d8]/10 blur-3xl rounded-full"></div>
+                
+                <div class="text-center max-w-xl mx-auto mb-10">
+                    <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-pink-400 mb-3">
+                        Favorite Creator RSS Feeds
+                    </h2>
+                    <p class="text-slate-300 text-sm font-light">
+                        These are highly curated feeds from content developers specializing in cybersecurity, systems development, operating models, and network boundaries.
+                    </p>
+                    <div class="mt-4 p-3 rounded-2xl bg-white/5 border border-white/5 inline-flex items-center gap-2 text-xs text-slate-300">
+                        <span class="text-purple-400 font-bold">App Recommendation:</span>
+                        <span>I love <a href="https://feedflow.dev/" target="_blank" class="underline text-purple-300 hover:text-white transition-colors">FeedFlow</a> for a minimal reading framework!</span>
+                    </div>
+                </div>
+
+                <!-- RSS Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="glass-card p-5 rounded-2xl flex flex-col justify-between gap-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-bold text-slate-100 text-lg">Brodie Robertson</h4>
+                                <span class="text-[10px] bg-purple-950/40 text-purple-300 border border-purple-800/30 px-2 py-0.5 rounded-full font-mono">Odysee</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-normal">Deep dives on Linux window environments, tiling controllers, CLI utilities, and open source ecosystems.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="copyLink('https://odysee.com/$/rss/@BrodieRobertson:5')" class="flex-grow py-2 px-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Feed Link
+                            </button>
+                            <a href="https://odysee.com/@BrodieRobertson:5" target="_blank" class="p-2 bg-[#7f12d8]/10 hover:bg-[#7f12d8]/20 text-purple-300 rounded-xl transition-colors">
+                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-5 rounded-2xl flex flex-col justify-between gap-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-bold text-slate-100 text-lg">Cyb3rMaddy</h4>
+                                <span class="text-[10px] bg-red-950/40 text-red-400 border border-red-800/30 px-2 py-0.5 rounded-full font-mono">YouTube</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-normal">Operational security guidelines, malware mechanics reviews, cybersecurity architectures, and infrastructure forensics.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="copyLink('https://www.youtube.com/feeds/videos.xml?channel_id=UCgd5-BWtbgOw5Hx2wP3qxzg')" class="flex-grow py-2 px-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Feed Link
+                            </button>
+                            <a href="https://www.youtube.com/@cyb3rmaddy" target="_blank" class="p-2 bg-[#7f12d8]/10 hover:bg-[#7f12d8]/20 text-purple-300 rounded-xl transition-colors">
+                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-5 rounded-2xl flex flex-col justify-between gap-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-bold text-slate-100 text-lg">SomeOrdinaryGamers</h4>
+                                <span class="text-[10px] bg-purple-950/40 text-purple-300 border border-purple-800/30 px-2 py-0.5 rounded-full font-mono">Odysee</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-normal">Analysis of online privacy trends, visual virtual machines configurations, hardware sandboxing, and web vulnerabilities.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="copyLink('https://odysee.com/$/rss/@SomeOrdinaryGamers:6')" class="flex-grow py-2 px-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Feed Link
+                            </button>
+                            <a href="https://odysee.com/@SomeOrdinaryGamers" target="_blank" class="p-2 bg-[#7f12d8]/10 hover:bg-[#7f12d8]/20 text-purple-300 rounded-xl transition-colors">
+                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-5 rounded-2xl flex flex-col justify-between gap-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-bold text-slate-100 text-lg">Techlore</h4>
+                                <span class="text-[10px] bg-indigo-950/40 text-indigo-400 border border-indigo-800/30 px-2 py-0.5 rounded-full font-mono">Techlore XML</span>
+                            </div>
+                            <p class="text-xs text-slate-400 leading-normal">Actionable digital privacy guides, secure messaging matrix reports, router hardening frameworks, and custom OS structures.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="copyLink('https://techlore.tv/feeds/videos.xml?accountId=4')" class="flex-grow py-2 px-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Feed Link
+                            </button>
+                            <a href="https://techlore.tv" target="_blank" class="p-2 bg-[#7f12d8]/10 hover:bg-[#7f12d8]/20 text-purple-300 rounded-xl transition-colors">
+                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= PAGE: CONTACT ================= -->
+        <section id="page-contact" class="app-route hidden max-w-lg mx-auto">
+            <div class="glass-panel rounded-3xl p-8 md:p-10 shadow-2xl relative overflow-hidden border-white/10">
+                <div class="absolute -top-32 -left-32 w-64 h-64 bg-[#ff0033]/10 blur-3xl rounded-full"></div>
+                
+                <div class="mb-8 text-center">
+                    <h1 class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-red-400 mb-2">hit me up ✨</h1>
+                    <p class="text-xs text-slate-400">Routes straight into secure communication channels</p>
+                </div>
+
+                <form id="contactForm" onsubmit="handleContactSubmit(event)" class="space-y-5 relative z-10">
+                    <div>
+                        <label for="contact-subject" class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 ml-1">Subject:</label>
+                        <input type="text" id="contact-subject" placeholder="What's the subject?" required 
+                        class="block w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-white/30 focus:ring-2 focus:ring-[#7f12d8]/50 focus:border-transparent outline-none transition-all text-sm font-medium">
+                    </div>
+
+                    <div>
+                        <label for="contact-message" class="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 ml-1">Message:</label>
+                        <textarea id="contact-message" rows="5" placeholder="Type your message here..." required 
+                        class="block w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-white/30 focus:ring-2 focus:ring-[#7f12d8]/50 focus:border-transparent outline-none transition-all text-sm font-medium leading-relaxed"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="w-full py-4 px-6 bg-gradient-to-r from-[#7f12d8] to-[#ff0033] hover:brightness-110 active:scale-95 text-white font-bold rounded-2xl transition-all duration-200 shadow-xl shadow-[#7f12d8]/20 text-sm flex items-center justify-center gap-2">
+                        Send Securely <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </form>
+
+                <div id="contact-success" class="mt-8 p-4 bg-emerald-950/20 border border-emerald-500/30 rounded-2xl hidden animate-pulse">
+                    <p class="text-center font-bold text-emerald-400 text-sm flex items-center justify-center gap-1.5">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> Secured the bag! 🫡
+                    </p>
+                    <p class="text-center text-xs text-slate-300 mt-1">Check your desktop mail framework client to complete sending parameters.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Map Leaflet JS Imports -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- CORE MODULE CONTROLLERS -->
+    <script>
+        // ================= CONFIGURATION & DATABASES =================
+        const MLY_KEY = 'MLY|26867455816212719|1f45e3cbfcc2a9f2977476ad1c3aa021';
+        const TARGET_EMAIL = 'ayt04@duck.com';
+        const COOLDOWN_TIME = 120; 
+
+        // RAW SHELL SCRIPT SOURCE DATA
+        const SHULKER_SCRIPT_DATA = `#███████╗██╗  ██╗██╗   ██╗██╗     ██╗  ██╗███████╗██████╗  ██████╗ ███████╗
+#██╔════╝██║  ██║██║   ██║██║     ██║ ██╔╝██╔════╝██╔══██╗██╔═══██╗██╔════╝
+#███████╗███████║██║   ██║██║     █████╔╝ █████╗  ██████╔╝██║   ██║███████╗
+#╚════██║██╔══██║██║   ██║██║     ██╔═██╗ ██╔══╝  ██╔══██╗██║   ██║╚════██║
+#███████║██║  ██║╚██████╔╝███████╗██║  ██╗███████╗██║  ██║╚██████╔╝███████║
+#╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
+
+# ==================== CONFIGURATION ====================
+DRIVE="/dev/mmcblk0p"      # Your eMMC/SD drive
+BOOT="1GB"                 # EF00 -> p1
+SWAP="2G"                  # 8200 -> p2
+ROOT="40GB"                # 8300 -> p3
+HOME=""			   # 	  -> p4
+HOSTNAME="ShulkerOS"       # System hostname
+USERNAME="ayt04"           # Your username
+TIMEZONE="America/Toronto" # Your timezone
+LOCALE="en_US.UTF-8"       # Your locale
+
+# Internet Configuration
+IWCTL="iwctl \${NI} scan"   # Configuring Internet
+PING="ping www.ayt04.xyz"  # Internet Testing
+LSBLK="lsblk"		   # List Your Device Block
+NI="wlan0"		   # Your Network Interface Device
+
+# Partitioning Tools
+EFIVAR="efivar -l"	   # UEFI
+GDISK="gdisk /dev/\$DRIVE"  # X for Expert.. Z for Zap!
+CGDISK="cgdisk /dev/\$DRIVE" # Formatting
+
+# Filesystem Creation
+MKFS_F32="mkfs.fat -F32 /dev/\${DRIVE}p1"
+MKSWAP="mkswap /dev/\${DRIVE}p2"
+MKFS_EXT4p3="mkfs.ext4 \${DRIVE}p3"
+MKFS_EXT4p4="mkfs.ext4 \${DRIVE}p4"
+
+# Mounting
+MOUNTp3="mount /dev/\${DRIVE}p3 /mnt"
+MKDIR_B_H="mkdir -p /mnt/boot /mnt/home"
+MOUNT_B="mount /dev/\${DRIVE}p1 /mnt/boot"
+MOUNT_H="mount /dev/\${DRIVE}p4 /mnt/home"
+
+# Base System Installation
+PACSTRAP="pacstrap -K /mnt base linux linux-firmware base-devel nano"
+GENFSTAB="genfstab -U -p /mnt >> /mnt/etc/fstab"
+NANO_FSTAB="nano /mnt/etc/fstab"
+
+# Mirror Configuration
+COPY_ML="cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup"
+NANO_ML="nano /etc/pacman.d/mirrorlist"
+RANKMIRRORS="rankmirrors -n 2 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist"
+PACMAN_CONTRIB="pacman -Sy pacman-contrib"
+
+# Chroot Environment
+ARCH_CHROOT1="arch-chroot /mnt"
+ARCH_CHROOT2="sudo pacman -S nano bash-completion"
+
+# Locale Setup
+NANO_LG="nano /etc/locale.gen en_US.UTF-8/en_US.UTF-8 /etc/locale.gen"
+NANO_LG_RUN="locale-gen"
+EXPORT_LANG="export LANG=en_US.UTF-8"
+SHOW_LANG="echo \`LANG=en_US.UTF-8\` > /etc/locale.conf"
+
+# Timezone & Clock
+TIMENCLOCK="ls /usr/share/zoneinfo/Canada/Eastern > /etc/localtime"
+ENABLE_CLOCK="hwclock --systohc --utc"
+
+# System Configuration
+SSD_SUPPORT="systemctl enable fstrim.timer"
+NANO_PACMAN_CONF="nano /etc/pacman.conf EOF \`[multilib] include = /etc/pacman.d/mirrorlist\` EOF"
+UPDATE="sudo pacman -Sy"
+FULL_UPDATE="pacman -Syu"
+
+# User Management
+PASSWD="passwd"
+USER_WHEEL="useradd -m -g users -G wheel,storage,power -s /bin/bash ayt04"
+ROOT_USER_PASSWD="passwd ayt04"
+EDITOR_VISUDO="EDITOR=nano visudo EOF %wheel ALL=(ALL:ALL) ALL Defaults rootpw EOF"
+
+# EFI Variables
+MOUNT_EFIVARFS="mount -t efivarfs efivarfs /sys/firmware/efi/efivars"
+LS_EFIVARFS="ls /sys/firmware/efi/efivars"
+
+# Bootloader
+INSTALL_BOOTLOADER="bootctl install"
+MODIFY_BOOTLOADER="nano /boot/loader/entries/arch.conf EOF title ShulkerOS linux /vmlinuz-linux initrd /initramfs-linux.img echo \`options root=PARTUUID=\$(blkid -s PARTUUID -o value /dev/mmcblkp3) rw\` >> /boot/loaders/entries/arch.conf EOF"
+
+# Network Services
+ENABLE_NM_NI="sudo pacman -S dhcpcd networkmanager sudo systemctl enable dhcpcd@wlan0.service NetworkManager.service"
+
+# Desktop Environment
+RICE="pacman -S xorg-server xorg-apps xorg-init xorg-twm xorg-clock xterm"
+START_X_SERVER="startx"
+ENABLE_SDDM="systemctl enable sddm.service"
+
+# Final Steps
+EXIT="exit"
+UNMOUNT_mnt="unmount -R /mnt"
+REBOOT="reboot"`;
+
+        const GEODETECTIVE_CITIES = [
+            { name: "Kabul, Afghanistan", lat: 34.5333, lng: 69.1667 },
+            { name: "Tirana, Albania", lat: 41.3275, lng: 19.8189 },
+            { name: "Algiers, Algeria", lat: 36.7538, lng: 3.0588 },
+            { name: "Andorra la Vella, Andorra", lat: 42.5078, lng: 1.5211 },
+            { name: "Luanda, Angola", lat: -8.8333, lng: 13.2333 },
+            { name: "St. John's, Antigua and Barbuda", lat: 17.1167, lng: -61.85 },
+            { name: "Buenos Aires, Argentina", lat: -34.6037, lng: -58.3816 },
+            { name: "Yerevan, Armenia", lat: 40.1833, lng: 44.5167 },
+            { name: "Canberra, Australia", lat: -35.2809, lng: 149.13 },
+            { name: "Vienna, Austria", lat: 48.2082, lng: 16.3738 },
+            { name: "Baku, Azerbaijan", lat: 40.4093, lng: 49.8671 },
+            { name: "Nassau, Bahamas", lat: 25.0343, lng: -77.3963 },
+            { name: "Manama, Bahrain", lat: 26.2285, lng: 50.586 },
+            { name: "Dhaka, Bangladesh", lat: 23.7104, lng: 90.4074 },
+            { name: "Bridgetown, Barbados", lat: 13.1939, lng: -59.5432 },
+            { name: "Minsk, Belarus", lat: 53.9, lng: 27.5667 },
+            { name: "Brussels, Belgium", lat: 50.8503, lng: 4.3517 },
+            { name: "Belmopan, Belize", lat: 17.1899, lng: -88.4976 },
+            { name: "Porto-Novo, Benin", lat: 6.4969, lng: 2.6281 },
+            { name: "Thimphu, Bhutan", lat: 27.4722, lng: 89.6361 },
+            { name: "La Paz, Bolivia", lat: -16.5, lng: -68.15 },
+            { name: "Sarajevo, Bosnia and Herzegovina", lat: 43.8486, lng: 18.3564 },
+            { name: "Gaborone, Botswana", lat: -24.6583, lng: 25.9122 },
+            { name: "Brasilia, Brazil", lat: -15.7942, lng: -47.8822 },
+            { name: "Bandar Seri Begawan, Brunei", lat: 4.8908, lng: 114.9406 },
+            { name: "Sofia, Bulgaria", lat: 42.6977, lng: 23.3219 },
+            { name: "Ouagadougou, Burkina Faso", lat: 12.3714, lng: -1.5197 },
+            { name: "Gitega, Burundi", lat: -3.4272, lng: 29.9309 },
+            { name: "Praia, Cabo Verde", lat: 14.9315, lng: -23.5125 },
+            { name: "Phnom Penh, Cambodia", lat: 11.55, lng: 104.9167 },
+            { name: "Yaoundé, Cameroon", lat: 3.848, lng: 11.5021 },
+            { name: "Ottawa, Canada", lat: 45.4215, lng: -75.6972 },
+            { name: "Bangui, Central African Republic", lat: 4.3667, lng: 18.5833 },
+            { name: "N'Djamena, Chad", lat: 12.1347, lng: 15.0557 },
+            { name: "Santiago, Chile", lat: -33.4489, lng: -70.6693 },
+            { name: "Beijing, China", lat: 39.9042, lng: 116.4074 },
+            { name: "Bogotá, Colombia", lat: 4.6243, lng: -74.0636 },
+            { name: "Moroni, Comoros", lat: -11.6453, lng: 43.2565 },
+            { name: "Kinshasa, DR Congo", lat: -4.325, lng: 15.3222 },
+            { name: "Brazzaville, Congo", lat: -4.2634, lng: 15.2663 },
+            { name: "San José, Costa Rica", lat: 9.9281, lng: -84.0907 },
+            { name: "Yamoussoukro, Ivory Coast", lat: 6.8276, lng: -5.2755 },
+            { name: "Zagreb, Croatia", lat: 45.815, lng: 15.9819 },
+            { name: "Havana, Cuba", lat: 23.1136, lng: -82.3666 },
+            { name: "Nicosia, Cyprus", lat: 35.1667, lng: 33.3667 },
+            { name: "Prague, Czechia", lat: 50.0755, lng: 14.4378 },
+            { name: "Copenhagen, Denmark", lat: 55.6761, lng: 12.5683 },
+            { name: "Djibouti, Djibouti", lat: 11.5883, lng: 43.145 },
+            { name: "Roseau, Dominica", lat: 15.3, lng: -61.3833 },
+            { name: "Santo Domingo, Dominican Republic", lat: 18.4861, lng: -69.9312 },
+            { name: "Quito, Ecuador", lat: -0.1807, lng: -78.4678 },
+            { name: "Cairo, Egypt", lat: 30.0444, lng: 31.2357 },
+            { name: "San Salvador, El Salvador", lat: 13.6929, lng: -89.2182 },
+            { name: "Malabo, Equatorial Guinea", lat: 3.75, lng: 8.7833 },
+            { name: "Asmara, Eritrea", lat: 15.3229, lng: 38.9251 },
+            { name: "Tallinn, Estonia", lat: 59.437, lng: 24.7535 },
+            { name: "Eswatini, Mbabane", lat: -26.305, lng: 31.1367 },
+            { name: "Addis Ababa, Ethiopia", lat: 9.03, lng: 38.74 },
+            { name: "Suva, Fiji", lat: -18.1416, lng: 178.4419 },
+            { name: "Helsinki, Finland", lat: 60.1699, lng: 24.9384 },
+            { name: "Paris, France", lat: 48.8566, lng: 2.3522 },
+            { name: "Libreville, Gabon", lat: 0.3908, lng: 9.4544 },
+            { name: "Banjul, Gambia", lat: 13.4667, lng: -16.5667 },
+            { name: "Tbilisi, Georgia", lat: 41.7151, lng: 44.8271 },
+            { name: "Berlin, Germany", lat: 52.52, lng: 13.405 },
+            { name: "Accra, Ghana", lat: 5.6037, lng: -0.187 },
+            { name: "Athens, Greece", lat: 37.9838, lng: 23.7275 },
+            { name: "St. George's, Grenada", lat: 12.05, lng: -61.75 },
+            { name: "Guatemala City, Guatemala", lat: 14.6349, lng: -90.5069 },
+            { name: "Conakry, Guinea", lat: 9.5092, lng: -13.7122 },
+            { name: "Bissau, Guinea-Bissau", lat: 11.8037, lng: -15.5833 },
+            { name: "Georgetown, Guyana", lat: 6.8, lng: -58.15 },
+            { name: "Port-au-Prince, Haiti", lat: 18.5333, lng: -72.3333 },
+            { name: "Tegucigalpa, Honduras", lat: 14.1, lng: -87.2167 },
+            { name: "Budapest, Hungary", lat: 47.4979, lng: 19.0402 },
+            { name: "Reykjavik, Iceland", lat: 64.1466, lng: -21.9426 },
+            { name: "New Delhi, India", lat: 28.6139, lng: 77.209 },
+            { name: "Jakarta, Indonesia", lat: -6.1751, lng: 106.865 },
+            { name: "Tehran, Iran", lat: 35.6892, lng: 51.389 },
+            { name: "Baghdad, Iraq", lat: 33.3152, lng: 44.3661 },
+            { name: "Dublin, Ireland", lat: 53.3498, lng: -6.2603 },
+            { name: "Jerusalem, Israel", lat: 31.7683, lng: 35.2137 },
+            { name: "Rome, Italy", lat: 41.9028, lng: 12.4964 },
+            { name: "Kingston, Jamaica", lat: 17.9714, lng: -76.7936 },
+            { name: "Tokyo, Japan", lat: 35.6895, lng: 139.6917 },
+            { name: "Amman, Jordan", lat: 31.9454, lng: 35.9284 },
+            { name: "Astana, Kazakhstan", lat: 51.1667, lng: 71.4333 },
+            { name: "Nairobi, Kenya", lat: -1.2921, lng: 36.8219 },
+            { name: "Tarawa, Kiribati", lat: 1.3278, lng: 172.9717 },
+            { name: "Pyongyang, North Korea", lat: 39.0333, lng: 125.75 },
+            { name: "Seoul, South Korea", lat: 37.5665, lng: 126.978 },
+            { name: "Kuwait City, Kuwait", lat: 29.3759, lng: 47.9774 },
+            { name: "Bishkek, Kyrgyzstan", lat: 42.8747, lng: 74.5698 },
+            { name: "Vientiane, Laos", lat: 17.9667, lng: 102.6 },
+            { name: "Riga, Latvia", lat: 56.9496, lng: 24.1052 },
+            { name: "Beirut, Lebanon", lat: 33.8886, lng: 35.4955 },
+            { name: "Maseru, Lesotho", lat: -29.3167, lng: 27.4833 },
+            { name: "Monrovia, Liberia", lat: 6.3005, lng: -10.7969 },
+            { name: "Tripoli, Libya", lat: 32.8872, lng: 13.1913 },
+            { name: "Vaduz, Liechtenstein", lat: 47.141, lng: 9.521 },
+            { name: "Vilnius, Lithuania", lat: 54.6872, lng: 25.2797 },
+            { name: "Luxembourg City, Luxembourg", lat: 49.6116, lng: 6.1319 },
+            { name: "Antananarivo, Madagascar", lat: -18.8792, lng: 47.5079 },
+            { name: "Lilongwe, Malawi", lat: -13.9626, lng: 33.7741 },
+            { name: "Kuala Lumpur, Malaysia", lat: 3.139, lng: 101.6869 },
+            { name: "Malé, Maldives", lat: 4.1755, lng: 73.5093 },
+            { name: "Bamako, Mali", lat: 12.6392, lng: -8.0029 },
+            { name: "Valletta, Malta", lat: 35.8989, lng: 14.5146 },
+            { name: "Majuro, Marshall Islands", lat: 7.1167, lng: 171.3833 },
+            { name: "Nouakchott, Mauritania", lat: 18.0858, lng: -15.9785 },
+            { name: "Port Louis, Mauritius", lat: -20.1609, lng: 57.5012 },
+            { name: "Mexico City, Mexico", lat: 19.4326, lng: -99.1332 },
+            { name: "Palikir, Micronesia", lat: 6.9172, lng: 158.185 },
+            { name: "Chisinau, Moldova", lat: 47.0105, lng: 28.8638 },
+            { name: "Monaco, Monaco", lat: 43.7333, lng: 7.4167 },
+            { name: "Ulaanbaatar, Mongolia", lat: 47.8864, lng: 106.9057 },
+            { name: "Podgorica, Montenegro", lat: 42.4304, lng: 19.2594 },
+            { name: "Rabat, Morocco", lat: 34.0209, lng: -6.8416 },
+            { name: "Maputo, Mozambique", lat: -25.9692, lng: 32.5732 },
+            { name: "Naypyidaw, Myanmar", lat: 19.7633, lng: 96.0785 },
+            { name: "Windhoek, Namibia", lat: -22.5597, lng: 17.0832 },
+            { name: "Yaren, Nauru", lat: -0.5477, lng: 166.9248 },
+            { name: "Kathmandu, Nepal", lat: 27.7172, lng: 85.324 },
+            { name: "Amsterdam, Netherlands", lat: 52.3676, lng: 4.9041 },
+            { name: "Wellington, New Zealand", lat: -41.2865, lng: 174.7762 },
+            { name: "Managua, Nicaragua", lat: 12.1364, lng: -86.2514 },
+            { name: "Niamey, Niger", lat: 13.5116, lng: 2.1254 },
+            { name: "Abuja, Nigeria", lat: 9.0765, lng: 7.3986 },
+            { name: "Skopje, North Macedonia", lat: 41.9965, lng: 21.4314 },
+            { name: "Oslo, Norway", lat: 59.9139, lng: 10.7522 },
+            { name: "Muscat, Oman", lat: 23.5859, lng: 58.4059 },
+            { name: "Islamabad, Pakistan", lat: 33.6844, lng: 73.0479 },
+            { name: "Ngerulmud, Palau", lat: 7.5006, lng: 134.6242 },
+            { name: "Panama City, Panama", lat: 8.9833, lng: -79.5167 },
+            { name: "Port Moresby, Papua New Guinea", lat: -9.4438, lng: 147.1803 },
+            { name: "Asunción, Paraguay", lat: -25.2637, lng: -57.5759 },
+            { name: "Lima, Peru", lat: -12.0464, lng: -77.0428 },
+            { name: "Manila, Philippines", lat: 14.5995, lng: 120.9842 },
+            { name: "Warsaw, Poland", lat: 52.2297, lng: 21.0122 },
+            { name: "Lisbon, Portugal", lat: 38.7223, lng: -9.1393 },
+            { name: "Doha, Qatar", lat: 25.2854, lng: 51.531 },
+            { name: "Bucharest, Romania", lat: 44.4268, lng: 26.1025 },
+            { name: "Moscow, Russia", lat: 55.7558, lng: 37.6173 },
+            { name: "Kigali, Rwanda", lat: -1.9441, lng: 30.0619 },
+            { name: "Basseterre, Saint Kitts and Nevis", lat: 17.2957, lng: -62.7261 },
+            { name: "Castries, Saint Lucia", lat: 14.0101, lng: -60.9875 },
+            { name: "Kingstown, Saint Vincent and the Grenadines", lat: 13.156, lng: -61.2248 },
+            { name: "Apia, Samoa", lat: -13.8333, lng: -171.7667 },
+            { name: "San Marino, San Marino", lat: 43.9333, lng: 12.45 },
+            { name: "São Tomé, Sao Tome and Principe", lat: 0.3302, lng: 6.7333 },
+            { name: "Riyadh, Saudi Arabia", lat: 24.7136, lng: 46.6753 },
+            { name: "Dakar, Senegal", lat: 14.7167, lng: -17.4677 },
+            { name: "Belgrade, Serbia", lat: 44.7866, lng: 20.4489 },
+            { name: "Victoria, Seychelles", lat: -4.6167, lng: 55.45 },
+            { name: "Freetown, Sierra Leone", lat: 8.484, lng: -13.2299 },
+            { name: "Singapore, Singapore", lat: 1.2868, lng: 103.8519 },
+            { name: "Bratislava, Slovakia", lat: 48.1486, lng: 17.1077 },
+            { name: "Ljubljana, Slovenia", lat: 46.0569, lng: 14.5058 },
+            { name: "Honiara, Solomon Islands", lat: -9.4456, lng: 159.9594 },
+            { name: "Mogadishu, Somalia", lat: 2.0469, lng: 45.3182 },
+            { name: "Pretoria, South Africa", lat: -25.7479, lng: 28.2293 },
+            { name: "Juba, South Sudan", lat: 4.8517, lng: 31.5712 },
+            { name: "Madrid, Spain", lat: 40.4168, lng: -3.7038 },
+            { name: "Colombo, Sri Lanka", lat: 6.9271, lng: 79.8612 },
+            { name: "Khartoum, Sudan", lat: 15.5007, lng: 32.5599 },
+            { name: "Paramaribo, Suriname", lat: 5.852, lng: -55.2038 },
+            { name: "Stockholm, Sweden", lat: 59.3293, lng: 18.0686 },
+            { name: "Bern, Switzerland", lat: 46.948, lng: 7.4474 },
+            { name: "Damascus, Syria", lat: 33.5138, lng: 36.2765 },
+            { name: "Taipei, Taiwan", lat: 25.033, lng: 121.5654 },
+            { name: "Dushanbe, Tajikistan", lat: 38.5598, lng: 68.787 },
+            { name: "Dodoma, Tanzania", lat: -6.1722, lng: 35.7516 },
+            { name: "Bangkok, Thailand", lat: 13.7563, lng: 100.5018 },
+            { name: "Dili, Timor-Leste", lat: -8.5586, lng: 125.5736 },
+            { name: "Lomé, Togo", lat: 6.1375, lng: 1.2123 },
+            { name: "Nukuʻalofa, Tonga", lat: -21.1394, lng: -175.2048 },
+            { name: "Port of Spain, Trinidad and Tobago", lat: 10.6667, lng: -61.5167 },
+            { name: "Tunis, Tunisia", lat: 36.8065, lng: 10.1815 },
+            { name: "Ankara, Turkey", lat: 39.9333, lng: 32.8597 },
+            { name: "Ashgabat, Turkmenistan", lat: 37.96, lng: 58.3267 },
+            { name: "Funafuti, Tuvalu", lat: -8.5242, lng: 179.1942 },
+            { name: "Kampala, Uganda", lat: 0.3476, lng: 32.5825 },
+            { name: "Kyiv, Ukraine", lat: 50.4501, lng: 30.5234 },
+            { name: "Abu Dhabi, UAE", lat: 24.4667, lng: 54.3667 },
+            { name: "London, UK", lat: 51.5074, lng: -0.1278 },
+            { name: "Washington, D.C., USA", lat: 38.9072, lng: -77.0369 },
+            { name: "Montevideo, Uruguay", lat: -34.9011, lng: -56.1645 },
+            { name: "Tashkent, Uzbekistan", lat: 41.2995, lng: 69.2401 },
+            { name: "Port Vila, Vanuatu", lat: -17.7333, lng: 168.3167 },
+            { name: "Vatican City", lat: 41.9029, lng: 12.4534 },
+            { name: "Caracas, Venezuela", lat: 10.4806, lng: -66.9036 },
+            { name: "Hanoi, Vietnam", lat: 21.0285, lng: 105.8542 },
+            { name: "Sana'a, Yemen", lat: 15.3547, lng: 44.2067 },
+            { name: "Lusaka, Zambia", lat: -15.4167, lng: 28.2833 },
+            { name: "Harare, Zimbabwe", lat: -17.8252, lng: 31.0335 }
+        ];
+
+        // ================= SPA NAVIGATION ENGINE =================
+        function navigate(routeId) {
+            // Update URL Hash
+            window.location.hash = `#/${routeId}`;
+        }
+
+        function handleSPAHashRoute() {
+            const rawHash = window.location.hash || '#/home';
+            const routeId = rawHash.replace('#/', '');
+
+            // Hide all routing container pages
+            document.querySelectorAll('.app-route').forEach(page => page.classList.add('hidden'));
+            
+            // Remove active indicator classes from top nav links
+            document.querySelectorAll('.glass-nav-btn').forEach(btn => btn.classList.remove('active'));
+
+            const targetPage = document.getElementById(`page-${routeId}`);
+            const targetNav = document.getElementById(`nav-${routeId}`);
+
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            } else {
+                // Fallback to home
+                document.getElementById('page-home').classList.remove('hidden');
+                document.getElementById('nav-home').classList.add('active');
+                return;
+            }
+
+            if (targetNav) {
+                targetNav.classList.add('active');
+            }
+
+            // Route Specific Actions
+            if (routeId === 'geodetective') {
+                // Auto-refresh map boundary size container logic safely
+                setTimeout(() => {
+                    if (geoMap) {
+                        geoMap.invalidateSize();
+                    }
+                }, 100);
+            }
+        }
+
+        window.addEventListener('hashchange', handleSPAHashRoute);
+
+
+        // ================= NOTIFICATION TOAST WRAPPERS =================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            toast.className = `p-4 rounded-2xl glass-panel text-white text-xs font-semibold flex items-center gap-2 shadow-2xl transition-all duration-300 translate-y-2 opacity-0 select-none pointer-events-auto border-l-4`;
+            
+            if (type === 'success') {
+                toast.classList.add('border-l-emerald-500');
+                toast.innerHTML = `<i data-lucide="check-circle" class="text-emerald-400 w-4 h-4"></i> ${message}`;
+            } else if (type === 'warning') {
+                toast.classList.add('border-l-amber-500');
+                toast.innerHTML = `<i data-lucide="alert-triangle" class="text-amber-400 w-4 h-4"></i> ${message}`;
+            } else {
+                toast.classList.add('border-l-[#ff0033]');
+                toast.innerHTML = `<i data-lucide="alert-circle" class="text-red-400 w-4 h-4"></i> ${message}`;
+            }
+
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            // Animate In
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 50);
+
+            // Animate Out & Remove
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-1');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3500);
+        }
+
+        // Clip copy helper
+        function copyLink(text) {
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+            showToast("RSS Feed target link copied to clipboard!");
+        }
+
+
+        // ================= GEODETECTIVE GAME ENGINE =================
+        let geoMap, geoGuessMarker;
+        let geoCooldownTimer = null;
+        let geoUserGuessCoords = null;
+        let geoCurrentImageURL = "";
+
+        function initGeoDetective() {
+            const emailBtn = document.getElementById('email-guess-btn');
+            
+            // Setup Leaflet
+            geoMap = L.map('osm-map', { center: [20, 0], zoom: 2 });
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(geoMap);
+
+            // Map clicks
+            geoMap.on('click', (e) => {
+                geoUserGuessCoords = e.latlng;
+                if (geoGuessMarker) {
+                    geoGuessMarker.setLatLng(geoUserGuessCoords);
+                } else {
+                    geoGuessMarker = L.marker(geoUserGuessCoords).addTo(geoMap);
+                }
+                emailBtn.disabled = false;
+                emailBtn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> Submit Guess via Email`;
+                lucide.createIcons();
+            });
+
+            geoLoadNewLocation();
+        }
+
+        async function geoLoadNewLocation() {
+            const loader = document.getElementById('geo-loader');
+            const imgElement = document.getElementById('street-image');
+            const emailBtn = document.getElementById('email-guess-btn');
+            
+            loader.style.display = 'flex';
+            imgElement.style.display = 'none';
+            
+            // Reset state
+            geoUserGuessCoords = null;
+            if (geoGuessMarker) { 
+                geoMap.removeLayer(geoGuessMarker); 
+                geoGuessMarker = null; 
+            }
+            emailBtn.disabled = true;
+            emailBtn.innerHTML = `<i data-lucide="navigation" class="w-4 h-4"></i> Select Location on Map Above`;
+            lucide.createIcons();
+
+            try {
+                const city = GEODETECTIVE_CITIES[Math.floor(Math.random() * GEODETECTIVE_CITIES.length)];
+                const lat = city.lat + (Math.random() - 0.5) * 0.15;
+                const lng = city.lng + (Math.random() - 0.5) * 0.15;
+                const bbox = `${lng-0.03},${lat-0.03},${lng+0.03},${lat+0.03}`;
+                
+                const resp = await fetch(`https://graph.mapillary.com/images?access_token=${MLY_KEY}&fields=id,geometry,thumb_original_url&bbox=${bbox}&limit=5`);
+                const data = await resp.json();
+                
+                if(!data.data || data.data.length === 0) throw new Error("No imagery found in vector boundary");
+                
+                const img = data.data[0];
+                geoCurrentImageURL = img.thumb_original_url;
+                imgElement.src = geoCurrentImageURL;
+                imgElement.onload = () => {
+                    loader.style.display = 'none';
+                    imgElement.style.display = 'block';
+                };
+            } catch (e) { 
+                // Retry automatically
+                geoLoadNewLocation(); 
+            }
+        }
+
+        function toggleGeoModal(show) {
+            const modal = document.getElementById('geo-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    if (geoMap) {
+                        geoMap.invalidateSize();
+                    }
+                }, 50);
+            } else {
+                modal.classList.add('opacity-0');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        function startGeoCooldown() {
+            const btn = document.getElementById('next-img-btn');
+            let timeLeft = COOLDOWN_TIME;
+            btn.disabled = true;
+            
+            if (geoCooldownTimer) clearInterval(geoCooldownTimer);
+
+            geoCooldownTimer = setInterval(() => {
+                timeLeft--;
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                let displaySeconds = seconds < 10 ? "0" + seconds : seconds;
+
+                btn.innerHTML = `<i data-lucide="lock" class="w-4 h-4"></i> Wait (${minutes}:${displaySeconds})`;
+                lucide.createIcons();
+
+                if (timeLeft <= 0) {
+                    clearInterval(geoCooldownTimer);
+                    btn.disabled = false;
+                    btn.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4"></i> Get New Image`;
+                    lucide.createIcons();
+                }
+            }, 1000);
+        }
+
+        function sendEmailGuess() {
+            if (!geoUserGuessCoords) return;
+
+            const subject = encodeURIComponent("GeoGuessr NMPZ Guess");
+            const body = encodeURIComponent(
+                `Hey! Here is my guess for the image.\n\n` +
+                `Image URL: ${geoCurrentImageURL}\n\n` +
+                `My Coordinates:\n\n` +
+                `Latitude: ${geoUserGuessCoords.lat.toFixed(6)}\n\n` +
+                `Longitude: ${geoUserGuessCoords.lng.toFixed(6)}\n\n` +
+                `Let me know how close I was!`
+            );
+
+            // Spawns system mail wrapper
+            window.location.href = `mailto:${TARGET_EMAIL}?subject=${subject}&body=${body}`;
+            
+            toggleGeoModal(false);
+            showToast("Opening system mail clients parameters...");
+            startGeoCooldown();
+        }
+
+
+        // ================= SHULKEROS DOCUMENTATION ENGINE =================
+        function switchDocTab(tabId) {
+            // Hide all sub sections
+            document.querySelectorAll('.doc-tab-content').forEach(sec => sec.classList.add('hidden'));
+
+            // Remove active class from menu buttons
+            document.querySelectorAll('.doc-sidebar-btn').forEach(btn => btn.classList.remove('active'));
+
+            // Show selected view
+            const targetSection = document.getElementById(`doc-section-${tabId}`);
+            const targetButton = document.getElementById(`doc-link-${tabId}`);
+
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+            if (targetButton) {
+                targetButton.classList.add('active');
+                
+                // Update breadcrumbs visually
+                const menuTitle = targetButton.innerText.trim();
+                document.getElementById('doc-breadcrumb').innerText = menuTitle;
+            }
+        }
+
+        function searchDocumentation() {
+            const query = document.getElementById('doc-search').value.toLowerCase();
+            const sidebarButtons = document.querySelectorAll('.doc-sidebar-btn');
+
+            sidebarButtons.forEach(btn => {
+                const text = btn.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    btn.style.display = 'flex';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+        }
+
+
+        // ================= SANDBOX SHULKER SCRIPT IDE VIEW =================
+        function initShulkerScriptView() {
+            const codeBlock = document.getElementById('shulker-code-block');
+            const linesContainer = document.getElementById('shulker-lines');
+            
+            // Format Code lines
+            const lines = SHULKER_SCRIPT_DATA.split('\n');
+            let lineNumHTML = "";
+            let codeHTML = "";
+
+            lines.forEach((line, index) => {
+                lineNumHTML += `<span>${index + 1}</span>\n`;
+                
+                // Super lightweight syntax highlighter emulator
+                let parsedLine = line
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+
+                // Highlight Comments
+                if (parsedLine.startsWith('#')) {
+                    parsedLine = `<span class="text-slate-500 italic">${parsedLine}</span>`;
+                } else {
+                    // Highlight Variables
+                    parsedLine = parsedLine.replace(/^([A-Za-z0-9_]+)=/g, '<span class="text-purple-400">$1</span>=');
+                    // Highlight Quotes
+                    parsedLine = parsedLine.replace(/("[^"]*")/g, '<span class="text-emerald-400">$1</span>');
+                }
+
+                codeHTML += `<span>${parsedLine}</span>\n`;
+            });
+
+            linesContainer.innerHTML = lineNumHTML;
+            codeBlock.innerHTML = codeHTML;
+        }
+
+        function copyShulkerScript() {
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = SHULKER_SCRIPT_DATA;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+            showToast("ShulkerOS custom configuration script copied to clipboard!");
+        }
+
+        function downloadShulkerScript() {
+            const blob = new Blob([SHULKER_SCRIPT_DATA], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'SHULKER_VIDEO_IDEA.sh';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            showToast("Download initialized safely.");
+        }
+
+
+        // ================= SECURE CONTACT FORM ENGINE =================
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            const subjectInput = document.getElementById('contact-subject').value;
+            const messageInput = document.getElementById('contact-message').value;
+
+            const myEmail = 'ayt04@duck.com';
+            const subject = encodeURIComponent(subjectInput);
+            const body = encodeURIComponent(messageInput);
+            const bioSignalNote = encodeURIComponent(`\n\nSent via ayt04.xyz`);
+            
+            const mailtoLink = `mailto:${myEmail}?subject=${subject}&body=${body}${bioSignalNote}`;
+
+            window.open(mailtoLink, '_blank');
+            
+            document.getElementById('contact-success').classList.remove('hidden');
+            showToast("Contact pipeline initialized!");
+        }
+
+
+        // ================= APPLICATION SYSTEM BOOTSTRAP =================
+        window.onload = function() {
+            // Initializing visual icon assets
+            lucide.createIcons();
+
+            // Setup state engines
+            initShulkerScriptView();
+            initGeoDetective();
+            
+            // Configure Sphinx-RTD side subnavs
+            switchDocTab('welcome');
+
+            // Listen to initial routing anchors
+            handleSPAHashRoute();
+        };
+    </script>
 </body>
 </html>
