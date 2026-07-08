@@ -1,0 +1,123 @@
+- [ ] iwctl
+
+- [ ] efivar -l
+
+- [ ] gdisk
+
+- [ ] cgdisk
+
+    - [ ] mkfs.fat -F32 p1 - Boot (EF00)
+
+    - [ ] mkswap p2 - Swap (8200)
+
+    - [ ] swapon p2
+
+    - [ ] mkfs.ext4 p3 - Root (8300)
+
+    - [ ] mkfs.ext4 p4 - Home
+
+- [ ] mount p3 /mnt
+
+- [ ] mkdir -p /mnt/boot /mnt/home
+
+- [ ] mount p1 /mnt/boot
+
+- [ ] mount p4 /mnt/home
+
+- [ ] cp mirrorlist
+
+- [ ] install pacman-contrib
+
+- [ ] rankmirrors -n 2 mirrorlist.backup
+
+- [ ] pacstrap -K /mnt base linux linux-firmware
+
+- [ ] genfstab -U -p /mnt >> /mnt/etc/fstab
+
+- [ ] nano /mnt/etc/fstab
+
+- [ ] arch-chroot /mnt
+
+    - [ ] sudo pacman -S nano bash-completion
+
+    - [ ] nano /etc/locale-gen
+
+        - [ ] en_US.UTF-8
+
+    - [ ] locale-gen
+
+    - [ ] echo LANG-en_US.UTF-8 > /etc/locale.conf
+
+    - [ ] export LANG=en_US.UTF-8
+
+    - [ ] ln -s /usr/share/zoneinfo/Canada/Eastern > /etc/localtime
+
+    - [ ] hwclock --systohc --utc
+
+    - [ ] echo Overlord > /etc/hostname
+
+    - [ ] systemctl enable fstrim.timer
+
+    - [ ] nano /etc/pacman.conf
+
+        - [ ] [multilib]
+
+        - [ ] Include = /etc/pacman.d/mirrorlist
+
+    - [ ] sudo pacman -Sy
+
+    - [ ] passwd
+
+    - [ ] useradd -m -g users -G wheel,storage,power -s /bin/bash addison
+
+    - [ ] passwd addison
+
+    - [ ] EDITOR=nano visudo
+
+        - [ ] %wheel ALL=(ALL:ALL) ALL
+
+        - [ ] Defaults rootpw
+
+    - [ ] mount -t efivarfs efivarfs /sys/firmware/efi/efivars
+
+    - [ ] ls /sys/firmware/efi/efivars
+
+    - [ ] bootctl install
+
+    - [ ] nano /boot/loader/entries/arch.conf
+
+        - [ ] title Arch
+
+        - [ ] linux /vmlinuz-linux
+
+        - [ ] initrd /initramfs-linux.img
+
+    - [ ] echo "options root=PARTUUID=$(blkid -s PARTUUID -o value /dev/p3) rw" >> /boot/loader/entries/arch.conf
+
+    - [ ] ip link
+
+    - [ ] sudo pacman -S dhcpcd
+
+    - [ ] sudo systemctl enable dhcpcd@wlan0.service
+
+    - [ ] sudo pacman -S networkmanager
+
+    - [ ] sudo systemctl enable NetworkManager.service
+
+    - [ ] exit
+
+- [ ] umount -R /mnt
+
+- [ ] reboot
+
+- [ ] sudo pacman -S xorg-server xorg-apps xorg-xinit xorg-twm xorg-xclock xterm
+
+- [ ] startx
+
+- [ ] sudo pacman -S sddm
+
+- [ ] sudo systemctl enable sddm.service
+
+- [ ] reboot
+
+    - [ ] sudo pacman -S steam firefox discord kate vlc
