@@ -1,13 +1,14 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AYT04 Portal — ShulkerOS, GeoDetective & RSS Hub</title>
+    <title>AYT04 Portal — ShulkerOS & GeoDetective</title>
     
     <!-- Open Graph / Meta -->
     <meta property="og:title" content="AYT04">
-    <meta property="og:description" content="My interactive sandbox platform, featuring ShulkerOS docs, GeoDetective NMPZ, and favourite creator RSS feeds.">
+    <meta property="og:description" content="My interactive sandbox platform, featuring ShulkerOS & NMPZ.">
     <meta property="og:image" content="https://avatars.githubusercontent.com/u/153463910?v=4">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
@@ -142,16 +143,10 @@
                     <i data-lucide="home" class="w-4 h-4"></i> Home
                 </button>
                 <button onclick="navigate('geodetective')" id="nav-geodetective" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
-                    <i data-lucide="map-pin" class="w-4 h-4"></i> GeoDetective
+                    <i data-lucide="map-pin" class="w-4 h-4"></i> NMPZ
                 </button>
                 <button onclick="navigate('docs')" id="nav-docs" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
-                    <i data-lucide="book-open" class="w-4 h-4"></i> ShulkerOS Docs
-                </button>
-                <button onclick="navigate('shulker')" id="nav-shulker" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
-                    <i data-lucide="terminal" class="w-4 h-4"></i> ShulkerOS Script
-                </button>
-                <button onclick="navigate('rss')" id="nav-rss" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
-                    <i data-lucide="rss" class="w-4 h-4"></i> Creator RSS
+                    <i data-lucide="book-open" class="w-4 h-4"></i> Docs
                 </button>
                 <button onclick="navigate('contact')" id="nav-contact" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
                     <i data-lucide="mail" class="w-4 h-4"></i> Contact
@@ -173,7 +168,7 @@
                 <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-[#ff0033]/20 blur-3xl rounded-full"></div>
 
                 <div class="relative z-10 flex flex-col items-center">
-                    <img src="https://avatars.githubusercontent.com/u/153463910?v=4" alt="AYT04 Profile Picture" class="w-32 h-32 rounded-full border-4 border-[#7f12d8] shadow-2xl mb-6">
+                    <img src="https://avatars.githubusercontent.com/u/153463910" alt="AYT04 Profile Picture" class="w-32 h-32 rounded-full border-4 border-[#7f12d8] shadow-2xl mb-6">
                     
                     <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-300">
                         AYT04
@@ -199,11 +194,11 @@
                             </div>
                             <span class="text-sm font-medium">GitHub</span>
                         </a>
-                        <a href="https://mastodon.social/@markymarkfuntime" target="_blank" class="glass-card p-4 rounded-2xl flex flex-col items-center gap-2 group">
+                        <a href="./install.txt" target="_blank" class="glass-card p-4 rounded-2xl flex flex-col items-center gap-2 group">
                             <div class="p-3 rounded-xl bg-white/5 text-white/80 group-hover:bg-[#7f12d8]/20 group-hover:text-white transition-all">
                                 <i data-lucide="message-square" class="w-6 h-6"></i>
                             </div>
-                            <span class="text-sm font-medium">Mastodon</span>
+                            <span class="text-sm font-medium">Contribute to my Install Script!</span>
                         </a>
                         <button onclick="navigate('contact')" class="glass-card p-4 rounded-2xl flex flex-col items-center gap-2 group text-left w-full">
                             <div class="p-3 rounded-xl bg-white/5 text-white/80 group-hover:bg-[#7f12d8]/20 group-hover:text-white transition-all mx-auto">
@@ -212,36 +207,7 @@
                             <span class="text-sm font-medium mx-auto">Contact</span>
                         </button>
                     </div>
-
-                    <!-- Quick Navigation Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-                        <div onclick="navigate('geodetective')" class="glass-card p-6 rounded-2xl cursor-pointer text-left relative overflow-hidden group">
-                            <div class="absolute top-0 right-0 p-4 text-[#ff0033] opacity-30 group-hover:opacity-100 transition-opacity">
-                                <i data-lucide="map" class="w-12 h-12"></i>
-                            </div>
-                            <h3 class="font-bold text-lg mb-1 flex items-center gap-2">GeoDetective <span class="text-xs text-red-500 font-mono">NMPZ</span></h3>
-                            <p class="text-xs text-slate-400 leading-normal">Interactive geo guess challenge based on Mapillary telemetry API and Leaflet Maps.</p>
-                        </div>
-                        <div onclick="navigate('docs')" class="glass-card p-6 rounded-2xl cursor-pointer text-left relative overflow-hidden group">
-                            <div class="absolute top-0 right-0 p-4 text-[#7f12d8] opacity-30 group-hover:opacity-100 transition-opacity">
-                                <i data-lucide="book" class="w-12 h-12"></i>
-                            </div>
-                            <h3 class="font-bold text-lg mb-1">ShulkerOS Wiki</h3>
-                            <p class="text-xs text-slate-400 leading-normal">Sphinx/RTD inspired installation handbook mapped directly to hardware specifications.</p>
-                        </div>
-                        <div onclick="navigate('shulker')" class="glass-card p-6 rounded-2xl cursor-pointer text-left relative overflow-hidden group">
-                            <div class="absolute top-0 right-0 p-4 text-emerald-500 opacity-30 group-hover:opacity-100 transition-opacity">
-                                <i data-lucide="code" class="w-12 h-12"></i>
-                            </div>
-                            <h3 class="font-bold text-lg mb-1">Shulker Script</h3>
-                            <p class="text-xs text-slate-400 leading-normal">Raw build parameters, partition structures and configuration scripts for Arch deployments.</p>
-                        </div>
-                    </div>
                 </div>
-            </div>
-            
-            <div class="mt-8 text-center text-xs text-white/30 font-mono">
-                ayt04.xyz &bull; Configured on custom standalone network targets
             </div>
         </section>
 
@@ -250,20 +216,6 @@
         <section id="page-geodetective" class="app-route hidden max-w-5xl mx-auto">
             <div class="glass-panel rounded-3xl p-6 shadow-2xl border-white/10">
                 <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 border-b border-white/5 pb-4">
-                    <div>
-                        <h2 class="text-2xl font-bold flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-red-400">
-                            <i data-lucide="map" class="text-[#ff0033] w-6 h-6"></i> GeoDetective Sandbox
-                        </h2>
-                        <p class="text-xs text-slate-400 mt-1">Rules: No Move, No Pan, No Zoom (NMPZ). Use the Map to pin the location and submit via secure email client.</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <button id="next-img-btn" onclick="geoLoadNewLocation()" class="px-5 py-2.5 bg-[#ff0033] text-white font-bold rounded-xl hover:bg-[#ff0033]/90 active:scale-95 transition-all text-xs flex items-center gap-1.5 shadow-lg shadow-[#ff0033]/20">
-                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Get New Image
-                        </button>
-                        <button id="open-modal-btn" onclick="toggleGeoModal(true)" class="px-5 py-2.5 bg-[#7f12d8] text-white font-bold rounded-xl hover:bg-[#7f12d8]/90 active:scale-95 transition-all text-xs flex items-center gap-1.5 shadow-lg shadow-[#7f12d8]/20">
-                            <i data-lucide="map-pin" class="w-4 h-4"></i> Place My Guess
-                        </button>
-                    </div>
                 </div>
 
                 <!-- Visual Capture Frame -->
@@ -273,10 +225,6 @@
                         <span class="text-sm font-mono text-slate-400">Consulting Mapillary API registers...</span>
                     </div>
                     <img id="street-image" src="" alt="Street View Capture Location" class="w-full h-full object-cover hidden select-none">
-                    
-                    <div class="absolute bottom-4 left-4 bg-black/60 px-3 py-1.5 rounded-lg border border-white/5 text-[10px] font-mono text-white/80 z-10 flex items-center gap-1.5">
-                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Raw Telemetry Active
-                    </div>
                 </div>
             </div>
 
@@ -284,26 +232,6 @@
             <div id="geo-modal" class="fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-4 md:p-6 hidden opacity-0 transition-opacity duration-300">
                 <div class="glass-panel w-full max-w-4xl h-[85vh] rounded-3xl p-6 flex flex-col gap-4 shadow-2xl relative border-white/10 overflow-hidden">
                     <div class="absolute -top-32 -left-32 w-64 h-64 bg-[#7f12d8]/10 blur-3xl rounded-full"></div>
-                    
-                    <div class="flex items-center justify-between z-10 border-b border-white/5 pb-3">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="map" class="text-[#7f12d8]"></i>
-                            <h3 class="text-xl font-bold">Pin Location Guess</h3>
-                        </div>
-                        <button onclick="toggleGeoModal(false)" class="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white">
-                            <i data-lucide="x" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-
-                    <!-- Embedded Leaflet Area -->
-                    <div id="osm-map" class="w-full flex-grow rounded-2xl overflow-hidden border border-white/10 relative z-10 shadow-lg"></div>
-
-                    <!-- Action control -->
-                    <div class="flex gap-4 items-center z-10 mt-2">
-                        <button id="email-guess-btn" disabled onclick="sendEmailGuess()" class="flex-grow py-3 px-6 bg-emerald-600 disabled:bg-slate-800 disabled:text-slate-500 hover:bg-emerald-500 text-white font-bold rounded-xl active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2 shadow-lg">
-                            <i data-lucide="navigation" class="w-4 h-4"></i> Select Location on Map Above
-                        </button>
-                    </div>
                 </div>
             </div>
         </section>
@@ -312,377 +240,18 @@
         <!-- ================= PAGE: DOCS ================= -->
         <section id="page-docs" class="app-route hidden max-w-7xl mx-auto">
             <div class="glass-panel rounded-3xl shadow-2xl overflow-hidden border-white/10 flex flex-col lg:flex-row min-h-[70vh]">
-                
-                <!-- Documentation Sidebar -->
-                <aside class="w-full lg:w-72 bg-black/40 border-b lg:border-b-0 lg:border-r border-white/10 p-5 flex flex-col justify-between shrink-0">
-                    <div>
-                        <div class="bg-[#7f12d8]/10 p-4 rounded-2xl border border-[#7f12d8]/20 mb-6">
-                            <div class="text-lg font-bold text-white flex items-center gap-2">
-                                <i data-lucide="terminal" class="text-purple-400"></i> ShulkerOS
-                            </div>
-                            <div class="text-[10px] text-white/50 font-mono mt-0.5">master branch (v1.0.0)</div>
-                            <div class="mt-3 relative">
-                                <i data-lucide="search" class="w-4 h-4 text-white/30 absolute left-3 top-2.5"></i>
-                                <input type="text" id="doc-search" oninput="searchDocumentation()" placeholder="Search docs..." class="w-full pl-9 pr-3 py-1.5 rounded-xl bg-black/30 border border-white/10 text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#7f12d8]/50">
-                            </div>
-                        </div>
-
-                        <nav class="flex flex-col gap-1 text-sm text-slate-300">
-                            <span class="px-2 py-1 text-[10px] uppercase font-bold text-white/30 tracking-widest">Introduction</span>
-                            <button onclick="switchDocTab('welcome')" id="doc-link-welcome" class="doc-sidebar-btn w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-2">
-                                <i data-lucide="info" class="w-3.5 h-3.5"></i> Welcome to ShulkerOS
-                            </button>
-                            
-                            <span class="px-2 py-1 text-[10px] uppercase font-bold text-white/30 tracking-widest mt-4">Core Deployment</span>
-                            <button onclick="switchDocTab('blueprint')" id="doc-link-blueprint" class="doc-sidebar-btn w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-2">
-                                <i data-lucide="layers" class="w-3.5 h-3.5"></i> Drive Geometries
-                            </button>
-                            <button onclick="switchDocTab('pipeline')" id="doc-link-pipeline" class="doc-sidebar-btn w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-2">
-                                <i data-lucide="list-ordered" class="w-3.5 h-3.5"></i> 10-Stage Installation
-                            </button>
-                            
-                            <span class="px-2 py-1 text-[10px] uppercase font-bold text-white/30 tracking-widest mt-4">Web Architecture</span>
-                            <button onclick="switchDocTab('geodetective')" id="doc-link-geodetective" class="doc-sidebar-btn w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-2">
-                                <i data-lucide="cpu" class="w-3.5 h-3.5"></i> GeoDetective Engine Specs
-                            </button>
-                        </nav>
-                    </div>
-
-                    <div class="mt-8 pt-4 border-t border-white/5 text-[10px] text-white/30 font-mono flex items-center justify-between">
-                        <span>Powered by Sphinx</span>
-                        <a href="https://github.com/AYT04" target="_blank" class="hover:text-white transition-colors flex items-center gap-1">
-                            <i data-lucide="github" class="w-3 h-3"></i> edit on GitHub
-                        </a>
-                    </div>
-                </aside>
 
                 <!-- Document Body Container -->
                 <article class="flex-grow p-6 md:p-10 bg-slate-950/20 max-w-4xl">
-                    <div class="flex items-center gap-1.5 text-xs text-white/40 border-b border-white/5 pb-4 mb-6">
-                        <span>Docs</span>
-                        <i data-lucide="chevron-right" class="w-3 h-3"></i>
-                        <span id="doc-breadcrumb" class="text-white/80 font-medium">Welcome to ShulkerOS</span>
-                    </div>
-
-                    <!-- SUBTAB: WELCOME -->
                     <section id="doc-section-welcome" class="doc-tab-content flex flex-col gap-5">
-                        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-400">
-                            Welcome to ShulkerOS Documentation
-                        </h1>
-                        <p class="text-slate-300 text-sm leading-relaxed">
-                            Welcome to the official alignment framework repository manual for <strong class="text-purple-400">ShulkerOS</strong>. This project acts as an interactive sandbox platform designed to eliminate traditional distribution gatekeeping. It transforms complex terminal mechanics into a modular, structural learning pipeline.
-                        </p>
-
                         <div class="relative aspect-video w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl mt-4 bg-black">
-                            <iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/_JYIAaLrwcY" title="I Installed The Hardest System Known To Man..." frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                        </div>
-
-                        <div class="bg-blue-950/20 border-l-4 border-blue-500 rounded-r-xl p-4 mt-4 text-xs">
-                            <h4 class="font-bold text-blue-400 flex items-center gap-1.5 mb-1">
-                                <i data-lucide="info" class="w-4 h-4"></i> Architectural Mapping Note
-                            </h4>
-                            <p class="text-slate-300">This documentation environment explicitly target variables parsed directly from the system environment rules inside <code class="bg-black/40 px-1 py-0.5 rounded text-pink-400 font-mono">SHULKER_VIDEO_IDEA.sh</code>.</p>
+                            <iframe class="absolute inset-0 w-full h-full" src="https://www.youtube.com/embed/_JYIAaLrwcY" title="I Installed The Hardest System Known To Man..." frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+                            </iframe>
                         </div>
                     </section>
-
-                    <!-- SUBTAB: BLUEPRINT -->
-                    <section id="doc-section-blueprint" class="doc-tab-content hidden flex flex-col gap-5">
-                        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-400">
-                            Drive Environment Blueprints
-                        </h1>
-                        <p class="text-slate-300 text-sm">
-                            ShulkerOS configurations target embedded physical hardware flash modules (<code class="bg-black/30 px-1 rounded text-purple-400 font-mono">/dev/mmcblk0</code>). Below is the architecture mapping matrix compiled directly from your system blueprints:
-                        </p>
-
-                        <h3 class="text-lg font-bold mt-4 border-b border-white/5 pb-2 text-purple-300">Target Storage Block Mapping Table</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse text-xs">
-                                <thead>
-                                    <tr class="bg-white/5 border-b border-white/10">
-                                        <th class="p-3 font-semibold text-slate-200">Partition</th>
-                                        <th class="p-3 font-semibold text-slate-200">Volume Target Size</th>
-                                        <th class="p-3 font-semibold text-slate-200">System Code ID</th>
-                                        <th class="p-3 font-semibold text-slate-200">Filesystem Type</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-white/5 text-slate-300 font-mono">
-                                    <tr class="hover:bg-white/5 transition-colors">
-                                        <td class="p-3 text-emerald-400">/dev/mmcblk0p1</td>
-                                        <td class="p-3">1GB</td>
-                                        <td class="p-3">EF00 (EFI System Partition)</td>
-                                        <td class="p-3 text-sky-400 font-bold">FAT32</td>
-                                    </tr>
-                                    <tr class="hover:bg-white/5 transition-colors">
-                                        <td class="p-3 text-emerald-400">/dev/mmcblk0p2</td>
-                                        <td class="p-3">2GB</td>
-                                        <td class="p-3">8200 (Linux Swap Boundary)</td>
-                                        <td class="p-3 text-amber-500 font-bold">SWAP</td>
-                                    </tr>
-                                    <tr class="hover:bg-white/5 transition-colors">
-                                        <td class="p-3 text-emerald-400">/dev/mmcblk0p3</td>
-                                        <td class="p-3">40GB</td>
-                                        <td class="p-3">8300 (Linux Root OS Directory)</td>
-                                        <td class="p-3 text-indigo-400 font-bold">EXT4 (Journaled)</td>
-                                    </tr>
-                                    <tr class="hover:bg-white/5 transition-colors">
-                                        <td class="p-3 text-emerald-400">/dev/mmcblk0p4</td>
-                                        <td class="p-3">Remaining Space</td>
-                                        <td class="p-3">8300 (Linux User Storage Profiles)</td>
-                                        <td class="p-3 text-indigo-400 font-bold">EXT4 (Journaled)</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <h3 class="text-lg font-bold mt-6 border-b border-white/5 pb-2 text-purple-300">Environmental Baseline Keys</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-                            <div class="bg-black/30 p-4 rounded-xl border border-white/5">
-                                <span class="text-white/40 block uppercase tracking-wider text-[9px] mb-1">System Hostname</span>
-                                <strong class="text-slate-200">ShulkerOS</strong>
-                            </div>
-                            <div class="bg-black/30 p-4 rounded-xl border border-white/5">
-                                <span class="text-white/40 block uppercase tracking-wider text-[9px] mb-1">Primary Active Profile</span>
-                                <strong class="text-slate-200">ayt04</strong>
-                            </div>
-                            <div class="bg-black/30 p-4 rounded-xl border border-white/5">
-                                <span class="text-white/40 block uppercase tracking-wider text-[9px] mb-1">Timezone Regional Target</span>
-                                <strong class="text-slate-200">America/Toronto</strong>
-                            </div>
-                            <div class="bg-black/30 p-4 rounded-xl border border-white/5">
-                                <span class="text-white/40 block uppercase tracking-wider text-[9px] mb-1">Wireless Controller Interface</span>
-                                <strong class="text-slate-200">wlan0 <span class="text-[10px] text-purple-400">(iwctl)</span></strong>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- SUBTAB: PIPELINE -->
-                    <section id="doc-section-pipeline" class="doc-tab-content hidden flex flex-col gap-5">
-                        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-400">
-                            The 10-Stage Installation Process
-                        </h1>
-                        <p class="text-slate-300 text-sm mb-4">
-                            The platform coordinates an absolute logical pipeline mapping variables down directly into functional physical device states:
-                        </p>
-
-                        <!-- Pipeline Timeline Steps -->
-                        <div class="relative pl-6 border-l border-white/10 flex flex-col gap-8 text-xs">
-                            <div class="relative">
-                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
-                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">1. Verification Testing</h4>
-                                <p class="text-slate-400 mt-1">Validates network capabilities via <code class="font-mono bg-black/30 text-pink-400 px-1 py-0.5 rounded">ping www.ayt04.xyz</code> and tests UEFI systems configuration variables standard with <code class="font-mono bg-black/30 text-pink-400 px-1 py-0.5 rounded">efivar -l</code>.</p>
-                            </div>
-                            <div class="relative">
-                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
-                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">2. Partition Table Zapping</h4>
-                                <p class="text-slate-400 mt-1">Executes robust sector clearing actions by feeding <code class="font-mono bg-black/30 text-pink-400 px-1 py-0.5 rounded">gdisk</code> expert-level execution sequences (<code class="font-mono text-[#ff0033]">x</code> to load commands, then <code class="font-mono text-[#ff0033]">z</code> to cleanly zero out structures).</p>
-                            </div>
-                            <div class="relative">
-                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
-                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">3. cgdisk Space Allocation</h4>
-                                <p class="text-slate-400 mt-1">Slices drive sectors accurately utilizing responsive GUI-driven ncurses configuration environments.</p>
-                            </div>
-                            <div class="relative">
-                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
-                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">4. Filesystem Format Structuring</h4>
-                                <p class="text-slate-400 mt-1">Builds partition layers cleanly. Forms FAT32 schemas to drive sector blocks, and sets up high-reliability journaled EXT4 structures.</p>
-                            </div>
-                            <div class="relative">
-                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
-                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">5. Folder Mounting Hierarchies</h4>
-                                <p class="text-slate-400 mt-1">Wires physical block partition p3 safely to system live workspace root (<code class="font-mono bg-black/30 text-emerald-400 px-1 py-0.5 rounded">/mnt</code>), and hooks up isolated boot/user profiles mounts inside.</p>
-                            </div>
-                            <div class="relative">
-                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
-                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">6. Pacstrap Core Deployments</h4>
-                                <p class="text-slate-400 mt-1">Deploys structural operations kernels, peripheral machine interfaces, and system packages from localized mirrors lists.</p>
-                            </div>
-                            <div class="relative">
-                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
-                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">7. Immutable Mapping & Chroot</h4>
-                                <p class="text-slate-400 mt-1">Generates unique permanent system ID signatures (<code class="font-mono text-[#7f12d8]">PARTUUID</code>) to lock system configurations safely before running <code class="font-mono bg-black/30 text-pink-400 px-1 py-0.5 rounded">arch-chroot</code> inside the container target.</p>
-                            </div>
-                            <div class="relative">
-                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
-                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">8. Regional Settings Calibration</h4>
-                                <p class="text-slate-400 mt-1">Configures language profiles, locks motherboard clock bounds directly to global standards, and commands SSD sector block optimization protocols to reduce physical wear.</p>
-                            </div>
-                            <div class="relative">
-                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
-                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">9. Bootloader Installation</h4>
-                                <p class="text-slate-400 mt-1">Installs modern high-efficiency <code class="font-mono bg-black/30 text-pink-400 px-1 py-0.5 rounded">systemd-boot</code> components inside local firmware sectors.</p>
-                            </div>
-                            <div class="relative">
-                                <span class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-[#7f12d8] border-4 border-slate-900 shadow"></span>
-                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">10. Display Greeters Setup</h4>
-                                <p class="text-slate-400 mt-1">Launches localized window engines (<code class="font-mono bg-black/30 text-[#ff0033] px-1 py-0.5 rounded">Xorg</code>) and activates user authentication managers (<code class="font-mono bg-black/30 text-[#ff0033] px-1 py-0.5 rounded">sddm.service</code>) to display visual dashboards on subsequent boots.</p>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- SUBTAB: GEODETECTIVE -->
-                    <section id="doc-section-geodetective" class="doc-tab-content hidden flex flex-col gap-5">
-                        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-400">
-                            GeoDetective Application Specification
-                        </h1>
-                        <p class="text-slate-300 text-sm">
-                            The geolocation engine uses dynamic OpenStreetMap layers coupled with real-world Mapillary street captures to challenge geographical reasoning:
-                        </p>
-
-                        <h3 class="text-lg font-bold mt-4 border-b border-white/5 pb-2 text-purple-300">API Registers & Security Keys</h3>
-                        <div class="bg-black/40 rounded-xl p-4 border border-white/10 font-mono text-xs">
-                            <span class="text-slate-500">// Mapillary Token Registers</span><br>
-                            <span class="text-pink-400">const</span> MLY_KEY = <span class="text-emerald-400">'MLY|26867455816212719|1f45e3cbfcc2a9f2977476ad1c3aa021'</span>;<br>
-                            <span class="text-pink-400">const</span> TARGET_EMAIL = <span class="text-emerald-400">'ayt04@duck.com'</span>;<br>
-                            <span class="text-pink-400">const</span> COOLDOWN_TIME = <span class="text-amber-400">120</span>; <span class="text-slate-500">// Seconds query wait limitation</span>
-                        </div>
-
-                        <h3 class="text-lg font-bold mt-6 border-b border-white/5 pb-2 text-purple-300">System Mechanics</h3>
-                        <p class="text-slate-300 text-sm leading-relaxed">
-                            The interface queries Mapillary database vectors using randomly generated coordinate boundaries surrounding global capitals. Pinning markers inside our integrated Leaflet viewport extracts coordinate states. Submitting triggers local operating system mail wrappers to compile coordinates to the server index immediately.
-                        </p>
-                    </section>
-
                 </article>
             </div>
         </section>
-
-
-        <!-- ================= PAGE: SHULKEROS SCRIPT ================= -->
-        <section id="page-shulker" class="app-route hidden max-w-5xl mx-auto">
-            <div class="glass-panel rounded-3xl p-6 shadow-2xl border-white/10 flex flex-col gap-5">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-4">
-                    <div>
-                        <h2 class="text-2xl font-bold flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-400">
-                            <i data-lucide="terminal" class="text-purple-500"></i> SHULKER_VIDEO_IDEA.sh
-                        </h2>
-                        <p class="text-xs text-slate-400 mt-1">Live operational terminal sandbox configuration script. Ready to download, copy, or review.</p>
-                    </div>
-                    <div class="flex items-center gap-2 self-start md:self-auto">
-                        <button onclick="downloadShulkerScript()" class="px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-lg shadow-purple-600/20 active:scale-95">
-                            <i data-lucide="download" class="w-4 h-4"></i> Download .sh
-                        </button>
-                        <button onclick="copyShulkerScript()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-100 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-white/10 active:scale-95">
-                            <i data-lucide="copy" class="w-4 h-4"></i> Copy Script
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Syntax Highlight Simulated Container -->
-                <div class="rounded-2xl bg-black/60 border border-white/5 overflow-hidden flex flex-col h-[65vh] shadow-inner">
-                    <div class="bg-[#160d24] px-4 py-3 flex items-center justify-between border-b border-white/5">
-                        <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full bg-red-500"></span>
-                            <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
-                            <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
-                            <span class="text-xs text-slate-400 font-mono ml-2">SHULKER_VIDEO_IDEA.sh &mdash; Bash (78 lines)</span>
-                        </div>
-                    </div>
-                    <div class="flex-grow overflow-y-auto p-4 code-container text-xs text-slate-300 leading-relaxed font-mono flex">
-                        <!-- Line Numbers -->
-                        <div id="shulker-lines" class="text-right text-slate-600 select-none pr-4 border-r border-white/5 flex flex-col shrink-0"></div>
-                        <!-- Content Code Panel -->
-                        <pre id="shulker-code-block" class="pl-4 overflow-x-auto whitespace-pre text-slate-200 flex-grow select-text selection:bg-[#7f12d8]/30"></pre>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-
-        <!-- ================= PAGE: CREATOR RSS ================= -->
-        <section id="page-rss" class="app-route hidden max-w-4xl mx-auto">
-            <div class="glass-panel rounded-3xl p-8 shadow-2xl border-white/10 relative overflow-hidden">
-                <div class="absolute -top-32 -right-32 w-64 h-64 bg-[#7f12d8]/10 blur-3xl rounded-full"></div>
-                
-                <div class="text-center max-w-xl mx-auto mb-10">
-                    <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-pink-400 mb-3">
-                        Favorite Creator RSS Feeds
-                    </h2>
-                    <p class="text-slate-300 text-sm font-light">
-                        These are highly curated feeds from content developers specializing in cybersecurity, systems development, operating models, and network boundaries.
-                    </p>
-                    <div class="mt-4 p-3 rounded-2xl bg-white/5 border border-white/5 inline-flex items-center gap-2 text-xs text-slate-300">
-                        <span class="text-purple-400 font-bold">App Recommendation:</span>
-                        <span>I love <a href="https://feedflow.dev/" target="_blank" class="underline text-purple-300 hover:text-white transition-colors">FeedFlow</a> for a minimal reading framework!</span>
-                    </div>
-                </div>
-
-                <!-- RSS Cards Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="glass-card p-5 rounded-2xl flex flex-col justify-between gap-4">
-                        <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <h4 class="font-bold text-slate-100 text-lg">Brodie Robertson</h4>
-                                <span class="text-[10px] bg-purple-950/40 text-purple-300 border border-purple-800/30 px-2 py-0.5 rounded-full font-mono">Odysee</span>
-                            </div>
-                            <p class="text-xs text-slate-400 leading-normal">Deep dives on Linux window environments, tiling controllers, CLI utilities, and open source ecosystems.</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="copyLink('https://odysee.com/$/rss/@BrodieRobertson:5')" class="flex-grow py-2 px-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95">
-                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Feed Link
-                            </button>
-                            <a href="https://odysee.com/@BrodieRobertson:5" target="_blank" class="p-2 bg-[#7f12d8]/10 hover:bg-[#7f12d8]/20 text-purple-300 rounded-xl transition-colors">
-                                <i data-lucide="external-link" class="w-4 h-4"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="glass-card p-5 rounded-2xl flex flex-col justify-between gap-4">
-                        <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <h4 class="font-bold text-slate-100 text-lg">Cyb3rMaddy</h4>
-                                <span class="text-[10px] bg-red-950/40 text-red-400 border border-red-800/30 px-2 py-0.5 rounded-full font-mono">YouTube</span>
-                            </div>
-                            <p class="text-xs text-slate-400 leading-normal">Operational security guidelines, malware mechanics reviews, cybersecurity architectures, and infrastructure forensics.</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="copyLink('https://www.youtube.com/feeds/videos.xml?channel_id=UCgd5-BWtbgOw5Hx2wP3qxzg')" class="flex-grow py-2 px-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95">
-                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Feed Link
-                            </button>
-                            <a href="https://www.youtube.com/@cyb3rmaddy" target="_blank" class="p-2 bg-[#7f12d8]/10 hover:bg-[#7f12d8]/20 text-purple-300 rounded-xl transition-colors">
-                                <i data-lucide="external-link" class="w-4 h-4"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="glass-card p-5 rounded-2xl flex flex-col justify-between gap-4">
-                        <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <h4 class="font-bold text-slate-100 text-lg">SomeOrdinaryGamers</h4>
-                                <span class="text-[10px] bg-purple-950/40 text-purple-300 border border-purple-800/30 px-2 py-0.5 rounded-full font-mono">Odysee</span>
-                            </div>
-                            <p class="text-xs text-slate-400 leading-normal">Analysis of online privacy trends, visual virtual machines configurations, hardware sandboxing, and web vulnerabilities.</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="copyLink('https://odysee.com/$/rss/@SomeOrdinaryGamers:6')" class="flex-grow py-2 px-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95">
-                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Feed Link
-                            </button>
-                            <a href="https://odysee.com/@SomeOrdinaryGamers" target="_blank" class="p-2 bg-[#7f12d8]/10 hover:bg-[#7f12d8]/20 text-purple-300 rounded-xl transition-colors">
-                                <i data-lucide="external-link" class="w-4 h-4"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="glass-card p-5 rounded-2xl flex flex-col justify-between gap-4">
-                        <div>
-                            <div class="flex items-center justify-between mb-3">
-                                <h4 class="font-bold text-slate-100 text-lg">Techlore</h4>
-                                <span class="text-[10px] bg-indigo-950/40 text-indigo-400 border border-indigo-800/30 px-2 py-0.5 rounded-full font-mono">Techlore XML</span>
-                            </div>
-                            <p class="text-xs text-slate-400 leading-normal">Actionable digital privacy guides, secure messaging matrix reports, router hardening frameworks, and custom OS structures.</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="copyLink('https://techlore.tv/feeds/videos.xml?accountId=4')" class="flex-grow py-2 px-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95">
-                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Feed Link
-                            </button>
-                            <a href="https://techlore.tv" target="_blank" class="p-2 bg-[#7f12d8]/10 hover:bg-[#7f12d8]/20 text-purple-300 rounded-xl transition-colors">
-                                <i data-lucide="external-link" class="w-4 h-4"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
 
         <!-- ================= PAGE: CONTACT ================= -->
         <section id="page-contact" class="app-route hidden max-w-lg mx-auto">
@@ -691,7 +260,7 @@
                 
                 <div class="mb-8 text-center">
                     <h1 class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-red-400 mb-2">hit me up ✨</h1>
-                    <p class="text-xs text-slate-400">Routes straight into secure communication channels</p>
+                    <p class="text-xs text-slate-400">Contact me if you have any questions or want to talk.</p>
                 </div>
 
                 <form id="contactForm" onsubmit="handleContactSubmit(event)" class="space-y-5 relative z-10">
@@ -708,15 +277,14 @@
                     </div>
                     
                     <button type="submit" class="w-full py-4 px-6 bg-gradient-to-r from-[#7f12d8] to-[#ff0033] hover:brightness-110 active:scale-95 text-white font-bold rounded-2xl transition-all duration-200 shadow-xl shadow-[#7f12d8]/20 text-sm flex items-center justify-center gap-2">
-                        Send Securely <i data-lucide="send" class="w-4 h-4"></i>
+                        Send? <i data-lucide="send" class="w-4 h-4"></i>
                     </button>
                 </form>
 
                 <div id="contact-success" class="mt-8 p-4 bg-emerald-950/20 border border-emerald-500/30 rounded-2xl hidden animate-pulse">
                     <p class="text-center font-bold text-emerald-400 text-sm flex items-center justify-center gap-1.5">
-                        <i data-lucide="check-circle" class="w-4 h-4"></i> Secured the bag! 🫡
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> Sent! 🫡
                     </p>
-                    <p class="text-center text-xs text-slate-300 mt-1">Check your desktop mail framework client to complete sending parameters.</p>
                 </div>
             </div>
         </section>
@@ -729,137 +297,8 @@
     <!-- CORE MODULE CONTROLLERS -->
     <script>
         // ================= CONFIGURATION & DATABASES =================
-        const MLY_KEY = 'MLY|27179734925045511|e7744482137b04e7f5d65082b417f566';
-        const TARGET_EMAIL = 'ayt04@duck.com';
-        const COOLDOWN_TIME = 120; 
-
-        // RAW SHELL SCRIPT SOURCE DATA
-        const SHULKER_SCRIPT_DATA = `# Arch Install | Gnome/IOS Theme | Dumb Phone - A Nebula Project
-
-- [ ] Iwctl
-
-- [ ] Efivar -l
-
-- [ ] Gdisk
-
-- [ ] Cgdisk
-
-    - [ ] mkfs.fat -F32 p1 - Boot (EF00)
-
-    - [ ] mkswap p2 - Swap (8200)
-
-    - [ ] swapon p2
-
-    - [ ] mkfs.ext4 p3 - Root (8300)
-
-    - [ ] mkfs.ext4 p4 - Home
-
-- [ ] mount p3 /mnt
-
-- [ ] mkdir -p /mnt/boot /mnt/home
-
-- [ ] mount p1 /mnt/boot
-
-- [ ] mount p4 /mnt/home
-
-- [ ] cp mirrorlist
-
-- [ ] install pacman-contrib
-
-- [ ] rankmirrors -n 2 mirrorlist.backup
-
-- [ ] pacstrap -K /mnt base linux linux-firmware
-
-- [ ] genfstab -U -p /mnt >> /mnt/etc/fstab
-
-- [ ] nano /mnt/etc/fstab
-
-- [ ] arch-chroot /mnt
-
-    - [ ] sudo pacman -S nano bash-completion
-
-    - [ ] nano /etc/locale-gen
-
-        - [ ] en\_US.UTF-8
-
-    - [ ] locale-gen
-
-    - [ ] echo LANG-en\_US.UTF-8 > /etc/locale.conf
-
-    - [ ] export LANG=en\_US.UTF-8
-
-    - [ ] ln -s /usr/share/zoneinfo/canada/Eastern > /etc/localtime
-
-    - [ ] hwclock --systohc --utc
-
-    - [ ] echo Overlord > /etc/hostname
-
-    - [ ] systemctl enable fstrim.timer
-
-    - [ ] nano /etc/pacman.conf
-
-        - [ ] [multilib]
-
-        - [ ] Include = /etc/pacman.d/mirrorlist
-
-    - [ ] sudo pacman -Sy
-
-    - [ ] passwd
-
-    - [ ] useradd -m -g users -G wheel,storage,power -s /bin/bash addison
-
-    - [ ] passwd addison
-
-    - [ ] EDITOR=nano visudo
-
-        - [ ] %wheel ALL=(ALL:ALL) ALL
-
-        - [ ] Defaults rootpw
-
-    - [ ] mount -t efivarfs efivarfs /sys/firmware/efi/efivars
-
-    - [ ] ls /sys/firmware/efi/efivars
-
-    - [ ] bootctl install
-
-    - [ ] nano /boot/loader/entries/arch.conf
-
-        - [ ] title Arch
-
-        - [ ] linux /vmlinuz-linux
-
-        - [ ] initrd /initramfs-linux.img
-
-    - [ ] echo "options root=PARTUUID=$(blkid -s PARTUUID -o value /dev/p3) rw" >> /boot/loader/entries/arch.conf
-
-    - [ ] ip link
-
-    - [ ] sudo pacman -S dhcpcd
-
-    - [ ] sudo systemctl enable dhcpcd@wlan0.service
-
-    - [ ] sudo pacman -S networkmanager
-
-    - [ ] sudo systemctl enable NetworkManager.service
-
-    - [ ] exit
-
-- [ ] umount -R /mnt
-
-- [ ] reboot
-
-- [ ] sudo pacman -S xorg-server xorg-apps xorg-xinit xorg-twm xorg-xclock xterm
-
-- [ ] startx
-
-- [ ] sudo pacman -S sddm
-
-- [ ] sudo systemctl enable sddm.service
-
-- [ ] reboot
-
-    - [ ] sudo pacman -S steam firefox discord kate vlc`;
-
+        const MLY_KEY = 'MLY|27547355641550433|a8c5ee6562ef79a37b521fe2a18a659a';
+        const COOLDOWN_TIME = 120;
         const GEODETECTIVE_CITIES = [
             { name: "Kabul, Afghanistan", lat: 34.5333, lng: 69.1667 },
             { name: "Tirana, Albania", lat: 41.3275, lng: 19.8189 },
@@ -1325,67 +764,6 @@
                     btn.style.display = 'none';
                 }
             });
-        }
-
-
-        // ================= SANDBOX SHULKER SCRIPT IDE VIEW =================
-        function initShulkerScriptView() {
-            const codeBlock = document.getElementById('shulker-code-block');
-            const linesContainer = document.getElementById('shulker-lines');
-            
-            // Format Code lines
-            const lines = SHULKER_SCRIPT_DATA.split('\n');
-            let lineNumHTML = "";
-            let codeHTML = "";
-
-            lines.forEach((line, index) => {
-                lineNumHTML += `<span>${index + 1}</span>\n`;
-                
-                // Super lightweight syntax highlighter emulator
-                let parsedLine = line
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;");
-
-                // Highlight Comments
-                if (parsedLine.startsWith('#')) {
-                    parsedLine = `<span class="text-slate-500 italic">${parsedLine}</span>`;
-                } else {
-                    // Highlight Variables
-                    parsedLine = parsedLine.replace(/^([A-Za-z0-9_]+)=/g, '<span class="text-purple-400">$1</span>=');
-                    // Highlight Quotes
-                    parsedLine = parsedLine.replace(/("[^"]*")/g, '<span class="text-emerald-400">$1</span>');
-                }
-
-                codeHTML += `<span>${parsedLine}</span>\n`;
-            });
-
-            linesContainer.innerHTML = lineNumHTML;
-            codeBlock.innerHTML = codeHTML;
-        }
-
-        function copyShulkerScript() {
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = SHULKER_SCRIPT_DATA;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-            showToast("ShulkerOS custom configuration script copied to clipboard!");
-        }
-
-        function downloadShulkerScript() {
-            const blob = new Blob([SHULKER_SCRIPT_DATA], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'SHULKER_VIDEO_IDEA.sh';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            showToast("Download initialized safely.");
         }
 
 
