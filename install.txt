@@ -1,81 +1,125 @@
-# --- Pre-chroot (run on installer) ---
-iwctl
-efivar -l
-gdisk
-cgdisk
+"ping www.google.com"
 
-mkfs.fat -F32 p1
-mkswap p2
-swapon p2
-mkfs.ext4 p3
-mkfs.ext4 p4
+"EFI VAR okay and then Dash L"
 
-mount p3 /mnt
-mkdir -p /mnt/boot /mnt/home
-mount p1 /mnt/boot
-mount p4 /mnt/home
+"lsblk list block"
 
-cp mirrorlist /mnt/etc/pacman.d/mirrorlist
-pacstrap -K /mnt base linux linux-firmware
-genfstab -U -p /mnt >> /mnt/etc/fstab
-nano /mnt/etc/fstab
+"gdisc space slash Dev and slash sdb"
 
-arch-chroot /mnt
+"X4 expert and then we're going to be doing Z to zap"
 
-# --- Chroot (run inside arch-chroot) ---
-ln -sf /usr/share/zoneinfo/Canada/Eastern /etc/localtime
-hwclock --systohc --utc
+"CG disk it's a easier uh you know partitioning tool so do slash Dev slash sdb"
 
-echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
-locale-gen
-echo "LANG=en_US.UTF-8" > /etc/locale.conf
+"make FS for file system and then you want to do fat which is file allocation table okay I'm not literally being fat phobic here Dash capital F 32 for FAT32 and then you want to type in Dev and then sdb one"
 
-echo "Overlord" > /etc/hostname
+"MK Swap and then do slash Dev slash sdb2"
 
-systemctl enable fstrim.timer
+"swap on slash Dev sdb2"
 
-pacman -S --noconfirm nano bash-completion sudo
+"makefs.ext4 slash Dev slash sdb 3"
 
-# Edit /etc/pacman.conf and ensure:
-# [multilib]
-# Include = /etc/pacman.d/mirrorlist
-nano /etc/pacman.conf
+"make FS Dot ext4 and just do Dev sdb4"
 
-pacman -Sy --noconfirm
+"Mount Dev and then sdb3 and then we're going to be doing space slash MNT"
 
-useradd -m -g users -G wheel,storage,power -s /bin/bash addison
-passwd addison
+"make directory all right and we're going to be doing Mount and then slash boot so MNT slash boot"
 
-EDITOR=nano visudo
-# In visudo, ensure this line exists:
-# %wheel ALL=(ALL:ALL) ALL
+"make another directory and we're going to do an MNT slash home"
 
-mount -t efivarfs efivarfs /sys/firmware/efi/efivars
-bootctl install
+"Mount Dev sdb 1 which is if you remember our one gig boot directory and that's going to be going into MNT and you guessed it slash boot"
 
-nano /boot/loader/entries/arch.conf
-# title Arch
-# linux /vmlinuz-linux
-# initrd /initramfs-linux.img
+"mount Dev sdb uh four and then we're going to be because that's our home directory our largest partition slash MNT slash home"
 
-echo "options root=PARTUUID=$(blkid -s PARTUUID -o value /dev/p3) rw" >> /boot/loader/entries/arch.conf
+"CP for copy and we're going to be doing uh Slash Etsy Etc Pac-Man and you can kind of press tab to auto complete things so pacman.d slash mirror list now here we're going to have another space and we're going to go to slash Etsy and then we're going to do Pac-Man D and then we're going to be doing mirror list dot backup"
 
-pacman -S --noconfirm dhcpcd networkmanager
-systemctl enable dhcpcd@wlan0.service
-systemctl enable NetworkManager.service
+"sudo Pac-Man Dash s this is going to be a command you're going to need to know this is how you install packages onto this version of Linux with the arch like package management system so dash s and you're going to be typing in Pac-Man contrib"
 
-exit
+"sudo Pac-Man Dash Sy your first time and then Pac-Man contrib"
 
-# --- Finish ---
-umount -R /mnt
-reboot
+"rank mirrors right this is the command and then do dash n and then you want to type in 6 for the top ones and of course in this situation you're going to do Etsy Pacman dot d slash mirror list and in this case you want to do the backup and then you want to do one Arrow which is you know to the the greater than arrow and then you want to do slash Etsy Pac-Man D mirror list"
 
-# --- After reboot ---
-pacman -S xorg-server xorg-xinit xterm xorg-apps sddm --noconfirm
-startx
+"pack strap all right strap on your seat belts buckos Dash capital K and you're gonna do slash MNT you're gonna do uh you're gonna do according to the actual installation guide yes I am looking at the guide myself because things do change type in bass Linux because you need the kernel Linux firmware because you want to actually use your Hardware underneath Linux let's not pretend and then of course the last but not least if you're going to be working with you know development kind of stuff do base Dash devil"
 
-pacman -S sddm --noconfirm
-systemctl enable sddm.service
-reboot
+"gen F stab all right and then you're gonna do Dash capital u again lowercases in uppercases very important Dash lowercase SP and then slash MNT and then two arrows to the right and then you're going to be doing slash MNT slash Etsy slash F stab"
 
-pacman -S steam firefox discord kate vlc --noconfirm
+"Nano MNT Etsy f-stab"
+
+"Arch CH root and then do uh Slash MNT"
+
+"sudo Pac-Man Dash s and do Nano and also do bash Dash completion"
+
+"Nano slash Etsy and then do locale.gen"
+
+"Locale Dash gen"
+
+"Echo Capital Lang equal n underscore us dot UTF minus eight and then of course one Arrow key to the right and you want to do Etsy Locale and then conf"
+
+"export okay Lang and then you want to do equals n underscore again very important that you get the capitals all right so n u s UTF minus eight"
+
+"LS as list and then you want to do slash user share Zone info"
+
+"Ln space dash s and you're going to be linking something symbolically kind of like a shortcut in a way and then you're going to go all the way to the end get one Arrow key to the right and you're going to do slash Etsy local time"
+
+"HW uh clock all right so HW clock and then do Dash sys tohc and then you're going to do Dash do dashes UTC"
+
+"Echo and you're going to type in whatever your name is so for me it's Overlord and then one Arrow key to the right slash Etsy and then you're going to do slash hostname"
+
+"system CTL all right system control enable fstrom dot timer"
+
+"Nano Dash Etsy and then do pacman.com"
+
+"sudo Pac-Man Dash Dash s y"
+
+"pass WD"
+
+"user add and then you do Dash M Dash G and then of course in this situation you want to do uh users and then Dash capital G you want to give it wheel support storage support and you want to give it power control too hit dash s and then of course give it the shell so in this case we're going to go the default bin bash and then we're going to type in our name"
+
+"password and then the username"
+
+"editor equal Nano and then you want to do VI sudo"
+
+"mount T and then you want to do EFI VAR fs and you want to do EFI VAR FS uh and then do slash system the directory firmware and then you want to go to EFI EFI bars"
+
+"boot CTL install"
+
+"Nano and then do slash boot loaders and trees and then slash and just do Arch um You can call it whatever you want you can call it first just call it Arch to make it easier for you it arch.conf"
+
+"Echo because we're going to be writing something to a file we're going to be doing uh you know a commas uh and then we're going to be typing in options root equal part uuid we're actually going to be using the ID which is static doesn't change so no matter what happens with Updates this will not screw up the boot process ever you always want to have a system that can at least boot in right now inside here you want to do Capital part uuid and you want to do equal Dolan sign dollar sign right here I won't even joke around one bracket block ID dash s and then part uuid all right dash o and then we're going to grab the value of it and space Dev sdb 3 which is our root directory where our system is stored now of course we're going to be doing RW and then an apostrophe to close off this string of characters we're copying into that file we just made now here we're going to be doing two brackets because two brackets actually adds a line to a file one bracket straight up overwrites the entire file so if you ever wonder why I have different brackets and the amount of it that's why so hit space and you want to do slash boot loader entries and that Arch configuration file we made"
+
+"Nano boot loader entries Arch"
+
+"IP Link"
+
+"sudo Pac-Man Dash s and you want to First install DHCP CD"
+
+"sudo system CTL and then you want to do enable and then you want to enable dhcpcd add enp 56 s0 again yours may be different and then of course dot service"
+
+"sudo Pac-Man s and then do network manager"
+
+"sudo system CTL enable and then the network manager dot service"
+
+"sudo Pac-Man s you want to install Nvidia DK Ms remember those Linux headers we installed earlier we're going to be using something known as the kernel module uh the dynamic kernel module system which basically means we're going to be just building these modules to order okay like a chef makes fresh food in a restaurant so again install this then install live GL vnd and of course all of this is on the Arch Linux installation so do Nvidia utils because you do want the utilities and then of course opencl Nvidia and you also want to have the the lip 32 versions of this as well too just in case any software calls upon it so do lib32 lib glvnd and then do lib32 Nvidia utils lib32 opencl and then Nvidia and then of course Nvidia Dash settings"
+
+"sudo pacman-s Linux headers"
+
+"sudo Nano Etsy make initcpio.com"
+
+"sudo Nano slash boot loader entries the you know whatever your configuration is called and then after the options line right after RW so get to the very end of this line and you want to just type in uh Nvidia uh uh dot dash DRM dot mode set equals one"
+
+"sudo make directory Etsy Pac-Man Dash D and then hooks"
+
+"sudo Nano Etsy Pac-Man D Hooks and then call this one nvidia.book"
+
+"type in exit you mount unmount everything so R and slash MNT and then of course type in the words reboot"
+
+"sudo Pac-Man Dash s and you want to install zorg server like so uh and then you want to install zorg Dash apps zorg X in it zorg uh sorry not Dash zorg zorg twm and you want to do zorg X clock and then X term"
+
+"start X"
+
+"type in the words exit"
+
+"sudo Pac-Man s and do plasma and then do sddm"
+
+"system CTL pseudo system CTL enable sddm.service"
+
+"sudo Pac-Man Dash s and you can type in console with a K and then of course you can install a bunch of other things so do you need for instance a web browser well you can get Firefox do you want to get a file manager do dolphin do you want to get a text editor type in Kate do you want to get Discord as well type in Discord hey do you want to download Steam for those video games type in Steam"
