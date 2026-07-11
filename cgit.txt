@@ -1,0 +1,122 @@
+To set up **cgit** (a fast, lightweight web interface for Git repositories), the approach differs significantly between Windows and Arch Linux. **cgit** is designed primarily for Unix-like systems and integrates tightly with web servers and CGI handlers, making **Arch Linux the recommended and straightforward platform**. On Windows, setup is complex and generally discouraged without a compatibility layer like WSL.
+
+## 🐧 Setting Up cgit on Arch Linux
+
+On Arch Linux, cgit is available in the official repositories and integrates easily with common web servers like Apache, Nginx, or Lighttpd.
+
+### 1. Install cgit and Dependencies
+
+First, update your system and install cgit along with a web server and CGI handler (e.g., `fcgiwrap` for Nginx or built-in CGI support for Apache).
+
+```bash
+sudo pacman -Syu
+sudo pacman -S cgit fcgiwrap nginx
+```
+
+*Note: If you prefer Apache, install `apache` and `cgi` modules instead.*
+
+### 2. Configure the Web Server
+
+#### Option A: Using Nginx with fcgiwrap
+
+1.  **Configure fcgiwrap**: Ensure the `fcgiwrap` socket is active.
+    ```bash
+    sudo systemctl enable --now fcgiwrap.socket
+    ```
+
+2.  **Edit Nginx Configuration**: Create or edit a server block (e.g., `/etc/nginx/conf.d/cgit.conf`).
+
+    ```nginx
+    server {
+        listen 80;
+        server_name git.example.com; # Replace with your domain or IP
+        root /usr/share/webapps/cgit;
+
+        # Serve static files (CSS, images)
+        location ~* ^.+(cgit\.(css|png)|favicon\.ico|robots\.txt) {
+            root /usr/share/webapps/cgit;
+            expires 30d;
+        }
+
+        # Handle dynamic CGI requests
+        location / {
+            try_files $uri @cgit;
+        }
+
+        location @cgit {
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME /usr/lib/cgit/cgit.cgi;
+            fastcgi_param PATH_INFO $uri;
+            fastcgi_param QUERY_STRING $args;
+            fastcgi_param HTTP_HOST $server_name;
+            fastcgi_pass unix:/run/fcgiwrap.sock;
+        }
+    }
+    ```
+
+3.  **Restart Nginx**:
+    ```bash
+    sudo systemctl restart nginx
+    ```
+
+#### Option B: Using Apache
+
+1.  **Enable CGI Module**: Ensure `mod_cgi` is enabled in `/etc/httpd/conf/httpd.conf`.
+2.  **Add Configuration**: Add the following to your httpd config or a separate file like `/etc/httpd/conf/extra/cgit.conf`:
+
+    ```apache
+    ScriptAlias /cgit "/usr/lib/cgit/cgit.cgi/"
+    Alias /cgit-css "/usr/share/webapps/cgit/"
+
+    <Directory "/usr/share/webapps/cgit/">
+        AllowOverride None
+        Options None
+        Require all granted
+    </Directory>
+
+    <Directory "/usr/lib/cgit/">
+        AllowOverride None
+        Options ExecCGI FollowSymlinks
+        Require all granted
+    </Directory>
+    ```
+
+3.  **Restart Apache**:
+    ```bash
+    sudo systemctl restart httpd
+    ```
+
+### 3. Configure cgit
+
+Edit the cgit configuration file located at `/etc/cgitrc`.
+
+```bash
+sudo nano /etc/cgitrc
+```
+
+Basic configuration example:
+
+```text
+virtual-root=/cgit/
+cache-root=/var/cache/cgit/
+enable-git-config=1
+add-repo=/srv/git/
+scan-path=/srv/git/
+```
+
+*   **`add-repo`** or **`scan-path`**: Point this to the directory where your bare Git repositories are stored (e.g., `/srv/git/`).
+*   Ensure the web server user (e.g., `http` or `nginx`) has read permissions to your repository directory.
+
+### 4. Finalize and Access
+
+1.  Create your repository directory if it doesn't exist:
+    ```bash
+    sudo mkdir -p /srv/git
+    sudo chown -R http:http /srv/git # Adjust user/group based on your web server
+    ```
+2.  Initialize a test repo:
+    ```bash
+    cd /srv/git
+    git init --bare test.git
+    ```
+3.  Access `http://your-server-ip/cgit` in your browser.
