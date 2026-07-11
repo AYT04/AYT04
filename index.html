@@ -8,7 +8,7 @@
     
     <!-- Open Graph / Meta -->
     <meta property="og:title" content="AYT04">
-    <meta property="og:description" content="My interactive sandbox platform, featuring ShulkerOS & NMPZ.">
+    <meta property="og:description" content="My interactive sandbox & ShulkerOS.">
     <meta property="og:image" content="https://avatars.githubusercontent.com/u/153463910?v=4">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
@@ -142,9 +142,6 @@
                 <button onclick="navigate('home')" id="nav-home" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
                     <i data-lucide="home" class="w-4 h-4"></i> Home
                 </button>
-                <button onclick="navigate('geodetective')" id="nav-geodetective" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
-                    <i data-lucide="map-pin" class="w-4 h-4"></i> NMPZ
-                </button>
                 <button onclick="navigate('docs')" id="nav-docs" class="glass-nav-btn px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white flex items-center gap-2">
                     <i data-lucide="book-open" class="w-4 h-4"></i> Docs
                 </button>
@@ -211,32 +208,6 @@
             </div>
         </section>
 
-
-        <!-- ================= PAGE: GEODETECTIVE ================= -->
-        <section id="page-geodetective" class="app-route hidden max-w-5xl mx-auto">
-            <div class="glass-panel rounded-3xl p-6 shadow-2xl border-white/10">
-                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 border-b border-white/5 pb-4">
-                </div>
-
-                <!-- Visual Capture Frame -->
-                <div class="relative w-full aspect-video md:h-[500px] bg-black/40 rounded-2xl border border-white/5 overflow-hidden shadow-inner">
-                    <div id="geo-loader" class="absolute inset-0 flex flex-col items-center justify-center gap-3 z-20 bg-slate-950/80">
-                        <div class="w-10 h-10 border-4 border-[#ff0033] border-t-transparent rounded-full animate-spin"></div>
-                        <span class="text-sm font-mono text-slate-400">Consulting Mapillary API registers...</span>
-                    </div>
-                    <img id="street-image" src="" alt="Street View Capture Location" class="w-full h-full object-cover hidden select-none">
-                </div>
-            </div>
-
-            <!-- Custom Unified Modals (Leaflet Map Guessing) -->
-            <div id="geo-modal" class="fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-4 md:p-6 hidden opacity-0 transition-opacity duration-300">
-                <div class="glass-panel w-full max-w-4xl h-[85vh] rounded-3xl p-6 flex flex-col gap-4 shadow-2xl relative border-white/10 overflow-hidden">
-                    <div class="absolute -top-32 -left-32 w-64 h-64 bg-[#7f12d8]/10 blur-3xl rounded-full"></div>
-                </div>
-            </div>
-        </section>
-
-
         <!-- ================= PAGE: DOCS ================= -->
         <section id="page-docs" class="app-route hidden max-w-7xl mx-auto">
             <div class="glass-panel rounded-3xl shadow-2xl overflow-hidden border-white/10 flex flex-col lg:flex-row min-h-[70vh]">
@@ -291,15 +262,8 @@
 
     </main>
 
-    <!-- Map Leaflet JS Imports -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <!-- CORE MODULE CONTROLLERS -->
     <script>
-        // ================= CONFIGURATION & DATABASES =================
-        const MLY_KEY = 'MLY|27547355641550433|a8c5ee6562ef79a37b521fe2a18a659a';
-        const COOLDOWN_TIME = 120;
-        const GEODETECTIVE_CITIES = [
+        const GEOGUESSR = [
             { name: "Kabul, Afghanistan", lat: 34.5333, lng: 69.1667 },
             { name: "Tirana, Albania", lat: 41.3275, lng: 19.8189 },
             { name: "Algiers, Algeria", lat: 36.7538, lng: 3.0588 },
@@ -528,16 +492,6 @@
             if (targetNav) {
                 targetNav.classList.add('active');
             }
-
-            // Route Specific Actions
-            if (routeId === 'geodetective') {
-                // Auto-refresh map boundary size container logic safely
-                setTimeout(() => {
-                    if (geoMap) {
-                        geoMap.invalidateSize();
-                    }
-                }, 100);
-            }
         }
 
         window.addEventListener('hashchange', handleSPAHashRoute);
@@ -578,156 +532,6 @@
             }, 3500);
         }
 
-        // Clip copy helper
-        function copyLink(text) {
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = text;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-            showToast("RSS Feed target link copied to clipboard!");
-        }
-
-
-        // ================= GEODETECTIVE GAME ENGINE =================
-        let geoMap, geoGuessMarker;
-        let geoCooldownTimer = null;
-        let geoUserGuessCoords = null;
-        let geoCurrentImageURL = "";
-
-        function initGeoDetective() {
-            const emailBtn = document.getElementById('email-guess-btn');
-            
-            // Setup Leaflet
-            geoMap = L.map('osm-map', { center: [20, 0], zoom: 2 });
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(geoMap);
-
-            // Map clicks
-            geoMap.on('click', (e) => {
-                geoUserGuessCoords = e.latlng;
-                if (geoGuessMarker) {
-                    geoGuessMarker.setLatLng(geoUserGuessCoords);
-                } else {
-                    geoGuessMarker = L.marker(geoUserGuessCoords).addTo(geoMap);
-                }
-                emailBtn.disabled = false;
-                emailBtn.innerHTML = `<i data-lucide="send" class="w-4 h-4"></i> Submit Guess via Email`;
-                lucide.createIcons();
-            });
-
-            geoLoadNewLocation();
-        }
-
-        async function geoLoadNewLocation() {
-            const loader = document.getElementById('geo-loader');
-            const imgElement = document.getElementById('street-image');
-            const emailBtn = document.getElementById('email-guess-btn');
-            
-            loader.style.display = 'flex';
-            imgElement.style.display = 'none';
-            
-            // Reset state
-            geoUserGuessCoords = null;
-            if (geoGuessMarker) { 
-                geoMap.removeLayer(geoGuessMarker); 
-                geoGuessMarker = null; 
-            }
-            emailBtn.disabled = true;
-            emailBtn.innerHTML = `<i data-lucide="navigation" class="w-4 h-4"></i> Select Location on Map Above`;
-            lucide.createIcons();
-
-            try {
-                const city = GEODETECTIVE_CITIES[Math.floor(Math.random() * GEODETECTIVE_CITIES.length)];
-                const lat = city.lat + (Math.random() - 0.5) * 0.15;
-                const lng = city.lng + (Math.random() - 0.5) * 0.15;
-                const bbox = `${lng-0.03},${lat-0.03},${lng+0.03},${lat+0.03}`;
-                
-                const resp = await fetch(`https://graph.mapillary.com/images?access_token=${MLY_KEY}&fields=id,geometry,thumb_original_url&bbox=${bbox}&limit=5`);
-                const data = await resp.json();
-                
-                if(!data.data || data.data.length === 0) throw new Error("No imagery found in vector boundary");
-                
-                const img = data.data[0];
-                geoCurrentImageURL = img.thumb_original_url;
-                imgElement.src = geoCurrentImageURL;
-                imgElement.onload = () => {
-                    loader.style.display = 'none';
-                    imgElement.style.display = 'block';
-                };
-            } catch (e) { 
-                // Retry automatically
-                geoLoadNewLocation(); 
-            }
-        }
-
-        function toggleGeoModal(show) {
-            const modal = document.getElementById('geo-modal');
-            if (show) {
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.remove('opacity-0');
-                    if (geoMap) {
-                        geoMap.invalidateSize();
-                    }
-                }, 50);
-            } else {
-                modal.classList.add('opacity-0');
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 300);
-            }
-        }
-
-        function startGeoCooldown() {
-            const btn = document.getElementById('next-img-btn');
-            let timeLeft = COOLDOWN_TIME;
-            btn.disabled = true;
-            
-            if (geoCooldownTimer) clearInterval(geoCooldownTimer);
-
-            geoCooldownTimer = setInterval(() => {
-                timeLeft--;
-                let minutes = Math.floor(timeLeft / 60);
-                let seconds = timeLeft % 60;
-                let displaySeconds = seconds < 10 ? "0" + seconds : seconds;
-
-                btn.innerHTML = `<i data-lucide="lock" class="w-4 h-4"></i> Wait (${minutes}:${displaySeconds})`;
-                lucide.createIcons();
-
-                if (timeLeft <= 0) {
-                    clearInterval(geoCooldownTimer);
-                    btn.disabled = false;
-                    btn.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4"></i> Get New Image`;
-                    lucide.createIcons();
-                }
-            }, 1000);
-        }
-
-        function sendEmailGuess() {
-            if (!geoUserGuessCoords) return;
-
-            const subject = encodeURIComponent("GeoGuessr NMPZ Guess");
-            const body = encodeURIComponent(
-                `Hey! Here is my guess for the image.\n\n` +
-                `Image URL: ${geoCurrentImageURL}\n\n` +
-                `My Coordinates:\n\n` +
-                `Latitude: ${geoUserGuessCoords.lat.toFixed(6)}\n\n` +
-                `Longitude: ${geoUserGuessCoords.lng.toFixed(6)}\n\n` +
-                `Let me know how close I was!`
-            );
-
-            // Spawns system mail wrapper
-            window.location.href = `mailto:${TARGET_EMAIL}?subject=${subject}&body=${body}`;
-            
-            toggleGeoModal(false);
-            showToast("Opening system mail clients parameters...");
-            startGeoCooldown();
-        }
-
-
         // ================= SHULKEROS DOCUMENTATION ENGINE =================
         function switchDocTab(tabId) {
             // Hide all sub sections
@@ -752,54 +556,27 @@
             }
         }
 
-        function searchDocumentation() {
-            const query = document.getElementById('doc-search').value.toLowerCase();
-            const sidebarButtons = document.querySelectorAll('.doc-sidebar-btn');
-
-            sidebarButtons.forEach(btn => {
-                const text = btn.innerText.toLowerCase();
-                if (text.includes(query)) {
-                    btn.style.display = 'flex';
-                } else {
-                    btn.style.display = 'none';
-                }
-            });
-        }
-
-
-        // ================= SECURE CONTACT FORM ENGINE =================
         function handleContactSubmit(e) {
             e.preventDefault();
             const subjectInput = document.getElementById('contact-subject').value;
             const messageInput = document.getElementById('contact-message').value;
 
-            const myEmail = 'ayt04@duck.com';
+            const email = 'ayt04@duck.com';
             const subject = encodeURIComponent(subjectInput);
-            const body = encodeURIComponent(messageInput);
-            const bioSignalNote = encodeURIComponent(`\n\nSent via ayt04.xyz`);
             
-            const mailtoLink = `mailto:${myEmail}?subject=${subject}&body=${body}${bioSignalNote}`;
+            const mailtoLink = `mailto:${email}?subject=${subject}`;
 
             window.open(mailtoLink, '_blank');
             
             document.getElementById('contact-success').classList.remove('hidden');
-            showToast("Contact pipeline initialized!");
+            showToast("Check your Inbox!");
         }
 
 
         // ================= APPLICATION SYSTEM BOOTSTRAP =================
         window.onload = function() {
-            // Initializing visual icon assets
             lucide.createIcons();
-
-            // Setup state engines
-            initShulkerScriptView();
-            initGeoDetective();
-            
-            // Configure Sphinx-RTD side subnavs
-            switchDocTab('welcome');
-
-            // Listen to initial routing anchors
+            switchDocTab('home');
             handleSPAHashRoute();
         };
     </script>

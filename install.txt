@@ -1,123 +1,81 @@
-- [ ] iwctl
+# --- Pre-chroot (run on installer) ---
+iwctl
+efivar -l
+gdisk
+cgdisk
 
-- [ ] efivar -l
+mkfs.fat -F32 p1
+mkswap p2
+swapon p2
+mkfs.ext4 p3
+mkfs.ext4 p4
 
-- [ ] gdisk
+mount p3 /mnt
+mkdir -p /mnt/boot /mnt/home
+mount p1 /mnt/boot
+mount p4 /mnt/home
 
-- [ ] cgdisk
+cp mirrorlist /mnt/etc/pacman.d/mirrorlist
+pacstrap -K /mnt base linux linux-firmware
+genfstab -U -p /mnt >> /mnt/etc/fstab
+nano /mnt/etc/fstab
 
-    - [ ] mkfs.fat -F32 p1 - Boot (EF00)
+arch-chroot /mnt
 
-    - [ ] mkswap p2 - Swap (8200)
+# --- Chroot (run inside arch-chroot) ---
+ln -sf /usr/share/zoneinfo/Canada/Eastern /etc/localtime
+hwclock --systohc --utc
 
-    - [ ] swapon p2
+echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+locale-gen
+echo "LANG=en_US.UTF-8" > /etc/locale.conf
 
-    - [ ] mkfs.ext4 p3 - Root (8300)
+echo "Overlord" > /etc/hostname
 
-    - [ ] mkfs.ext4 p4 - Home
+systemctl enable fstrim.timer
 
-- [ ] mount p3 /mnt
+pacman -S --noconfirm nano bash-completion sudo
 
-- [ ] mkdir -p /mnt/boot /mnt/home
+# Edit /etc/pacman.conf and ensure:
+# [multilib]
+# Include = /etc/pacman.d/mirrorlist
+nano /etc/pacman.conf
 
-- [ ] mount p1 /mnt/boot
+pacman -Sy --noconfirm
 
-- [ ] mount p4 /mnt/home
+useradd -m -g users -G wheel,storage,power -s /bin/bash addison
+passwd addison
 
-- [ ] cp mirrorlist
+EDITOR=nano visudo
+# In visudo, ensure this line exists:
+# %wheel ALL=(ALL:ALL) ALL
 
-- [ ] install pacman-contrib
+mount -t efivarfs efivarfs /sys/firmware/efi/efivars
+bootctl install
 
-- [ ] rankmirrors -n 2 mirrorlist.backup
+nano /boot/loader/entries/arch.conf
+# title Arch
+# linux /vmlinuz-linux
+# initrd /initramfs-linux.img
 
-- [ ] pacstrap -K /mnt base linux linux-firmware
+echo "options root=PARTUUID=$(blkid -s PARTUUID -o value /dev/p3) rw" >> /boot/loader/entries/arch.conf
 
-- [ ] genfstab -U -p /mnt >> /mnt/etc/fstab
+pacman -S --noconfirm dhcpcd networkmanager
+systemctl enable dhcpcd@wlan0.service
+systemctl enable NetworkManager.service
 
-- [ ] nano /mnt/etc/fstab
+exit
 
-- [ ] arch-chroot /mnt
+# --- Finish ---
+umount -R /mnt
+reboot
 
-    - [ ] sudo pacman -S nano bash-completion
+# --- After reboot ---
+pacman -S xorg-server xorg-xinit xterm xorg-apps sddm --noconfirm
+startx
 
-    - [ ] nano /etc/locale-gen
+pacman -S sddm --noconfirm
+systemctl enable sddm.service
+reboot
 
-        - [ ] en_US.UTF-8
-
-    - [ ] locale-gen
-
-    - [ ] echo LANG-en_US.UTF-8 > /etc/locale.conf
-
-    - [ ] export LANG=en_US.UTF-8
-
-    - [ ] ln -s /usr/share/zoneinfo/Canada/Eastern > /etc/localtime
-
-    - [ ] hwclock --systohc --utc
-
-    - [ ] echo Overlord > /etc/hostname
-
-    - [ ] systemctl enable fstrim.timer
-
-    - [ ] nano /etc/pacman.conf
-
-        - [ ] [multilib]
-
-        - [ ] Include = /etc/pacman.d/mirrorlist
-
-    - [ ] sudo pacman -Sy
-
-    - [ ] passwd
-
-    - [ ] useradd -m -g users -G wheel,storage,power -s /bin/bash addison
-
-    - [ ] passwd addison
-
-    - [ ] EDITOR=nano visudo
-
-        - [ ] %wheel ALL=(ALL:ALL) ALL
-
-        - [ ] Defaults rootpw
-
-    - [ ] mount -t efivarfs efivarfs /sys/firmware/efi/efivars
-
-    - [ ] ls /sys/firmware/efi/efivars
-
-    - [ ] bootctl install
-
-    - [ ] nano /boot/loader/entries/arch.conf
-
-        - [ ] title Arch
-
-        - [ ] linux /vmlinuz-linux
-
-        - [ ] initrd /initramfs-linux.img
-
-    - [ ] echo "options root=PARTUUID=$(blkid -s PARTUUID -o value /dev/p3) rw" >> /boot/loader/entries/arch.conf
-
-    - [ ] ip link
-
-    - [ ] sudo pacman -S dhcpcd
-
-    - [ ] sudo systemctl enable dhcpcd@wlan0.service
-
-    - [ ] sudo pacman -S networkmanager
-
-    - [ ] sudo systemctl enable NetworkManager.service
-
-    - [ ] exit
-
-- [ ] umount -R /mnt
-
-- [ ] reboot
-
-- [ ] sudo pacman -S xorg-server xorg-apps xorg-xinit xorg-twm xorg-xclock xterm
-
-- [ ] startx
-
-- [ ] sudo pacman -S sddm
-
-- [ ] sudo systemctl enable sddm.service
-
-- [ ] reboot
-
-    - [ ] sudo pacman -S steam firefox discord kate vlc
+pacman -S steam firefox discord kate vlc --noconfirm
