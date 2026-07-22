@@ -69,6 +69,10 @@ Ls       ^^^^^^^^^^^^^^^^^^^^^^^
 Bootctl install
 
 Nano /boot/loader/entries/arch.conf
+title AYTOS
+linux /vmlinuz-linux.img
+initrd /intel-ucode.img
+initrd /initramfs-linux.img
 
 Echo 'options root=PARTUUID=$(blkid -s PARTUUID -o value /dev/sdb3) rw' >> /boot/loader/entries/arch.conf
 
